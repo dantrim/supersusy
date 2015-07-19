@@ -7,7 +7,7 @@ ROOT.TCanvas.__init__._creates = False
 ROOT.TPad.__init__._creates = False
 ROOT.TLine.__init__._creates = False
 ROOT.TLegend.__init__._creates = False
-
+ROOT.TGraphErrors.__init__._creates = False
 
 # ----------------------------------------------
 #  TCanvas Methods
@@ -72,6 +72,26 @@ def th2f(name, title, nxbin, xlow, xhigh, nybin, ylow, yhigh, xtitle, ytitle) :
     h.GetYaxis().SetTitle(ytitle)
     h.Sumw2()
     return h
+
+# ----------------------------------------------
+#  TCanvas Methods
+# ----------------------------------------------
+def th1_to_tgraph(hist) :
+    '''
+    The provided histogram is turned into a TGraphErrors object
+    '''
+    g = ROOT.TGraphErrors()
+    for ibin in xrange(hist.GetNbinsX()) :
+        y = hist.GetBinContent(ibin)
+        ey = hist.GetBinError(ibin)
+        x = hist.GetBinCenter(ibin)
+        ex = hist.GetBinWidth(ibin)
+
+        g.SetPoint(ibin, x, y)
+        g.SetPointError(ibin, ex, ey)
+
+    return g
+        
 
 # ----------------------------------------------
 #  TLegend Methods
