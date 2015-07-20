@@ -41,6 +41,12 @@ reg.displayname = "Z-enriched"
 reg.tcut = "nLeptons==2 && nJets>=0 && l_pt[0]>25 && l_pt[1]>25"
 regions.append(reg)
 
+reg = region.Region()
+reg.simplename = "ttlike"
+reg.displayname = "ttbar"
+reg.tcut = "nLeptons>=1 && nJets>1 && nBJets>2"
+regions.append(reg)
+
 
 #############################################
 # Set up the plots
@@ -49,7 +55,7 @@ regions.append(reg)
 plots = []
 # test plot
 p = plot.Plot1D()
-p.initialize(variable="l_pt[0]", region="sr1a", name = "sr1a_lpt0")
+p.initialize(variable="l_pt[0]", region="zlike", name = "sr1a_lpt0")
 p.labels(x="Lead lepton p_{T} [GeV]", y="Entries / 5 GeV")
 p.xax(5, 25, 150)
 p.yax(0,500)
@@ -57,7 +63,7 @@ p.setRatioCanvas(p.name)
 plots.append(p)
 
 p = plot.Plot1D()
-p.initialize("sr1c", "met", "sr1c_met")
+p.initialize("ttlike", "met", "sr1c_met")
 p.labels(x="MET [GeV]", y="Entries / 10 GeV")
 p.xax(10,0,500)
 p.yax(0,500)

@@ -25,7 +25,29 @@ def get_plotConfig(conf) :
         print 'get_plotConfig ERROR    Input plotConfig ("%s") is not found in the plotConfig/ directory. Does it exist? Exitting.'%conf
         sys.exit()
 
-zjetsfile = "/afs/cern.ch/work/d/dantrim/public/SusyAna/ntuples/n0208/n0208/mc15_13TeV.root"
+def check_for_consistency(plots, regions) :
+    '''
+    Make sure that the plots are not asking for a region that
+    has not been loaded in the config
+    '''
+    bad_regions = []
+    configured_regions = []
+    for r in regions :
+        configured_regions.append(r.simplename)
+    for p in plots :
+        current_region = p.region
+        if current_region not in configured_regions :
+            bad_regions.append(current_region)
+    if len(bad_regions) > 0 :
+        print 'check_for_consistency ERROR    You have configured a plot for a region that has not also been configured:'
+        print bad_regions
+        print 'check_for_consistency ERROR    The regions set-up in the configuration ("%s") are:'%plotConfig
+        for r in configured_regions :
+            print "check_for_consistency ERROR     > '%s'"%(r)
+        print "check_for_consistency ERROR    Exitting."
+        sys.exit()
+    else :
+        print "check_for_consistency    Plots and regions consistent."
 
 if __name__=="__main__" :
     parser = argparse.ArgumentParser()
@@ -58,3 +80,5 @@ if __name__=="__main__" :
         r.Print()
     print ""
     data.Print()
+
+    check_for_consistency(plots, regions)
