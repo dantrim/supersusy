@@ -14,6 +14,7 @@ class Signal :
 
         self.color = r.kBlue
         self.displayname = ""
+        self.scale_factor = 1.0
         
         # mass info
         self.mA = 0.0
