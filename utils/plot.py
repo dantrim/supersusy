@@ -20,6 +20,7 @@ class Plot1D :
         self.x_range_max = 50.0
         self.y_range_min = 0.0
         self.y_range_max = 50.0
+        self.nbins = 20
 
         self.canvas = None
         self.ratioCanvas = None
@@ -52,7 +53,7 @@ class Plot1D :
 
     def defaultCanvas(self, name) :
         c = r.TCanvas("c_"+name, "c_"+name, 768, 768)
-        return c
+        self.canvas = c
 
     def setRatioCanvas(self, name) :
         self.ratioCanvas = RatioCanvas(name)

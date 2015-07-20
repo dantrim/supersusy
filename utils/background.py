@@ -3,6 +3,8 @@ import glob
 import sys
 sys.path.append('../..')
 
+r.TColor.__init__._creates = False
+
 class Background :
     def __init__(self, displayname = "") :
         self.dbg = False
@@ -43,6 +45,9 @@ class Background :
         (i.e. is not of the form 'id_XXXXXX')
         '''
         self.treename = name
+
+    def set_color(self, color) :
+        self.color = color
 
     def set_dsid_from_file(self, file) :
         dsid = ""

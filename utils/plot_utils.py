@@ -85,7 +85,8 @@ def th1_to_tgraph(hist) :
         y = hist.GetBinContent(ibin)
         ey = hist.GetBinError(ibin)
         x = hist.GetBinCenter(ibin)
-        ex = hist.GetBinWidth(ibin)
+        ex = 0.5 * hist.GetBinWidth(ibin)
+
 
         g.SetPoint(ibin, x, y)
         g.SetPointError(ibin, ex, ey)
