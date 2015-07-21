@@ -5,6 +5,7 @@ from math import floor
 import sys
 sys.path.append('../..')
 
+
 class Plot1D :
     def __init__(self) :
         self.is2D = False
@@ -50,6 +51,9 @@ class Plot1D :
         Set y-axis logarithmic
         '''
         self.doLogY = True
+
+    def isLog(self) :
+        return self.doLogY
 
     def defaultCanvas(self, name) :
         c = r.TCanvas("c_"+name, "c_"+name, 768, 768)
@@ -159,8 +163,8 @@ class RatioCanvas :
         dn  = self.lower_pad
 
         can.cd()
-        up_height = 0.55
-        dn_height = 0.50
+        up_height = 0.75
+        dn_height = 0.30
         up.SetPad(0.0, 1.0-up_height, 1.0, 1.0)
         dn.SetPad(0.0, 0.0, 1.0, dn_height)
 
@@ -170,13 +174,21 @@ class RatioCanvas :
 
         up.SetFrameFillColor(0)
         up.SetFillColor(0)
-        dn.SetLeftMargin(0.04)
-        dn.SetRightMargin(0.01)
-        dn.SetBottomMargin(0.5)
-        dn.SetTopMargin(0.03)
 
-        up.SetLeftMargin(0.04)
-        up.SetRightMargin(0.01)
+        # set right margins
+        up.SetRightMargin(0.05)
+        dn.SetRightMargin(0.05)
+
+        # set left margins
+        up.SetLeftMargin(0.14)
+        dn.SetLeftMargin(0.14)
+
+        # set top margins
+        up.SetTopMargin(0.7 * up.GetTopMargin())
+        
+        # set bottom margins
+        up.SetBottomMargin(0.09)
+        dn.SetBottomMargin(0.4)
 
         up.Draw()
         dn.Draw()

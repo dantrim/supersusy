@@ -4,6 +4,7 @@ import sys
 sys.path.append('../..')
 
 r.TColor.__init__._creates = False
+r.TEventList.__init__._creates = False
 
 class Background :
     def __init__(self, displayname = "") :
@@ -11,6 +12,7 @@ class Background :
         self.treename = ""
         self.displayname = displayname
         self.color = r.kRed
+        self.fillStyle = 1001
 
         self.file = ""
         self.tree = None
@@ -48,6 +50,12 @@ class Background :
 
     def set_color(self, color) :
         self.color = color
+
+    def set_fillStyle(self, style) :
+        '''
+        Override the default fill style
+        '''
+        self.fillStyle = style
 
     def set_dsid_from_file(self, file) :
         dsid = ""
@@ -115,6 +123,12 @@ class Data :
         (this is typical of Data samples)
         '''
         self.treename = name
+
+    def set_color(self, color) :
+        '''
+        Override the default Data color
+        '''
+        self.color = color
 
     def set_tree(self) :
         if self.treename == "" :

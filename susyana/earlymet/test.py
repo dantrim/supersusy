@@ -5,7 +5,11 @@ r.gROOT.SetBatch(False)
 r.gStyle.SetOptStat(False)
 import sys
 sys.path.append('../../..')
-sys.dont_write_bytecode = True
+#sys.dont_write_bytecode = True
+
+r.TEventList.__init__._creates = False
+r.TH1F.__init__._creates = False
+
 
 import argparse
 import os
@@ -49,14 +53,162 @@ def check_for_consistency(plots, regions) :
     else :
         print "check_for_consistency    Plots and regions consistent."
 
-def make_plotsRatio(plot, regions, data, backgrounds) :
-    print "make_plotsRatio not defined"
+def make_plotsRatio(plot, reg, data, backgrounds) :
+    print "make_plotsRatio    Plotting %s"%plot.name
+
+    rcan = plot.ratioCanvas
+    rcan.canvas.cd()
+    rcan.upper_pad.cd()
+
+    if plot.isLog() : rcan.upper_pad.SetLogy(True)
+    rcan.upper_pad.Update()
+
+    stack = r.THStack("stack_"+plot.name, "")
+    leg = pu.default_legend()
+    leg.SetNColumns(2)
+
+
+    histos = []
+    for b in backgrounds :
+        h = pu.th1f("h_"+b.treename+"_"+plot.variable, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+        h.SetLineColor(r.kBlack)
+        h.SetFillColor(b.color)
+        h.SetFillStyle(1001)
+        h.Sumw2
+
+        cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
+        cut = r.TCut(cut)
+        sel = r.TCut("1")
+        var = "l_q[0]*l_d0sigBSCorr[0]"
+        cmd = "%s>>+%s"%(var, h.GetName())
+        #cmd = "%s>>+%s"%(plot.variable, h.GetName())
+        b.tree.Draw(cmd, cut * sel)
+        print "%s: %.2f"%(b.displayname, h.Integral(0,-1))
+        #stack.Add(h)
+        leg.AddEntry(h, b.displayname, "fl")
+        histos.append(h)
+        rcan.upper_pad.Update()
+
+    #order the histos
+    histos = sorted(histos, key=lambda h: h.Integral(), reverse=False)
+    for h in histos :
+        stack.Add(h)
+    rcan.upper_pad.Update()
+
+    #### DATA
+    hd = pu.th1f("h_data_"+reg.simplename, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+    hd.Sumw2
+    cut = "(" + reg.tcut + ")"
+    cut = r.TCut(cut)
+    sel = r.TCut("1")
+    #var = "l_q[0]*l_d0sigBSCorr[0]"
+    #cmd = "%s>>+%s"%(var, hd.GetName())
+    cmd = "%s>>+%s"%(plot.variable, hd.GetName())
+    data.tree.Draw(cmd, cut * sel)
+    print "Data: %.2f"%(hd.Integral(0,-1))
+    #g = pu.th1_to_tgraph(hd)
+    g = pu.convert_errors_to_poisson(hd)
+    g.SetLineWidth(2)
+    g.SetMarkerStyle(20)
+    g.SetMarkerSize(1.1)
+    g.SetLineColor(1)
+    leg.AddEntry(g, "Data", "p")
+    rcan.upper_pad.Update()
+
+        
+    stack.Draw("HIST")
+    stack.GetXaxis().SetTitle(plot.x_label)
+    stack.GetYaxis().SetTitle(plot.y_label)
+    stack.GetXaxis().SetTitleFont(42)
+    stack.GetYaxis().SetTitleFont(42)
+    stack.GetXaxis().SetLabelFont(42)
+    stack.GetYaxis().SetLabelFont(42)
+    stack.GetYaxis().SetTitleOffset(1.4)
+    stack.GetYaxis().SetLabelOffset(0.013)
+    stack.SetMinimum(plot.y_range_min)
+    stack.SetMaximum(plot.y_range_max)
+    #stack.GetXaxis().SetLabelSize(0.046)
+    stack.GetXaxis().SetLabelSize(0.035)
+    #stack.GetYaxis().SetLabelSize(0.05)
+    stack.GetYaxis().SetLabelSize(1.2 * 0.035)
+    stack.GetXaxis().SetTitleSize(0.048 * 0.85)
+    stack.GetYaxis().SetTitleSize(0.055 * 0.85)
+
+    #throw away x-axis labels
+    stack.GetXaxis().SetTitleOffset(-999)
+    stack.GetXaxis().SetLabelOffset(-999)
+    rcan.upper_pad.Update()
+
+    g.Draw("option same pz")
+    leg.Draw()
+    r.gPad.RedrawAxis()
+    pu.draw_text_on_top(text=plot.name)
+    pu.draw_text(text="#it{ATLAS} Simulation",x=0.18,y=0.85)
+    pu.draw_text(text="13 TeV, ~6 pb^{-1}",x=0.18, y=0.8)
+    pu.draw_text(text=reg.displayname, x=0.18,y=0.75)
+
+    r.gPad.SetTickx()
+    r.gPad.SetTicky()
+
+    rcan.upper_pad.Update()
+
+    #### Lower Pad
+
+    rcan.lower_pad.cd()
+    h_sm = stack.GetStack().Last().Clone("h_sm")
+    
+    # yaxis
+    yax = h_sm.GetYaxis()
+    yax.SetRangeUser(0,2)
+    yax.SetTitle("Data/SM")
+    yax.SetTitleSize(0.14)
+    yax.SetLabelSize(0.13)
+    yax.SetLabelOffset(0.98 * 0.013)
+    yax.SetTitleOffset(0.45)
+    yax.SetLabelFont(42)
+    yax.SetTitleFont(42)
+    yax.SetNdivisions(5) 
+    # xaxis
+    xax = h_sm.GetXaxis()
+    xax.SetTitleSize(1.2 * 0.14)
+    xax.SetLabelSize(0.13)
+    xax.SetLabelOffset(1.15*0.02)
+    xax.SetTitleOffset(0.85 * xax.GetTitleOffset())
+    xax.SetLabelFont(42)
+    xax.SetTitleFont(42)
+   
+    h_sm.SetTickLength(0.06)
+    h_sm.Draw("AXIS")
+    rcan.lower_pad.Update()
+
+    # draw lines
+    pu.draw_line(plot.x_range_min, 1.0, plot.x_range_max, 1.0,color=r.kRed,style=2,width=1)
+    pu.draw_line(plot.x_range_min, 0.5, plot.x_range_max, 0.5,style=3,width=1)
+    pu.draw_line(plot.x_range_min, 1.5, plot.x_range_max, 1.5,style=3,width=1)
+
+    g_ratio = pu.divide_histograms(hd, h_sm, plot.x_label, "Data/SM")
+    g_ratio.SetLineWidth(1)
+    g_ratio.SetMarkerStyle(20)
+    g_ratio.SetMarkerSize(1.1)
+    g_ratio.SetLineColor(1)
+    g_ratio.Draw("option pz")
+    rcan.lower_pad.Update()
+
+    rcan.canvas.Update()
+
+
+    outname = plot.name + ".eps"
+    rcan.canvas.SaveAs(outname)
+    
+
+    
+
 
 def make_plots1D(plot, reg, data, backgrounds) :
-    print "make_plots1D    Plotting %s"%plot.name 
 
     if plot.ratioCanvas : make_plotsRatio(plot, reg, data, backgrounds)
     else :
+        print "make_plots1D    Plotting %s"%plot.name 
         c = plot.canvas
         c.cd()
         c.SetFrameFillColor(0)
@@ -65,34 +217,41 @@ def make_plots1D(plot, reg, data, backgrounds) :
         c.SetRightMargin(0.05)
         c.SetBottomMargin(1.3*c.GetBottomMargin())
 
-        if p.doLogY : c.SetLogy(True)
+
+        if plot.isLog() : c.SetLogy(True)
+        c.Update()
         
         stack = r.THStack("stack_"+plot.name, "")
-     #   reg = region.Region()
-     #   for regi in regions :
-     #       if regi.simplename == plot.region :
-     #           reg.simplename = regi.simplename
-     #           reg.tcut = regi.tcut
-     #           reg.displayname = regi.displayname
 
         leg = pu.default_legend()
+        leg.SetNColumns(2)
 
+        # order the backgrounds by integral
+        histos = []
         for b in backgrounds :
-            h = pu.th1f("h_"+b.treename, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-            h.SetLineColor(b.color)
+            h = pu.th1f("h_"+b.treename+"_"+plot.variable, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+            h.SetLineColor(r.kBlack)
+            h.SetLineWidth(1)
             h.SetFillColor(b.color)
-            h.SetFillStyle(1001)
+            h.SetFillStyle(b.fillStyle)
             h.Sumw2
 
             cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
             cut = r.TCut(cut)
             sel = r.TCut("1")
-            cmd = "%s>>%s"%(plot.variable, h.GetName())
+            cmd = "%s>>+%s"%(plot.variable, h.GetName())
             b.tree.Draw(cmd, cut * sel)
             print "%s: %.2f"%(b.displayname, h.Integral(0,-1))
-            stack.Add(h)
-            leg.AddEntry(h, b.displayname, "fl")
+            #stack.Add(h)
+            leg.AddEntry(h, b.displayname, "f")
+            histos.append(h)
             c.Update()
+
+        #order the histos
+        histos = sorted(histos, key=lambda h: h.Integral(), reverse=False)
+        for h in histos :
+            stack.Add(h)
+        c.Update()
 
         #### DATA
         hd = pu.th1f("h_data_"+reg.simplename, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
@@ -100,16 +259,17 @@ def make_plots1D(plot, reg, data, backgrounds) :
         cut = "(" + reg.tcut + ")"
         cut = r.TCut(cut)
         sel = r.TCut("1")
-        cmd = "%s>>%s"%(plot.variable, hd.GetName())
+        cmd = "%s>>+%s"%(plot.variable, hd.GetName())
         data.tree.Draw(cmd, cut * sel)
         print "Data: %.2f"%(hd.Integral(0,-1))
-        g = pu.th1_to_tgraph(hd)
+        #g = pu.th1_to_tgraph(hd)
+        g = pu.convert_errors_to_poisson(hd)
         g.SetLineWidth(2)
         g.SetMarkerStyle(20)
         g.SetMarkerSize(1.1)
         g.SetLineColor(1)
+        leg.AddEntry(g, "Data", "p")
 
-        c.Update()
 
         
         stack.Draw("HIST")
@@ -119,7 +279,7 @@ def make_plots1D(plot, reg, data, backgrounds) :
         stack.GetYaxis().SetTitleFont(42)
         stack.GetXaxis().SetLabelFont(42)
         stack.GetYaxis().SetLabelFont(42)
-        stack.GetYaxis().SetTitleOffset(0.95 * 1.28)
+        stack.GetYaxis().SetTitleOffset(1.4)
         stack.GetYaxis().SetLabelOffset(0.013)
         stack.SetMinimum(plot.y_range_min)
         stack.SetMaximum(plot.y_range_max)
@@ -134,6 +294,11 @@ def make_plots1D(plot, reg, data, backgrounds) :
         g.Draw("option same pz")
         leg.Draw()
 
+        pu.draw_text_on_top(text=plot.name)
+        pu.draw_text(text="#it{ATLAS} Simulation",x=0.18,y=0.85)
+        pu.draw_text(text="13 TeV, ~6 pb^{-1}",x=0.18, y=0.8)
+        pu.draw_text(text=reg.displayname, x=0.18,y=0.75)
+        c.Update()
         r.gPad.RedrawAxis()
         outname = plot.name + ".eps"
         c.SaveAs(outname)
@@ -146,7 +311,6 @@ def make_plots(plots, regions, data, backgrounds) :
     for reg in regions:
         plots_with_region = []
         for p in plots :
-            print p.name
             if p.region == reg.simplename : plots_with_region.append(p)
         if len(plots_with_region)==0 : continue
         print "Setting EventLists for %s"%reg.simplename
@@ -155,12 +319,19 @@ def make_plots(plots, regions, data, backgrounds) :
         sel = r.TCut("1")
         for b in backgrounds :
             list_name = "list_" + reg.simplename + "_" + b.treename
-            list = r.TEventList(list_name)
-            draw_list = ">> " + list_name
-            b.tree.Draw(draw_list, sel*cut)
-            
-            this_list = r.gDirectory.Get(list_name)
-            b.tree.SetEventList(this_list)
+            #this_list = r.TEventList(list_name)
+            if os.path.isfile(list_name + ".root") :
+                rfile = r.TFile.Open(list_name+".root")
+                list = rfile.Get(list_name) 
+              #  thislist = r.gDirectory.Get(list.GetName())
+                list.Print()
+                b.tree.SetEventList(list)
+            else :
+                draw_list = ">> " + list_name
+                b.tree.Draw(draw_list, sel*cut)
+                list = r.gROOT.FindObject(list_name)
+                b.tree.SetEventList(list)
+                list.SaveAs(list_name + ".root")
 
         # do data
         data_list_name = "list_" + reg.simplename + "_data"
@@ -181,10 +352,19 @@ def make_plots(plots, regions, data, backgrounds) :
 
 if __name__=="__main__" :
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--plotConfig")
+    parser.add_argument("-c", "--plotConfig")
+    parser.add_argument("-r", "--requestRegion", default="")
+    parser.add_argument("-p", "--requestPlot", default="")
     args = parser.parse_args()
-    global plotConfig
+    global plotConfig, requestRegion, requestPlot
     plotConfig = args.plotConfig
+    requestRegion = args.requestRegion
+    requestPlot = args.requestPlot
+
+    if requestRegion != "" and requestPlot != "" :
+        print 'ERROR    You have requested both a reagion ("%s") AND a plot ("%s").'%(requestRegion, requestPlot)
+        print 'ERROR    You may only request one at a time. Exitting.'
+        sys.exit()
 
     conf_file = get_plotConfig(plotConfig)
     print conf_file
@@ -202,4 +382,19 @@ if __name__=="__main__" :
 
     check_for_consistency(plots, regions)
 
-    make_plots(plots, regions, data, backgrounds)
+    if requestRegion != "" :
+        requested_plots = []
+        for p in plots :
+            if p.region == requestRegion : requested_plots.append(p)
+        make_plots(requested_plots, regions, data, backgrounds)
+    elif requestPlot != "" :
+        requested_plots = []
+        for p in plots :
+            if p.name == requestPlot : requested_plots.append(p)
+        make_plots(requested_plots, regions, data, backgrounds)
+    else :
+        make_plots(plots, regions, data, backgrounds)
+            
+
+
+   # make_plots(plots, regions, data, backgrounds)
