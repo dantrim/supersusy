@@ -1,4 +1,5 @@
-
+*.root
+*.eps
 *.png
 *.pdf
 *.jpeg
