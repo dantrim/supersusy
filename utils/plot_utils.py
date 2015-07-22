@@ -128,7 +128,7 @@ def divide_histograms(hnum, hden, xtitle, ytitle) :
     for i in range(1,nbins+1) :
         c1 = float(hnum.GetBinContent(i))
         c2 = float(hden.GetBinContent(i))
-        if c2 == 0 : break
+        if c2 == 0 : continue
         c3 = c1 / c2 * 1.0
         if c3 == 0 : c3 = -99
         hratio.SetBinContent(i, c3)
@@ -203,6 +203,12 @@ def set_palette(name="", ncontours=999) :
         red   = [1.00, 0.84, 0.61, 0.34, 0.00]
         green = [1.00, 0.84, 0.61, 0.34, 0.00]
         blue  = [1.00, 0.84, 0.61, 0.34, 0.00] 
+    elif "redbluevector" :
+        #stops = [0.00, 0.34, 0.61, 0.84, 1.00]
+        stops = [0.00, 0.20, 0.5, 0.70, 1.00]
+        red   = [0.35, 0.29, 0.29, 0.89, 0.90]
+        green = [0.70, 0.57, 0.35, 0.22, 0.05]
+        blue  = [0.95, 0.88, 0.70, 0.45, 0.09]
     else :
         stops = [0.00, 0.34, 0.61, 0.84, 1.00]
         red   = [0.00, 0.00, 0.87, 1.00, 0.51]

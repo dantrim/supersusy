@@ -73,12 +73,6 @@ reg.tcut = "nLeptons==2 && nMuons==2 && nJets==0 && nBJets==0 && l_pt[0]>20 && l
 regions.append(reg)
 
 reg = region.Region()
-reg.simplename = "zlike_mmj"
-reg.displayname = "Z-enriched"
-reg.tcut = "nLeptons==2 && nMuons==2 && nJets>=0 && l_pt[0]>20 && l_pt[1]>20 && (l_q[0]*l_q[1])<0 && abs(mll-91.2)<25"
-regions.append(reg)
-
-reg = region.Region()
 reg.simplename = "zmm_positive"
 reg.displayname = "Z#mu#mu (Lead lepton Q+)"
 reg.tcut = "nLeptons==2 && nMuons==2 && nJets==0 && nBJets==0 && l_pt[0]>20 && l_pt[1]>20 && (l_q[0]*l_q[1])<0 && l_q[0]>0"
@@ -102,6 +96,13 @@ reg.displayname = "2l-1j"
 reg.tcut = "nLeptons==2 && nJets==1 && nBJets==0"
 regions.append(reg)
 
+
+reg = region.Region()
+reg.simplename = "zlike_mmj"
+reg.displayname = "Z#mu#mu >=0j (no d0sig, no zsin)"
+reg.tcut = "nLeptons==2 && nMuons==2 && nJets>=0 && nBJets==0 && l_pt[0]>25 && l_pt[1]>25 && (l_q[0]*l_q[1])<0 && abs(mll-91.2)<25"
+regions.append(reg)
+
 #############################################
 # Set up the plots
 #############################################
@@ -120,3 +121,57 @@ p.yax(5,25,100)
 p.defaultCanvas()
 plots.append(p)
 
+p = plot.Plot2D()
+p.initialize("zlike_mmj", "l_d0sigBSCorr[0]", "l_eta[0]", "zlike_mmj_d0sigBSCorr0_eta0_zjets")
+p.labels(x="Lead lepton d0sig (BSCorr)", y="Lead lepton #eta")
+p.set_sample("zjets")
+p.xax(0.5,-6,6)
+p.yax(0.5,-3,3)
+p.defaultCanvas()
+plots.append(p)
+
+p = plot.Plot2D()
+p.initialize("zlike_mmj", "l_d0[0]", "l_eta[0]", "zlike_mmj_d00_eta0_data")
+p.labels(x="Lead lepton d0 [mm]", y="Lead lepton #eta")
+p.set_sample("Data")
+p.xax(0.005,-0.1,0.1)
+p.yax(0.5,-3,3)
+p.defaultCanvas()
+plots.append(p)
+
+p = plot.Plot2D()
+p.initialize("zlike_mmj", "l_d0sigBSCorr[0]", "l_phi[0]", "zlike_mmj_d0sigBSCorr0_phi0_zjets")
+p.labels(x="Lead lepton d0sig (BSCorr)", y="Lead lepton #phi")
+p.set_sample("zjets")
+p.xax(0.5,-6,6)
+p.yax(0.5,-3,3)
+p.defaultCanvas()
+plots.append(p)
+
+p = plot.Plot2D()
+p.initialize("zlike_mmj", "l_d0[0]", "l_phi[0]", "zlike_mmj_d00_phi0_data")
+p.labels(x="Lead lepton d0 [mm]", y="Lead lepton #phi")
+p.set_sample("Data")
+p.xax(0.005,-0.1,0.1)
+p.yax(0.5,-3,3)
+p.defaultCanvas()
+plots.append(p)
+
+
+p = plot.Plot2D()
+p.initialize("zlike_mmj", "j_pt[0]", "j_jvt[0]", "zlike_mmj_jpt0_jvt0_zjets")
+p.labels(x="Lead jet p_{T} [GeV]", y="Lead jet JVT")
+p.set_sample("zjets")
+p.xax(5,25,120)
+p.yax(0.02,0.5,1.0)
+p.defaultCanvas()
+plots.append(p)
+
+p = plot.Plot2D()
+p.initialize("zlike_mmj", "j_pt[0]", "j_jvf[0]", "zlike_mmj_jpt0_jvf0_zjets")
+p.labels(x="Lead jet p_{T} [GeV]", y="Lead jet JVF")
+p.set_sample("zjets")
+p.xax(5,25,120)
+p.yax(0.02,0.5,1.0)
+p.defaultCanvas()
+plots.append(p)

@@ -79,9 +79,9 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
         cut = r.TCut(cut)
         sel = r.TCut("1")
-        var = "l_q[0]*l_d0sigBSCorr[0]"
-        cmd = "%s>>+%s"%(var, h.GetName())
-        #cmd = "%s>>+%s"%(plot.variable, h.GetName())
+        #var = "l_q[0]*l_d0sigBSCorr[0]"
+        #cmd = "%s>>+%s"%(var, h.GetName())
+        cmd = "%s>>+%s"%(plot.variable, h.GetName())
         b.tree.Draw(cmd, cut * sel)
         print "%s: %.2f"%(b.displayname, h.Integral(0,-1))
         #stack.Add(h)
@@ -305,14 +305,13 @@ def make_plots1D(plot, reg, data, backgrounds) :
 
 def check_2d_consistency(plot, data, backgrounds) :
 
-    if plot.sample == "Data" :
-        if data == None :
-            print 'check_2d_consistency ERROR    Requested sample is ("Data") and the data sample is empty. Exitting.'
-            sys.exit()
+    if plot.sample == "Data" and data.treename == "":
+        print 'check_2d_consistency ERROR    Requested sample is ("Data") and the data sample is empty. Exitting.'
+        sys.exit()
     sample_in_backgrounds = False
     for b in backgrounds :
-        if plot.sample == b.name : sample_in_backgrounds = True
-    if not sample_in_backgrounds :
+        if plot.sample == b.name and plot.sample != "Data" : sample_in_backgrounds = True
+    if not sample_in_backgrounds and plot.sample != "Data" :
         print 'check_2d_consistency ERROR    Requested sample ("%s") is not in the backgrounds list:'%plot.sample
         print backgrounds
         print 'check_2d_consistency ERROR    Exitting.'
@@ -325,20 +324,23 @@ def make_plots2D(plot, reg, data, backgrounds) :
 
     check_2d_consistency(plot, data, backgrounds)
     
-    pu.set_palette()
+    pu.set_palette(name="redbluevector")
 
     c = plot.canvas
     c.cd()
     # these should be int he default cavnas setting in utils/plot.py
     c.SetFrameFillColor(0)
     c.SetFillColor(0)
-    c.SetLeftMargin(0.14)
-    c.SetRightMargin(0.1)
+    c.SetLeftMargin(0.13)
+    c.SetRightMargin(0.14)
     c.SetBottomMargin(1.3*c.GetBottomMargin())
+
+    name_on_plot = ""
 
     if plot.sample != "Data" :
         for b in backgrounds :
             if b.name != plot.sample : continue
+            name_on_plot = b.displayname
             h = pu.th2f("h_"+b.name+"_"+plot.xVariable+"_"+plot.yVariable, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, int(plot.n_binsY), plot.y_range_min, plot.y_range_max, plot.x_label, plot.y_label)
             
             cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
@@ -347,14 +349,33 @@ def make_plots2D(plot, reg, data, backgrounds) :
             cmd = "%s:%s>>+%s"%(plot.yVariable,plot.xVariable,h.GetName())
             b.tree.Draw(cmd, cut * sel)
 
+
+    if plot.sample == "Data" :
+        name_on_plot = "Data"
+        h = pu.th2f("h_"+data.name+"_"+plot.xVariable+"_"+plot.yVariable, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, int(plot.n_binsY), plot.y_range_min, plot.y_range_max, plot.x_label, plot.y_label)
+
+        cut = "(" + reg.tcut + ")"
+        cut = r.TCut(cut)
+        sel = r.TCut("1")
+        cmd = "%s:%s>>+%s"%(plot.yVariable,plot.xVariable,h.GetName())
+        data.tree.Draw(cmd, cut * sel)
+
+
     if h.Integral()!=0 : h.Scale(1/h.Integral())
-    
+    h.Smooth()
+    h.GetYaxis().SetTitleOffset(1.52 * h.GetYaxis().GetTitleOffset())
+    h.GetXaxis().SetTitleOffset(1.2 * h.GetXaxis().GetTitleOffset())
+    #r.TGaxis.SetMaxDigits(2)
+    #h.GetZaxis().SetLabelSize(0.75 * h.GetLabelSize())
+ 
     g = r.TGraph2D(1)
     g.SetMarkerStyle(r.kFullSquare)
     g.SetMarkerSize(2.0 * g.GetMarkerSize())
     g.SetHistogram(h)
     g.Draw(plot.style)
+#    g.Smooth()
 
+    pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name,name_on_plot))
 
  #   h.Draw(plot.style)
     c.Update()
