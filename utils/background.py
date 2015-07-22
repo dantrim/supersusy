@@ -7,9 +7,10 @@ r.TColor.__init__._creates = False
 r.TEventList.__init__._creates = False
 
 class Background :
-    def __init__(self, displayname = "") :
+    def __init__(self, name = "", displayname = "") :
         self.dbg = False
         self.treename = ""
+        self.name = name
         self.displayname = displayname
         self.color = r.kRed
         self.fillStyle = 1001
@@ -103,6 +104,7 @@ class Data :
     def __init__(self) :
         self.dbg = False
         self.treename = ""
+        self.name = "Data"
         self.displayname = "Data"
         self.color = r.kBlack
 

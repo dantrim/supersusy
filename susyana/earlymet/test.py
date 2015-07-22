@@ -302,10 +302,65 @@ def make_plots1D(plot, reg, data, backgrounds) :
         r.gPad.RedrawAxis()
         outname = plot.name + ".eps"
         c.SaveAs(outname)
-        
 
-def make_plots2D(plot, regions, data, backgrounds) :
-    print "make_plots2D not defined"
+def check_2d_consistency(plot, data, backgrounds) :
+
+    if plot.sample == "Data" :
+        if data == None :
+            print 'check_2d_consistency ERROR    Requested sample is ("Data") and the data sample is empty. Exitting.'
+            sys.exit()
+    sample_in_backgrounds = False
+    for b in backgrounds :
+        if plot.sample == b.name : sample_in_backgrounds = True
+    if not sample_in_backgrounds :
+        print 'check_2d_consistency ERROR    Requested sample ("%s") is not in the backgrounds list:'%plot.sample
+        print backgrounds
+        print 'check_2d_consistency ERROR    Exitting.'
+        sys.exit()
+
+    print 'check_2d_consistency    Samples consistent with plot.'
+
+def make_plots2D(plot, reg, data, backgrounds) :
+    print "make_plots2D    Plotting %s"%plot.name 
+
+    check_2d_consistency(plot, data, backgrounds)
+    
+    pu.set_palette()
+
+    c = plot.canvas
+    c.cd()
+    # these should be int he default cavnas setting in utils/plot.py
+    c.SetFrameFillColor(0)
+    c.SetFillColor(0)
+    c.SetLeftMargin(0.14)
+    c.SetRightMargin(0.1)
+    c.SetBottomMargin(1.3*c.GetBottomMargin())
+
+    if plot.sample != "Data" :
+        for b in backgrounds :
+            if b.name != plot.sample : continue
+            h = pu.th2f("h_"+b.name+"_"+plot.xVariable+"_"+plot.yVariable, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, int(plot.n_binsY), plot.y_range_min, plot.y_range_max, plot.x_label, plot.y_label)
+            
+            cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
+            cut = r.TCut(cut)
+            sel = r.TCut("1")
+            cmd = "%s:%s>>+%s"%(plot.yVariable,plot.xVariable,h.GetName())
+            b.tree.Draw(cmd, cut * sel)
+
+    if h.Integral()!=0 : h.Scale(1/h.Integral())
+    
+    g = r.TGraph2D(1)
+    g.SetMarkerStyle(r.kFullSquare)
+    g.SetMarkerSize(2.0 * g.GetMarkerSize())
+    g.SetHistogram(h)
+    g.Draw(plot.style)
+
+
+ #   h.Draw(plot.style)
+    c.Update()
+    r.gPad.RedrawAxis()
+    outname = plot.name+".eps"
+    c.SaveAs(outname)
 
 def make_plots(plots, regions, data, backgrounds) :
     for reg in regions:
@@ -334,11 +389,18 @@ def make_plots(plots, regions, data, backgrounds) :
                 list.SaveAs(list_name + ".root")
 
         # do data
-        data_list_name = "list_" + reg.simplename + "_data"
-        data_list = r.TEventList(data_list_name)
-        draw_list = ">> " + data_list_name
-        data.tree.Draw(draw_list, sel*cut)
-        data.tree.SetEventList(r.gDirectory.Get(data_list_name))
+        data_list_name = "list_" + reg.simplename + "_" + data.treename
+        if os.path.isfile(data_list_name + ".root") :
+            rfile = r.TFile.Open(data_list_name+".root")
+            data_list = rfile.Get(data_list_name)
+            data_list.Print()
+            data.tree.SetEventList(data_list)
+        else :
+            draw_list = ">> " + data_list_name
+            data.tree.Draw(draw_list, sel * cut)
+            data_list = r.gROOT.FindObject(data_list_name)
+            data.tree.SetEventList(data_list)
+            data_list.SaveAs(data_list_name+".root")
 
         for p in plots_with_region :
             if not p.is2D : make_plots1D(p, reg, data, backgrounds) 

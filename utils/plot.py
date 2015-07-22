@@ -95,7 +95,10 @@ class Plot2D :
         self.is2D = True
         self.xVariable = ""
         self.yVariable = ""
-        self.name = self.default_plot_name(self)
+        self.region = ""
+        self.sample = ""
+        self.name = ""
+        #self.name = self.default_plot_name()
         self.x_label = "x-Label"
         self.y_label = "y-Label"
         self.x_bin_width = 1.0
@@ -105,10 +108,52 @@ class Plot2D :
         self.y_range_min = 0.0
         self.y_range_max = 0.0 
 
-        self.n_binsX = self.get_n_bins(self, "X")
-        self.n_binsY = self.get_n_bins(self, "Y")
         self.style = "colz"
 
+        self.canvas = None
+
+    def initialize(self, region="", xvar="", yvar="", name="") :
+        '''
+        Initalize the selection ('region'), x- and y-variables
+        to be plotted, as well as the name of the plot
+        '''
+        self.region = region
+        self.xVariable = xvar
+        self.yVariable = yvar
+        self.name = name 
+
+    def set_sample(self, sample="") :
+        '''
+        Set by name which sample the 2D histo is to be
+        plotted for
+        '''
+        self.sample = sample
+
+    def xax(self, width=1.0, min=0.0, max=50.0) :
+        '''
+        Set the x-axis attributes
+        '''
+        self.x_bin_width = width
+        self.x_range_min = min
+        self.x_range_max = max
+        self.n_binsX = self.get_n_bins(width, min, max)
+
+    def yax(self, width=1.0, min=0.0, max=50.0) :
+        '''
+        Set the y-axis attributes
+        '''
+        self.y_bin_width = width
+        self.y_range_min = min
+        self.y_range_max = max
+        self.n_binsY = self.get_n_bins(width, min, max)
+
+    def labels(self, x="",y="") :
+        '''
+        Set the x- and y-axis titles
+        '''
+        self.x_label = x
+        self.y_label = y
+         
 
     def default_plot_name(self) :
         '''
@@ -117,20 +162,15 @@ class Plot2D :
         '''
         return self.region + "_" + self.xVariable + "_" + self.yVariable 
 
-    def get_n_bins(self, axis="X") :
+    def defaultCanvas(self) :
+        c = r.TCanvas("c_" + self.name, "", 768, 768)
+        self.canvas = c 
+
+    def get_n_bins(self, width, min, max) :
         '''
         From the user-provided bin width and (min,max) get
         the number of bins for the specified axis
         '''
-        min, max, width, nbins = 0.0, 0.0, 0.0, 0.0
-        if axis=="X" :
-            min = self.x_range_min
-            max = self.x_range_max
-            width = self.x_bin_width
-        elif axis=="Y" :
-            min = self.y_range_min
-            max = self.y_range_max
-            width = self.y_bin_width
         nbins = floor( (max - min) / (width) + 0.5 )
         return nbins
 
@@ -147,7 +187,7 @@ class Plot2D :
         self.style = style
 
     def Print(self) :
-        print "Plot2D    plot: %s  (region: %s  xVar: %s  yVar: %s)"%(self.name, self.xVariable, self.yVariable)
+        print "Plot2D    plot: %s  (region: %s  xVar: %s  yVar: %s)"%(self.name, self.region, self.xVariable, self.yVariable)
 
 class RatioCanvas :
     def __init__(self, name) :

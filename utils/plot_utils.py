@@ -1,5 +1,7 @@
 import ROOT
 ROOT.gROOT.SetBatch(True)
+import array
+
 
 ROOT.TH1F.__init__._creates = False
 ROOT.TH2F.__init__._creates = False
@@ -191,3 +193,25 @@ def draw_line(xl=0.0,yl=0.0,xh=1.0,yh=1.0,color=ROOT.kBlack,width=2,style=1) :
     l.SetLineWidth(width)
     l.SetLineStyle(style)
     l.Draw()
+
+# ----------------------------------------------
+#  Style Methods
+# ----------------------------------------------
+def set_palette(name="", ncontours=999) :
+    if name == "gray" or name == "grayscale" :
+        stops = [0.00, 0.34, 0.61, 0.84, 1.00]
+        red   = [1.00, 0.84, 0.61, 0.34, 0.00]
+        green = [1.00, 0.84, 0.61, 0.34, 0.00]
+        blue  = [1.00, 0.84, 0.61, 0.34, 0.00] 
+    else :
+        stops = [0.00, 0.34, 0.61, 0.84, 1.00]
+        red   = [0.00, 0.00, 0.87, 1.00, 0.51]
+        green = [0.00, 0.81, 1.00, 0.20, 0.00]
+        blue  = [0.51, 1.00, 0.12, 0.00, 0.00] 
+    s = array.array('d', stops)
+    R = array.array('d', red)
+    g = array.array('d', green)
+    b = array.array('d', blue)
+    npoints = len(s)
+    ROOT.TColor.CreateGradientColorTable(npoints, s, R, g, b, ncontours)
+    ROOT.gStyle.SetNumberContours(ncontours) 
