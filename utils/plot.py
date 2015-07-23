@@ -107,6 +107,7 @@ class Plot2D :
         self.x_range_max = 50.0
         self.y_range_min = 0.0
         self.y_range_max = 0.0 
+        self.do_profile = False
 
         self.style = "colz"
 
@@ -128,6 +129,12 @@ class Plot2D :
         plotted for
         '''
         self.sample = sample
+
+    def doProfile(self) :
+        '''
+        Set whether to do a profile plot
+        '''
+        self.do_profile = True
 
     def xax(self, width=1.0, min=0.0, max=50.0) :
         '''

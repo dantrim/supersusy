@@ -319,10 +319,79 @@ def check_2d_consistency(plot, data, backgrounds) :
 
     print 'check_2d_consistency    Samples consistent with plot.'
 
+def make_1dprofile(plot, reg, data, backgrounds) :
+    print "make_1dprofile    Plotting %s"%plot.name
+
+    r.gStyle.SetOptStat(1100)
+    c = plot.canvas
+    c.cd()
+    c.SetGridx(1)
+    c.SetGridy(1)
+    c.SetFrameFillColor(0)
+    c.SetFillColor(0)
+    c.SetLeftMargin(0.13)
+    c.SetRightMargin(0.14)
+    c.SetBottomMargin(1.3*c.GetBottomMargin())
+
+    name_on_plot = ""
+
+    if plot.sample != "Data" :
+        for b in backgrounds :
+            if b.name != plot.sample : continue
+            name_on_plot += b.displayname
+            h = r.TProfile("hprof_"+b.name+"_"+plot.xVariable+"_"+plot.yVariable,";%s;%s"%(plot.x_label,plot.y_label), int(plot.n_binsX), plot.x_range_min, plot.x_range_max, plot.y_range_min, plot.y_range_max)
+
+            cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
+            cut = r.TCut(cut)
+            sel = r.TCut("1")
+            cmd = "%s:%s>>+%s"%(plot.yVariable, plot.xVariable, h.GetName())
+            b.tree.Draw(cmd, cut * sel, "prof")
+            h.SetMarkerColor(r.TColor.GetColor("#E67067"))
+
+    if plot.sample == "Data" :
+        name_on_plot = "Data"
+        h = r.TProfile("hprof_Data_"+plot.xVariable+"_"+plot.yVariable,";%s;%s"%(plot.x_label,plot.y_label), int(plot.n_binsX), plot.x_range_min, plot.x_range_max, plot.y_range_min, plot.y_range_max)
+
+        cut = "(" + reg.tcut + ")"
+        cut = r.TCut(cut)
+        sel = r.TCut("1")
+        cmd = "%s:%s>>+%s"%(plot.yVariable, plot.xVariable, h.GetName())
+        data.tree.Draw(cmd, cut * sel, "prof")
+        h.SetMarkerColor(r.TColor.GetColor("#5E9AD6"))
+
+ #   r.TGaxis.SetMaxDigits(2)
+    h.GetYaxis().SetTitleOffset(1.6 * h.GetYaxis().GetTitleOffset())
+    h.GetXaxis().SetTitleOffset(1.2 * h.GetXaxis().GetTitleOffset())
+    h.SetMarkerStyle(8)
+    h.SetLineColor(r.kBlack)
+    h.SetMarkerSize(1.15*h.GetMarkerSize())
+   # h.GetYaxis().SetRangeUser(plot.y_range_min,plot.y_range_max)
+
+    h.Draw()
+    r.gPad.Update()
+
+    st = h.FindObject("stats")
+    st.SetY1NDC(0.93 * st.GetY1NDC())
+    st.SetY2NDC(0.93 * st.GetY2NDC())
+
+    h.Draw()
+
+    #pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name, name_on_plot),pushup=1.035)
+    pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name, name_on_plot))
+
+    c.Update()
+    r.gPad.RedrawAxis()
+    outname = plot.name + ".eps"
+    c.SaveAs(outname)
+
 def make_plots2D(plot, reg, data, backgrounds) :
-    print "make_plots2D    Plotting %s"%plot.name 
 
     check_2d_consistency(plot, data, backgrounds)
+
+    if plot.do_profile : 
+        make_1dprofile(plot, reg, data, backgrounds)
+        return
+    print "make_plots2D    Plotting %s"%plot.name 
     
     pu.set_palette(name="redbluevector")
 

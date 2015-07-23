@@ -57,12 +57,16 @@ def th1f(name, title, nbin, nlow, nhigh, xtitle, ytitle) :
     h.Sumw2()
     return h
 
-def draw_text_on_top(text="", size=0.04, ) :
+def draw_text_on_top(text="", size=0.04, pushright=1.0, pushup=1.0) :
     s = size
     t = text
     top_margin = ROOT.gPad.GetTopMargin()
     left_margin = ROOT.gPad.GetLeftMargin()
-    draw_text(x=left_margin, y=1.0-0.85*top_margin, text=t, size=s)
+    xpos = pushright * left_margin
+    ypos = 1.0 - 0.85*top_margin
+    ypos *= pushup
+    #draw_text(x=xpos, y=1.0-0.85*top_margin, text=t, size=s)
+    draw_text(x=xpos, y=ypos, text=t, size=s)
 
 def th1_to_tgraph(hist) :
     '''
