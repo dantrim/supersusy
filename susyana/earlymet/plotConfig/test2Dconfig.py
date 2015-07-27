@@ -9,38 +9,38 @@ import supersusy.utils.region as region
 #############################################
 # Set up the samples
 #############################################
-zjetsfile = "/afs/cern.ch/work/d/dantrim/public/SusyAna/ntuples/n0208/n0208/mc15_13TeV.root"
+
+scratchdir = "/scratch/dantrim/n0209/july24/"
+#datafile = scratchdir + "data15_13TeV.root"
+datafile = scratchdir + "data15_periodC_13TeV.root"
+mcfile = scratchdir + "mc15_13TeV.root"
 backgrounds = []
 
 #### MC
-# z+jets
-zfile = zjetsfile
-zjets = background.Background("zjets", "Z+jets")
-zjets.set_debug()
-zjets.set_file(zfile)
-zjets.scale_factor = 0.9
-zjets.set_color(r.TColor.GetColor("#82DE68"))
-zjets.set_fillStyle(3609)
-zjets.set_treename("Zjets_CENTRAL")
-zjets.set_merged_tree(zjets.treename)
-backgrounds.append(zjets)
+# zmumu
+zmm = background.Background("zmm", "Z#mu#mu")
+zmm.set_debug()
+zmm.set_file(mcfile)
+zmm.set_scale_factor = 0.9
+zmm.set_color(r.TColor.GetColor("#82DE68"))
+zmm.set_treename("Zmm_CENTRAL")
+zmm.set_merged_tree(zmm.treename)
+backgrounds.append(zmm)
 
 # ttbar
-ttfile = "/afs/cern.ch/work/d/dantrim/public/SusyAna/ntuples/n0208/n0208/ttbar_wjets_mc15_13TeV.root"
 ttbar = background.Background("ttbar", "TTbar")
 ttbar.set_debug()
-ttbar.set_file(ttfile)
+ttbar.set_file(mcfile)
 ttbar.scale_factor = 0.9
 ttbar.set_color(r.TColor.GetColor("#E67067"))
 ttbar.set_treename("TTbar_CENTRAL")
 ttbar.set_merged_tree(ttbar.treename)
 backgrounds.append(ttbar)
 
-# w+jets
-wjetsfile = "/afs/cern.ch/work/d/dantrim/public/SusyAna/ntuples/n0208/n0208/ttbar_wjets_mc15_13TeV.root"
+# wjets
 wjets = background.Background("wjets", "W+jets")
 wjets.set_debug()
-wjets.set_file(wjetsfile)
+wjets.set_file(mcfile)
 wjets.scale_factor = 0.9
 wjets.set_color(r.TColor.GetColor("#5E9AD6"))
 wjets.set_treename("Wjets_CENTRAL")
@@ -48,10 +48,9 @@ wjets.set_merged_tree(wjets.treename)
 backgrounds.append(wjets)
 
 #### DATA
-datafile = "/afs/cern.ch/work/d/dantrim/public/SusyAna/ntuples/n0208/data15_13TeV.root"
 data = background.Data()
 data.set_file(datafile)
-data.set_color(r.kBlue)
+data.set_color(r.kBlack)
 data.set_treename("Data_CENTRAL")
 data.set_merged_tree(data.treename)
 
@@ -110,60 +109,63 @@ regions.append(reg)
 plots = []
 
 p = plot.Plot2D()
-p.initialize("zlike_mmj", "l_eta[0]", "l_d0sigBSCorr[0]", "zlike_mmj_d0sigBSCorr_eta0_zjets_prof")
+p.initialize("zlike_mmj", "l_eta[0]", "l_d0sigBSCorr[0]", "zlike_mmj_d0sigBSCorr_eta0_data_prof")
 p.labels(x="Lead lepton #eta", y="Lead lepton d0sig (BSCorr)")
-p.set_sample("zjets")
-p.xax(0.5,-3,3)
-p.yax(0.5,-0.2,0.2)
-p.doProfile()
-p.defaultCanvas()
-plots.append(p)
-
-p = plot.Plot2D()
-p.initialize("zlike_mmj", "l_eta[0]", "l_d0[0]", "zlike_mmj_d00_eta0_data_prof")
-p.labels(y="Lead lepton d0 [mm]", x="Lead lepton #eta")
 p.set_sample("Data")
-p.yax(0.005,-0.1,0.1)
 p.xax(0.5,-3,3)
+p.yax(0.5,-0.035,0.035)
 p.doProfile()
 p.defaultCanvas()
 plots.append(p)
 
+
 p = plot.Plot2D()
-p.initialize("zlike_mmj", "l_phi[0]", "l_d0sigBSCorr[0]", "zlike_mmj_d0sigBSCorr_phi0_zjets_prof")
+p.initialize("zlike_mmj", "l_phi[0]", "l_d0sigBSCorr[0]", "zlike_mmj_d0sigBSCorr_phi0_data_prof")
 p.labels(x="Lead lepton #phi", y="Lead lepton d0sig (BSCorr)")
-p.set_sample("zjets")
-p.xax(0.5,-3,3)
-p.yax(0.5,-0.2,0.2)
-p.doProfile()
-p.defaultCanvas()
-plots.append(p)
-
-p = plot.Plot2D()
-p.initialize("zlike_mmj", "l_phi[0]", "l_d0[0]", "zlike_mmj_d00_phi0_data_prof")
-p.labels(y="Lead lepton d0 [mm]", x="Lead lepton #phi")
 p.set_sample("Data")
-p.yax(0.005,-0.1,0.1)
 p.xax(0.5,-3,3)
+p.yax(0.5,-0.04,0.04)
 p.doProfile()
 p.defaultCanvas()
 plots.append(p)
 
+#p = plot.Plot2D()
+#p.initialize("zlike_mmj", "l_eta[0]", "l_d0sig[0]", "zlike_mmj_d0sig_eta0_data_prof")
+#p.labels(x="Lead lepton #eta", y="Lead lepton d0sig")
+#p.set_sample("Data")
+#p.xax(0.5,-3,3)
+#p.yax(0.5,-0.09,0.09)
+#p.doProfile()
+#p.defaultCanvas()
+#plots.append(p)
+#
+#p = plot.Plot2D()
+#p.initialize("zlike_mmj", "l_phi[0]", "l_d0sig[0]", "zlike_mmj_d0sig_phi0_data_prof")
+#p.labels(x="Lead lepton #phi", y="Lead lepton d0sig")
+#p.set_sample("Data")
+#p.xax(0.5,-3,3)
+#p.yax(0.5,-0.04,0.04)
+#p.doProfile()
+#p.defaultCanvas()
+#plots.append(p)
 
-p = plot.Plot2D()
-p.initialize("zlike_mmj", "j_pt[0]", "j_jvt[0]", "zlike_mmj_jpt0_jvt0_zjets")
-p.labels(x="Lead jet p_{T} [GeV]", y="Lead jet JVT")
-p.set_sample("zjets")
-p.xax(5,25,120)
-p.yax(0.02,0.5,1.0)
-p.defaultCanvas()
-plots.append(p)
-
-p = plot.Plot2D()
-p.initialize("zlike_mmj", "j_pt[0]", "j_jvf[0]", "zlike_mmj_jpt0_jvf0_zjets")
-p.labels(x="Lead jet p_{T} [GeV]", y="Lead jet JVF")
-p.set_sample("zjets")
-p.xax(5,25,120)
-p.yax(0.02,0.5,1.0)
-p.defaultCanvas()
-plots.append(p)
+### d0(eta), d0(phi)
+#p = plot.Plot2D()
+#p.initialize("zlike_mmj", "l_eta[0]", "l_d0[0]", "zlike_mmj_d00_eta0_data_prof")
+#p.labels(y="Lead lepton d0 [mm]", x="Lead lepton #eta")
+#p.set_sample("Data")
+#p.yax(0.005,-0.1,0.1)
+#p.xax(0.5,-3,3)
+#p.doProfile()
+#p.defaultCanvas()
+#plots.append(p)
+#
+#p = plot.Plot2D()
+#p.initialize("zlike_mmj", "l_phi[0]", "l_d0[0]", "zlike_mmj_d00_phi0_data_prof")
+#p.labels(y="Lead lepton d0 [mm]", x="Lead lepton #phi")
+#p.set_sample("Data")
+#p.yax(0.005,-0.1,0.1)
+#p.xax(0.5,-3,3)
+#p.doProfile()
+#p.defaultCanvas()
+#plots.append(p)

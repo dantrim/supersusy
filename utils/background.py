@@ -58,6 +58,12 @@ class Background :
         '''
         self.fillStyle = style
 
+    def set_scale_factor(self, sf) :
+        '''
+        Set the scale factor for this background
+        '''
+        self.scale_factor = sf
+
     def set_dsid_from_file(self, file) :
         dsid = ""
         if "CENTRAL" in file :

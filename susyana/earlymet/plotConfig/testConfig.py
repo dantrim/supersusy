@@ -9,48 +9,50 @@ import supersusy.utils.region as region
 #############################################
 # Set up the samples
 #############################################
-zjetsfile = "/afs/cern.ch/work/d/dantrim/public/SusyAna/ntuples/n0208/n0208/mc15_13TeV.root"
+scratchdir = "/scratch/dantrim/n0209/july24/"
+#datafile = scratchdir + "data15_13TeV.root"
+datafile = scratchdir + "data15_periodC_13TeV.root"
+mcfile = scratchdir + "mc15_13TeV.root"
 backgrounds = []
 
 #### MC
-# z+jets
-zfile = zjetsfile
-zjets = background.Background("zjets", "Zjets")
-zjets.set_debug()
-zjets.set_file(zfile)
-zjets.scale_factor = 0.9
-zjets.set_color(r.TColor.GetColor("#82DE68"))
-zjets.set_treename("Zjets_CENTRAL")
-zjets.set_merged_tree(zjets.treename)
-backgrounds.append(zjets)
+# zmumu
+zmm = background.Background("zmm", "Z#mu#mu")
+zmm.set_debug()
+zmm.set_file(mcfile)
+zmm.scale_factor = 7.5
+#zmm.set_scale_factor = 0.9
+zmm.set_color(r.TColor.GetColor("#82DE68"))
+zmm.set_treename("Zmm_CENTRAL")
+zmm.set_merged_tree(zmm.treename)
+backgrounds.append(zmm)
 
 # ttbar
-ttfile = "/afs/cern.ch/work/d/dantrim/public/SusyAna/ntuples/n0208/n0208/ttbar_wjets_mc15_13TeV.root"
-ttbar = background.Background("ttbar","TTbar")
+ttbar = background.Background("ttbar", "TTbar")
 ttbar.set_debug()
-ttbar.set_file(ttfile)
-ttbar.scale_factor = 0.9
+ttbar.set_file(mcfile)
+ttbar.scale_factor = 7.5
+#ttbar.scale_factor = 0.9
 ttbar.set_color(r.TColor.GetColor("#E67067"))
 ttbar.set_treename("TTbar_CENTRAL")
 ttbar.set_merged_tree(ttbar.treename)
 backgrounds.append(ttbar)
 
-# w+jets
-wjetsfile = "/afs/cern.ch/work/d/dantrim/public/SusyAna/ntuples/n0208/n0208/ttbar_wjets_mc15_13TeV.root"
-wjets = background.Background("wjets", "Wjets")
+# wjets
+wjets = background.Background("wjets", "W+jets")
 wjets.set_debug()
-wjets.set_file(wjetsfile)
-wjets.scale_factor = 0.9
+wjets.set_file(mcfile)
+wjets.scale_factor = 7.5
+#wjets.scale_factor = 0.9
 wjets.set_color(r.TColor.GetColor("#5E9AD6"))
 wjets.set_treename("Wjets_CENTRAL")
 wjets.set_merged_tree(wjets.treename)
 backgrounds.append(wjets)
 
 #### DATA
-datafile = "/afs/cern.ch/work/d/dantrim/public/SusyAna/ntuples/n0208/data15_13TeV.root"
 data = background.Data()
 data.set_file(datafile)
-data.set_color(r.kBlue)
+data.set_color(r.kBlack)
 data.set_treename("Data_CENTRAL")
 data.set_merged_tree(data.treename)
 
@@ -214,6 +216,32 @@ p.doLogY = True
 p.setRatioCanvas(p.name)
 plots.append(p)
 
+p = plot.Plot1D()
+p.initialize("zlike_mm0j", "l_d0sig[0]", "zlike_mm0j_d0sig0")
+p.labels(x="Lead lepton d0sig", y="Entries")
+p.xax(0.5,-10,10)
+p.yax(0.1,1000000)
+p.doLogY = True
+p.setRatioCanvas(p.name)
+plots.append(p)
+
+p = plot.Plot1D()
+p.initialize("zlike_mm0j", "l_d0sigBSCorr[0]", "zlike_mm0j_d0sigBSCorr0")
+p.labels(x="Lead lepton d0sig (BSCorr)", y="Entries")
+p.xax(0.5,-10,10)
+p.yax(0.1,1000000)
+p.doLogY = True
+p.setRatioCanvas(p.name)
+plots.append(p)
+
+p = plot.Plot1D()
+p.initialize("zlike_mm0j", "l_d0[0]", "zlike_mm0j_d00")
+p.labels(x="Lead lepton d0 [mm]", y="Entries")
+p.xax(0.01,-0.2,0.2)
+p.yax(0.1,1000000)
+p.doLogY = True
+p.setRatioCanvas(p.name)
+plots.append(p)
 
 ### zlike_mm0j_wd0
 

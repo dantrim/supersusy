@@ -144,7 +144,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     r.gPad.RedrawAxis()
     pu.draw_text_on_top(text=plot.name)
     pu.draw_text(text="#it{ATLAS} Simulation",x=0.18,y=0.85)
-    pu.draw_text(text="13 TeV, ~6 pb^{-1}",x=0.18, y=0.8)
+    pu.draw_text(text="13 TeV, ~50 pb^{-1} (period C)",x=0.18, y=0.8)
     pu.draw_text(text=reg.displayname, x=0.18,y=0.75)
 
     r.gPad.SetTickx()
@@ -197,7 +197,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     rcan.canvas.Update()
 
 
-    outname = plot.name + ".eps"
+    outname =  "jul24/" + plot.name + ".eps"
     rcan.canvas.SaveAs(outname)
     
 
@@ -359,13 +359,13 @@ def make_1dprofile(plot, reg, data, backgrounds) :
         data.tree.Draw(cmd, cut * sel, "prof")
         h.SetMarkerColor(r.TColor.GetColor("#5E9AD6"))
 
- #   r.TGaxis.SetMaxDigits(2)
+  #  r.TGaxis.SetMaxDigits(2)
     h.GetYaxis().SetTitleOffset(1.6 * h.GetYaxis().GetTitleOffset())
     h.GetXaxis().SetTitleOffset(1.2 * h.GetXaxis().GetTitleOffset())
     h.SetMarkerStyle(8)
     h.SetLineColor(r.kBlack)
     h.SetMarkerSize(1.15*h.GetMarkerSize())
-   # h.GetYaxis().SetRangeUser(plot.y_range_min,plot.y_range_max)
+    h.GetYaxis().SetRangeUser(plot.y_range_min,plot.y_range_max)
 
     h.Draw()
     r.gPad.Update()
@@ -376,12 +376,12 @@ def make_1dprofile(plot, reg, data, backgrounds) :
 
     h.Draw()
 
-    #pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name, name_on_plot),pushup=1.035)
+  #  pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name, name_on_plot),pushup=1.035)
     pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name, name_on_plot))
 
     c.Update()
     r.gPad.RedrawAxis()
-    outname = plot.name + ".eps"
+    outname = "periodC/" + plot.name + ".eps"
     c.SaveAs(outname)
 
 def make_plots2D(plot, reg, data, backgrounds) :
