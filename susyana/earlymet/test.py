@@ -15,6 +15,7 @@ import argparse
 import os
 
 import supersusy.utils.plot_utils as pu
+import supersusy.utils.utils as utils
 import supersusy.utils.signal as signal
 import supersusy.utils.background as background
 import supersusy.utils.region as region
@@ -197,8 +198,9 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     rcan.canvas.Update()
 
 
-    outname =  "jul24/" + plot.name + ".eps"
+    outname = plot.name + ".eps"
     rcan.canvas.SaveAs(outname)
+    utils.mv_file_to_dir(outname, outdir, True)
     
 
     
@@ -302,6 +304,7 @@ def make_plots1D(plot, reg, data, backgrounds) :
         r.gPad.RedrawAxis()
         outname = plot.name + ".eps"
         c.SaveAs(outname)
+        utils.mv_file_to_dir(outname, outdir, True)
 
 def check_2d_consistency(plot, data, backgrounds) :
 
@@ -383,6 +386,7 @@ def make_1dprofile(plot, reg, data, backgrounds) :
     r.gPad.RedrawAxis()
     outname = "periodC/" + plot.name + ".eps"
     c.SaveAs(outname)
+    utils.mv_file_to_dir(outname, outdir, True)
 
 def make_plots2D(plot, reg, data, backgrounds) :
 
@@ -451,6 +455,7 @@ def make_plots2D(plot, reg, data, backgrounds) :
     r.gPad.RedrawAxis()
     outname = plot.name+".eps"
     c.SaveAs(outname)
+    utils.mv_file_to_dir(outname, outdir, True)
 
 def make_plots(plots, regions, data, backgrounds) :
     for reg in regions:
@@ -507,11 +512,13 @@ if __name__=="__main__" :
     parser.add_argument("-c", "--plotConfig")
     parser.add_argument("-r", "--requestRegion", default="")
     parser.add_argument("-p", "--requestPlot", default="")
+    parser.add_argument("-o", "--outdir", default="./")
     args = parser.parse_args()
-    global plotConfig, requestRegion, requestPlot
+    global plotConfig, requestRegion, requestPlot, outdir
     plotConfig = args.plotConfig
     requestRegion = args.requestRegion
     requestPlot = args.requestPlot
+    outdir = args.outdir
 
     if requestRegion != "" and requestPlot != "" :
         print 'ERROR    You have requested both a reagion ("%s") AND a plot ("%s").'%(requestRegion, requestPlot)
