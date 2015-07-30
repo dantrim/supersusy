@@ -1,4 +1,5 @@
 import ROOT
+from math import sqrt
 ROOT.gROOT.SetBatch(True)
 import array
 
@@ -72,38 +73,109 @@ def th1_to_tgraph(hist) :
     '''
     The provided histogram is turned into a TGraphErrors object
     '''
-    g = ROOT.TGraphErrors()
-    for ibin in xrange(hist.GetNbinsX()) :
+
+    g = ROOT.TGraphAsymmErrors()
+
+    # don't care about the underflow/overflow
+    for ibin in xrange(1,hist.GetNbinsX()+1) :
         y = hist.GetBinContent(ibin)
         ey = hist.GetBinError(ibin)
         x = hist.GetBinCenter(ibin)
-        ex = 0.5 * hist.GetBinWidth(ibin)
-
-
-        g.SetPoint(ibin, x, y)
-        g.SetPointError(ibin, ex, ey)
+        ex = hist.GetBinWidth(ibin) / 2.0
+        g.SetPoint(ibin-1,x,y)
+        g.SetPointError(ibin-1,ex,ex,ey,ey)
+    
     return g
 
 def convert_errors_to_poisson(hist) :
-    value = 0.0
-    error_poisson_up = 0.0
-    error_poisson_down = 0.0
+    '''
+    Provided a histogram, convert the errors
+    to Poisson errors
+    '''
+    # needed variables
     alpha = 0.158655
-    beta = 0.158655 # 68%
+    beta = 0.158655
 
     g = ROOT.TGraphAsymmErrors()
-    for i in range(int(hist.GetNbinsX())) :
-        value = hist.GetBinContent(i)
-        if value != 0 :
-            error_poisson_up = 0.5 * ROOT.TMath.ChisquareQuantile(1-beta, 2 * (value + 1)) - value
-            error_poisson_down = value - 0.5 * ROOT.TMath.ChisquareQuantile(alpha, 2 * value)
-            g.SetPoint(i-1,hist.GetBinCenter(i), value)
-            g.SetPointError(i-1, 0.5 * hist.GetBinWidth(i), 0.5 * hist.GetBinWidth(i), error_poisson_down, error_poisson_up)
-        else :
-            g.SetPoint(i-1, hist.GetBinCenter(i), -10)
-            g.SetPointError(i-1, 0., 0., 0., 0.)
 
-    return g 
+    for ibin in xrange(1,hist.GetNbinsX()+1) :
+        value = hist.GetBinContent(ibin)
+        if value != 0 :
+            error_poisson_up = 0.5 * ROOT.TMath.ChisquareQuantile(1-beta,2*(value+1))-value
+            error_poisson_down = value - 0.5*ROOT.TMath.ChisquareQuantile(alpha,2*value)
+            ex = hist.GetBinWidth(ibin) / 2.0 
+            g.SetPoint(ibin-1, hist.GetBinCenter(ibin), value)
+            g.SetPointError(ibin-1, ex, ex, error_poisson_down, error_poisson_up)
+        else :
+            g.SetPoint(ibin-1, hist.GetBinCenter(ibin), 0.0)
+            g.SetPointError(ibin-1, 0., 0., 0., 0.)
+
+    return g
+
+def tgraphErrors_divide(g1, g2) :
+    '''
+    Provided two TGraphErrors objects, divide them
+    and return the resulting TGraphErrors object
+    '''
+    n1 = g1.GetN()
+    n2 = g2.GetN()
+    if n1 != n2 :
+        print "traphErrors_divide ERROR    input TGraphErrors do not have same number of entries!"
+    g3 = ROOT.TGraphErrors()
+
+    iv = 0
+    for i1 in xrange(n1) :
+        for i2 in xrange(n2) :
+            x1 = ROOT.Double(0.0)
+            y1 = ROOT.Double(0.0)
+            x2 = ROOT.Double(0.0)
+            y2 = ROOT.Double(0.0)
+            dx1 = ROOT.Double(0.0)
+            dy1 = ROOT.Double(0.0)
+            dy2 = ROOT.Double(0.0)
+
+            g1.GetPoint(i1,x1,y1)
+            g2.GetPoint(i2,x2,y2)
+
+            if x1 != x2 : continue
+                #print "test"
+            else :
+                dx1 = g1.GetErrorX(i1)
+                if y1 != 0 : dy1 = g1.GetErrorY(i1)/y1
+                if y2 != 0 : dy2 = g2.GetErrorY(i2)/y2
+
+                if y2 != 0. : g3.SetPoint(iv, x1, y1/y2)
+                else : g3.SetPoint(iv, x1, y2)
+
+            e = ROOT.Double(0.0)
+
+            if y1 !=0 and y2 != 0 :
+                e = sqrt(dy1*dy1 + dy2*dy2)*(y1/y2)
+            g3.SetPointError(iv,dx1,e)
+
+            iv += 1
+
+    return g3
+
+def add_overflow_to_lastbin(hist) :
+    '''
+    Given an input histogram, add the overflow
+    to the last visible bin
+    '''
+    # find the last bin
+    ilast = hist.GetXaxis().GetNbins()
+
+    # read in the values
+    lastBinValue = hist.GetBinContent(ilast)
+    lastBinError = hist.GetBinError(ilast)
+    overFlowValue = hist.GetBinContent(ilast+1)
+    overFlowError = hist.GetBinError(ilast+1)
+
+    # set the values
+    hist.SetBinContent(ilast+1, 0)
+    hist.SetBinError(ilast+1, 0)
+    hist.SetBinContent(ilast, lastBinValue+overFlowValue)
+    hist.SetBinError(ilast, sqrt(lastBinError*lastBinError + overFlowError*overFlowError))
 
 def divide_histograms(hnum, hden, xtitle, ytitle) :
     '''

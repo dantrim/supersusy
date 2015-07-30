@@ -9,6 +9,8 @@ sys.path.append('../../..')
 
 r.TEventList.__init__._creates = False
 r.TH1F.__init__._creates = False
+r.TGraphErrors.__init__._creates = False
+r.TGraphAsymmErrors.__init__._creates = False
 
 
 import argparse
@@ -86,12 +88,11 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
         cut = r.TCut(cut)
         sel = r.TCut("1")
-        #var = "l_q[0]*l_d0sigBSCorr[0]"
-        #cmd = "%s>>+%s"%(var, h.GetName())
         cmd = "%s>>+%s"%(plot.variable, h.GetName())
         b.tree.Draw(cmd, cut * sel)
-        print "%s: %.2f"%(b.displayname, h.Integral(0,-1))
         #stack.Add(h)
+        # add overflow
+        pu.add_overflow_to_lastbin(h)
         leg.AddEntry(h, b.displayname, "fl")
         histos.append(h)
         rcan.upper_pad.Update()
@@ -108,12 +109,12 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     cut = "(" + reg.tcut + ")"
     cut = r.TCut(cut)
     sel = r.TCut("1")
-    #var = "l_q[0]*l_d0sigBSCorr[0]"
-    #cmd = "%s>>+%s"%(var, hd.GetName())
     cmd = "%s>>+%s"%(plot.variable, hd.GetName())
     data.tree.Draw(cmd, cut * sel)
     print "Data: %.2f"%(hd.Integral(0,-1))
     #g = pu.th1_to_tgraph(hd)
+    # add overflow
+    pu.add_overflow_to_lastbin(hd)
     g = pu.convert_errors_to_poisson(hd)
     g.SetLineWidth(2)
     g.SetMarkerStyle(20)
@@ -193,7 +194,12 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     pu.draw_line(plot.x_range_min, 0.5, plot.x_range_max, 0.5,style=3,width=1)
     pu.draw_line(plot.x_range_min, 1.5, plot.x_range_max, 1.5,style=3,width=1)
 
-    g_ratio = pu.divide_histograms(hd, h_sm, plot.x_label, "Data/SM")
+    # convert to tgraphs to get the ratio
+    g_data = pu.th1_to_tgraph(hd)
+    g_sm = pu.th1_to_tgraph(h_sm)
+    g_ratio = pu.tgraphErrors_divide(g_data, g_sm)
+
+
     g_ratio.SetLineWidth(1)
     g_ratio.SetMarkerStyle(20)
     g_ratio.SetMarkerSize(1.1)
