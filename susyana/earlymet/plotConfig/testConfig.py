@@ -9,9 +9,9 @@ import supersusy.utils.region as region
 #############################################
 # Set up the samples
 #############################################
-scratchdir = "/scratch/dantrim/n0209/july24/"
+scratchdir = "/scratch/dantrim/n0209/wwlike/"
 #datafile = scratchdir + "data15_13TeV.root"
-datafile = scratchdir + "data15_periodC_13TeV.root"
+datafile = scratchdir + "data15_perC_13TeV.root"
 mcfile = scratchdir + "mc15_13TeV.root"
 backgrounds = []
 

@@ -65,13 +65,19 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     rcan.upper_pad.Update()
 
     stack = r.THStack("stack_"+plot.name, "")
-    leg = pu.default_legend()
+    leg = pu.default_legend(xl=0.7,yl=0.75,xh=0.97,yh=0.90)
     leg.SetNColumns(2)
 
 
     histos = []
     for b in backgrounds :
-        h = pu.th1f("h_"+b.treename+"_"+plot.variable, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+        hist_name = ""
+        if "abs" in plot.variable :
+            replace_var = plot.variable.replace("abs(","")
+            replace_var = replace_var.replace(")","")
+            hist_name = replace_var
+        else : hist_name = plot.variable
+        h = pu.th1f("h_"+b.treename+"_"+hist_name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
         h.SetLineColor(r.kBlack)
         h.SetFillColor(b.color)
         h.SetFillStyle(1001)
