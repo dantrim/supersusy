@@ -26,7 +26,7 @@ import supersusy.utils.plot as plot
 
 def get_plotConfig(conf) :
     configuration_file = ""
-    configuration_file = "./" + indir + "/config/" + conf + ".py"
+    configuration_file = "./" + indir + "/" + conf + ".py"
     if os.path.isfile(configuration_file) :
         return configuration_file
     else :
@@ -95,7 +95,12 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         sel = r.TCut("1")
         cmd = "%s>>+%s"%(plot.variable, h.GetName())
         b.tree.Draw(cmd, cut * sel)
-        print "%s: %.2f"%(b.name, h.Integral(0,-1))
+
+        # print the yield +/- stat error
+        stat_err = r.Double(0.0)
+        integral = h.IntegralAndError(0,-1,stat_err)
+        print "%s: %.2f +/- %.2f"%(b.name, integral, stat_err)
+
         # add overflow
         pu.add_overflow_to_lastbin(h)
         leg.AddEntry(h, b.displayname, "fl")
@@ -116,7 +121,11 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     sel = r.TCut("1")
     cmd = "%s>>+%s"%(plot.variable, hd.GetName())
     data.tree.Draw(cmd, cut * sel)
-    print "Data: %.2f"%(hd.Integral(0,-1))
+
+    # print the yield +/- stat error
+    stat_err = r.Double(0.0)
+    integral = hd.IntegralAndError(0,-1,stat_err)
+    print "Data: %.2f +/- %.2f"%(integral, stat_err)
     # add overflow
     pu.add_overflow_to_lastbin(hd)
     gdata = pu.convert_errors_to_poisson(hd)
@@ -219,6 +228,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     rcan.canvas.SaveAs(outname)
     out = indir + "/plots/" + outdir
     utils.mv_file_to_dir(outname, out, True)
+    fullname = out + "/" + outname
+    print "%s saved to : %s"%(outname, os.path.abspath(fullname)) 
 
 def make_plots1D(plot, reg, data, backgrounds) :
 
@@ -257,7 +268,12 @@ def make_plots1D(plot, reg, data, backgrounds) :
             sel = r.TCut("1")
             cmd = "%s>>+%s"%(plot.variable, h.GetName())
             b.tree.Draw(cmd, cut * sel)
-            print "%s: %.2f"%(b.displayname, h.Integral(0,-1))
+
+            # print the integral +/- stat_error
+            stat_err = r.Double(0.0)
+            integral = h.IntegralAndError(0,-1,stat_err)
+            print "%s: %.2f +/- %.2f"%(b.name, integral, stat_err)
+
             #stack.Add(h)
             leg.AddEntry(h, b.displayname, "f")
             histos.append(h)
@@ -277,7 +293,12 @@ def make_plots1D(plot, reg, data, backgrounds) :
         sel = r.TCut("1")
         cmd = "%s>>+%s"%(plot.variable, hd.GetName())
         data.tree.Draw(cmd, cut * sel)
-        print "Data: %.2f"%(hd.Integral(0,-1))
+
+        # print the integral and +/- stat error
+        stat_err = r.Double(0.0)
+        integral = hd.IntegralAndError(0,-1,stat_err)
+        print "Data: %.2f +/- %.2f"%(integral, stat_err)
+
         #g = pu.th1_to_tgraph(hd)
         g = pu.convert_errors_to_poisson(hd)
         g.SetLineWidth(2)
@@ -314,9 +335,13 @@ def make_plots1D(plot, reg, data, backgrounds) :
         pu.draw_text(text=reg.displayname, x=0.18,y=0.75)
         c.Update()
         r.gPad.RedrawAxis()
+
         outname = plot.name + ".eps"
         c.SaveAs(outname)
-        utils.mv_file_to_dir(outname, outdir, True)
+        out = indir + "/plots/" + outdir
+        utils.mv_file_to_dir(outname, out, True)
+        fullname = out + "/" + outname
+        print "%s saved to : %s"%(outname, os.path.abspath(fullname)) 
 
 def check_2d_consistency(plot, data, backgrounds) :
 
@@ -411,6 +436,8 @@ def make_1dprofile(plot, reg, data, backgrounds) :
     out = indir + "/plots/" + outdir
     c.SaveAs(outname)
     utils.mv_file_to_dir(outname, out, True)
+    fullname = out + "/" + outname
+    print "%s saved to : %s"%(outname, os.path.abspath(fullname)) 
 
 def make_plots2D(plot, reg, data, backgrounds) :
 
@@ -492,6 +519,8 @@ def make_plots2D(plot, reg, data, backgrounds) :
     out = indir + "/plots/" + outdir
     c.SaveAs(outname)
     utils.mv_file_to_dir(outname, out, True)
+    fullname = out + "/" + outname
+    print "%s saved to : %s"%(outname, os.path.abspath(fullname)) 
 
 def make_plots(plots, regions, data, backgrounds) :
     for reg in regions:
