@@ -16,12 +16,15 @@ class Plot1D :
         self.y_label = "Entries"
         self.doLogY = False
         self.leg_is_left = False
+        self.leg_is_bottom_right = False
+        self.leg_is_bottom_left = False
         self.x_bin_width = 1.0
         self.x_range_min = 0.0
         self.x_range_max = 50.0
         self.y_range_min = 0.0
         self.y_range_max = 50.0
         self.nbins = 20
+        self.is_comparison = False
 
         self.canvas = None
         self.ratioCanvas = None
@@ -30,6 +33,13 @@ class Plot1D :
         self.region = region
         self.variable = variable
         self.name = name
+
+    def setComparison(self) :
+        '''
+        Set whether this plot is just a simple 'comparison plot' --
+        i.e. no stack, no fill, the samples drawn "hist"
+        '''
+        self.is_comparison = True
 
     def labels(self, x="", y="Entries") :
         self.x_label = x
@@ -55,8 +65,8 @@ class Plot1D :
     def isLog(self) :
         return self.doLogY
 
-    def defaultCanvas(self, name) :
-        c = r.TCanvas("c_"+name, "c_"+name, 768, 768)
+    def setDefaultCanvas(self, name) :
+        c = r.TCanvas("c_"+name, "c_"+name, 800, 600)
         self.canvas = c
 
     def setRatioCanvas(self, name) :
@@ -170,7 +180,7 @@ class Plot2D :
         return self.region + "_" + self.xVariable + "_" + self.yVariable 
 
     def defaultCanvas(self) :
-        c = r.TCanvas("c_" + self.name, "", 768, 768)
+        c = r.TCanvas("c_" + self.name, "", 800, 600)
         self.canvas = c 
 
     def get_n_bins(self, width, min, max) :

@@ -3,6 +3,8 @@ import glob
 import sys
 sys.path.append('../..')
 
+import supersusy.utils.systematic as systematic
+
 r.TColor.__init__._creates = False
 r.TEventList.__init__._creates = False
 
@@ -13,12 +15,15 @@ class Background :
         self.name = name
         self.displayname = displayname
         self.color = r.kRed
+        self.line_style = 1
         self.fillStyle = 1001
 
         self.file = ""
         self.tree = None
         
         self.scale_factor = 1.0
+
+        self.systList = []
         
 
     def __eq__(self, other) :
@@ -57,6 +62,12 @@ class Background :
         Override the default fill style
         '''
         self.fillStyle = style
+
+    def setLineStyle(self, style) :
+        '''
+        Override the default line style
+        '''
+        self.line_style = style
 
     def set_scale_factor(self, sf) :
         '''
@@ -101,6 +112,33 @@ class Background :
         chain = r.TChain(tree_name)
         chain.Add(self.file)
         self.tree = chain
+
+
+    def addSys(self, syst=None) :
+        '''
+        Add a systematic to this background
+        '''
+        this_syst = systematic.Systematic(syst.name, syst.up_name, syst.down_name)
+        if syst.isWeightSys() :
+            this_syst.setWeightSys()
+            this_syst.tree = self.tree
+
+        elif syst.isKinSys() :
+            this_syst.setKinSys()
+            file = self.file
+            up_tree_name = self.name + "_" + syst.name + syst.up_name
+            down_tree_name = self.name + "_" + syst.name + syst.down_name
+
+            upchain = r.TChain(up_tree_name)
+            downchain = r.TChain(down_tree_name)
+
+            upchain.Add(self.file)
+            downchain.Add(self.file)
+            syst.tree_up = upchain
+            syst.tree_down = downchain
+
+        self.systList.append(this_syst)
+        
 
     def Print(self) :
         print 'Background "%s" (tree %s from: %s)'%(self.displayname,self.treename, self.file)

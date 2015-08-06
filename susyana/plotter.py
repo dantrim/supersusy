@@ -56,6 +56,55 @@ def check_for_consistency(plots, regions) :
     else :
         print "check_for_consistency    Plots and regions consistent."
 
+def getSystHists(plot, reg, b) :
+
+    for s in b.systList :
+        hist_name = ""
+        if "abs" in plot.variable :
+            replace_var = plot.variable.replace("abs(","")
+            replace_var = replace_var.replace(")","")
+            hist_name = replace_var
+        else : hist_name = plot.variable
+        h_up = pu.th1f("h_"+b.treename+"_"+hist_name+"_"+s.name+"_up", "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+        h_dn = pu.th1f("h_"+b.treename+"_"+hist_name+"_"+s.name+"_dn", "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+
+        if s.isWeightSys() :
+            cut_up = "(" + reg.tcut + ") * eventweight * " + str(s.up_name) + " * " + str(b.scale_factor)
+            cut_dn = "(" + reg.tcut + ") * eventweight * " + str(s.down_name) + " * " + str(b.scale_factor)
+
+            cut_up = r.TCut(cut_up)
+            cut_dn = r.TCut(cut_dn)
+            sel = r.TCut("1")
+
+            cmd_up = "%s>>%s"%(plot.variable, h_up.GetName())
+            cmd_dn = "%s>>%s"%(plot.variable, h_dn.GetName()) 
+
+            s.tree.Draw(cmd_up, cut_up * sel)
+            s.tree.Draw(cmd_dn, cut_dn * sel)
+
+            # add overflow to these guys' last bins
+            pu.add_overflow_to_lastbin(h_up)
+            pu.add_overflow_to_lastbin(h_dn)
+
+            s.up_histo = h_up
+            s.down_histo = h_dn
+
+        elif s.isKinSys() :
+            cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
+            cut = r.TCut(cut)
+            self = r.TCut("1")
+            cmd_up = "%s>>%s"%(plot.variable, h_up.GetName())
+            cmd_dn = "%s>>%s"%(plot.variable, h_dn.GetName())
+
+            s.tree_up.Draw(cmd_up, cut * sel)
+            s.tree_down.Draw(cmd_dn, cut * sel)
+
+            pu.add_overflow_to_lastbin(h_up)
+            pu.add_overflow_to_lastbin(h_dn)
+
+            s.up_histo = h_up
+            s.down_histo = h_dn
+
 def make_plotsRatio(plot, reg, data, backgrounds) :
 
     print "make_plotsRatio    Plotting %s"%plot.name
@@ -101,6 +150,9 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         integral = h.IntegralAndError(0,-1,stat_err)
         print "%s: %.2f +/- %.2f"%(b.name, integral, stat_err)
 
+        # get the variation histos if plotting syst band
+        if doSys : getSystHists(plot, reg, b)
+        
         # add overflow
         pu.add_overflow_to_lastbin(h)
         leg.AddEntry(h, b.displayname, "fl")
@@ -136,6 +188,55 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     leg.AddEntry(gdata, "Data", "p")
     rcan.upper_pad.Update()
 
+    #############################
+    # systematics loop
+    r.gStyle.SetHatchesSpacing(0.9)
+
+    # dummy histo for legend
+    mcError = r.TH1F("mcError", "mcError", 2,0,2)
+    mcError.SetFillStyle(3354)
+    mcError.SetFillColor(r.kBlack)
+    mcError.SetLineColor(r.TColor.GetColor("#FC0F1D"))
+    leg.AddEntry(mcError, "Total SM", "fl")
+
+    # histogram for total stack
+    totalSM = stack.GetStack().Last().Clone("totalSM")
+    nominalAsymErrors = pu.th1_to_tgraph(totalSM)
+    nominalAsymErrors.SetMarkerSize(0)
+    nominalAsymErrors.SetLineWidth(0)
+    nominalAsymErrors.SetFillStyle(3354)
+    nominalAsymErrors.SetFillColor(r.kGray + 3)
+   # leg.AddEntry(nominalAsymErrors, "Bkg. Uncert.", "f")
+
+    if doSys :
+        # totalSystHisto will hold each samples'
+        # variation
+        totalSysHisto = totalSM.Clone()
+        totalSysHisto.Reset()
+        transient = r.TGraphAsymmErrors()
+
+        # add to the error band the contribution from the up-variations 
+        systematics_up = [s.up_name for s in backgrounds[0].systList]
+        for up_sys in systematics_up :
+            for b in backgrounds :
+                for syst in b.systList :
+                    if syst.up_name != up_sys : continue
+                    totalSysHisto.Add(syst.up_histo)
+            transient = pu.th1_to_tgraph(totalSysHisto)
+            pu.add_to_band(transient, nominalAsymErrors)
+            totalSysHisto.Reset()
+
+        # add to the error band the contribution from the down-variations
+        systematics_down = [s.down_name for s in backgrounds[0].systList]
+        for dn_sys in systematics_down :
+            for b in backgrounds :
+                for syst in b.systList :
+                    if syst.down_name != dn_sys : continue
+                    totalSysHisto.Add(syst.down_histo)
+            transient = pu.th1_to_tgraph(totalSysHisto)
+            pu.add_to_band(transient, nominalAsymErrors)
+            totalSysHisto.Reset()
+
 
     # draw the MC stack and do cosmetcis
     stack.Draw("HIST")
@@ -157,6 +258,17 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     stack.GetXaxis().SetTitleOffset(-999)
     stack.GetXaxis().SetLabelOffset(-999)
     rcan.upper_pad.Update()
+
+    # draw the error band
+    nominalAsymErrors.Draw("same && E2")
+
+    # draw the total bkg line
+    hist_sm = stack.GetStack().Last().Clone("hist_sm")
+    hist_sm.SetLineColor(r.TColor.GetColor("#FC0F1D"))
+    hist_sm.SetLineWidth(1)
+    hist_sm.SetLineStyle(1)
+    hist_sm.SetFillStyle(0)
+    hist_sm.Draw("hist same")
 
     # draw the data graph
     gdata.Draw("option same pz")
@@ -205,6 +317,10 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     h_sm.Draw("AXIS")
     rcan.lower_pad.Update()
 
+    # get the ratio-error band
+    ratioBand = r.TGraphAsymmErrors(nominalAsymErrors)
+    pu.buildRatioErrorBand(nominalAsymErrors, ratioBand)
+
     # draw lines
     pu.draw_line(plot.x_range_min, 1.0, plot.x_range_max, 1.0,color=r.kRed,style=2,width=1)
     pu.draw_line(plot.x_range_min, 0.5, plot.x_range_max, 0.5,style=3,width=1)
@@ -215,12 +331,39 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     g_sm = pu.th1_to_tgraph(h_sm)
     g_ratio = pu.tgraphErrors_divide(g_data, g_sm)
 
-    g_ratio.SetLineWidth(1)
-    g_ratio.SetMarkerStyle(20)
-    g_ratio.SetMarkerSize(1.1)
-    g_ratio.SetLineColor(1)
-    g_ratio.Draw("option pz")
+    # For Data/MC only use the statistical error for data
+    # since we explicity draw the MC error band
+    nominalAsymErrorsNoSys = r.TGraphAsymmErrors(nominalAsymErrors)
+    for i in xrange(nominalAsymErrorsNoSys.GetN()) :
+        nominalAsymErrorsNoSys.SetPointError(i-1,0,0,0,0)
+    ratio_raw = pu.tgraphErrors_divide(g_data, nominalAsymErrorsNoSys)
+    ratio = r.TGraphAsymmErrors() 
+
+    x1, y1 = r.Double(0.0), r.Double(0.0)
+    index = 0
+    for i in xrange(ratio_raw.GetN()) :
+        ratio_raw.GetPoint(i, x1, y1)
+        if y1 > 0. :
+            ratio.SetPoint(index, x1, y1)
+            ratio.SetPointError(index, ratio_raw.GetErrorXlow(i), ratio_raw.GetErrorXhigh(i), ratio_raw.GetErrorYlow(i), ratio_raw.GetErrorYhigh(i))
+            index+=1
+    ratio.SetLineWidth(1)
+    ratio.SetMarkerStyle(20)
+    ratio.SetMarkerSize(1.1)
+    ratio.SetLineColor(1)
+    ratio.SetMarkerSize(1.1)
+    ratio.Draw("option pz")
     rcan.lower_pad.Update()
+    
+    ratioBand.Draw("same && E2")
+    rcan.lower_pad.Update()
+
+#    g_ratio.SetLineWidth(1)
+#    g_ratio.SetMarkerStyle(20)
+#    g_ratio.SetMarkerSize(1.1)
+#    g_ratio.SetLineColor(1)
+#    g_ratio.Draw("option pz")
+#    rcan.lower_pad.Update()
 
     rcan.canvas.Update()
 
@@ -231,9 +374,105 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     fullname = out + "/" + outname
     print "%s saved to : %s"%(outname, os.path.abspath(fullname)) 
 
+def make_plotsComparison(plot, reg, data, backgrounds) :
+    print "make_plotsComparison    Plotting %s"%plot.name
+
+    c = plot.canvas
+    c.cd()
+    c.SetFrameFillColor(0)
+    c.SetFillColor(0)
+    c.SetLeftMargin(0.14)
+    c.SetRightMargin(0.05)
+    c.SetBottomMargin(1.3*c.GetBottomMargin())
+
+    if plot.isLog() : c.SetLogy(True)
+    c.Update()
+
+    leg = None
+    if plot.leg_is_left : leg = pu.default_legend(xl=0.2,yl=0.7,xh=0.47, yh=0.87)
+    elif plot.leg_is_bottom_right : leg = pu.default_legend(xl=0.7, yl=0.2,xh=0.97,yh=0.37)
+    elif plot.leg_is_bottom_left : leg = pu.default_legend(xl=0.2,yl=0.2,xh=0.47,yh=0.37)
+    else : leg = pu.default_legend(xl=0.7,yl=0.7,xh=0.97,yh=0.87)
+
+    histos = []
+    for b in backgrounds :
+        hist_name = ""
+        if "abs" in plot.variable :
+            replace_var = plot.variable.replace("abs(","")
+            replace_var = replace_var.replace(")","")
+            hist_name = replace_var
+        else : hist_name = plot.variable
+        h = pu.th1f("h_"+b.treename+"_"+hist_name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+        h.SetLineColor(b.color)
+        h.SetLineWidth(2)
+        h.SetLineStyle(b.line_style)
+        h.Sumw2
+
+        # cut and make the sample weighted, applying any scale_factor
+        cut = "(" + reg.tcut + ") * " + str(b.scale_factor)
+        cut = r.TCut(cut)
+        sel = r.TCut("1")
+        cmd = "%s>>+%s"%(plot.variable, h.GetName())
+        b.tree.Draw(cmd, cut * sel)
+
+        # print the yield +/- stat error
+        stat_err = r.Double(0.0)
+        integral = h.IntegralAndError(0,-1, stat_err)
+        print "%s: %.2f +/- %.2f"%(b.name, integral, stat_err)
+
+        # normalize since we only care about shapes
+        if integral != 0 : h.Scale(1/integral)
+
+        # add overflow
+        pu.add_overflow_to_lastbin(h)
+
+        # setup the axes
+        x = h.GetXaxis()
+        x.SetTitle(plot.x_label)
+        x.SetTitleSize(0.048 * 0.85)
+        x.SetLabelSize(0.035)
+        x.SetLabelOffset(1.15 * 0.02)
+        x.SetTitleOffset(0.95 * x.GetTitleOffset())
+        x.SetLabelFont(42)
+        x.SetTitleFont(42)
+
+        y = h.GetYaxis()
+        y.SetTitle("Arb. units")
+        y.SetTitleSize(0.055 * 0.85)
+        y.SetLabelSize(1.2 * 0.035)
+        y.SetLabelOffset(0.013)
+        y.SetTitleOffset(1.4)
+        y.SetLabelFont(42)
+        y.SetTitleFont(42)
+
+        leg.AddEntry(h, b.displayname, "l")
+        histos.append(h)
+        c.Update()
+
+    is_first = True
+    for hist in histos :
+        if is_first :
+            is_first = False
+            hist.Draw("hist")
+        hist.Draw("hist same")
+
+    # legend
+    leg.Draw()
+
+    pu.draw_text_on_top(text=plot.name)
+
+    outname = plot.name + ".eps"
+    c.SaveAs(outname)
+    out = indir + "/plots/" + outdir
+    utils.mv_file_to_dir(outname, out, True)
+    fullname = out + "/" + outname
+    print "%s saved to : %s"%(outname, os.path.abspath(fullname))
+
+
 def make_plots1D(plot, reg, data, backgrounds) :
 
     if plot.ratioCanvas : make_plotsRatio(plot, reg, data, backgrounds)
+    elif plot.is_comparison : make_plotsComparison(plot, reg, data, backgrounds)
     else :
         print "make_plots1D    Plotting %s"%plot.name 
         c = plot.canvas
@@ -543,7 +782,7 @@ def make_plots(plots, regions, data, backgrounds) :
             if os.path.isfile(save_name) :
                 rfile = r.TFile.Open(save_name)
                 list = rfile.Get(list_name) 
-                print "%s : EventList found at %s"%(b.name, save_name)
+                print "%s : EventList found at %s"%(b.name, os.path.abspath(save_name))
                 if dbg : list.Print()
                 b.tree.SetEventList(list)
             else :
@@ -553,7 +792,6 @@ def make_plots(plots, regions, data, backgrounds) :
                 b.tree.SetEventList(list)
                 list.SaveAs(save_name)
                 #list.SaveAs(list_name + ".root")
-
         # do data
         data_list_name = "list_" + reg.simplename + "_" + data.treename
         data_save_name = "./" + indir + "/lists/" + data_list_name + ".root"
@@ -561,7 +799,7 @@ def make_plots(plots, regions, data, backgrounds) :
             #rfile = r.TFile.Open(data_list_name+".root")
             rfile = r.TFile.Open(data_save_name)
             data_list = rfile.Get(data_list_name)
-            print "Data : EventList found at %s"%data_save_name
+            print "Data : EventList found at %s"%os.path.abspath(data_save_name)
             if dbg : data_list.Print()
             data.tree.SetEventList(data_list)
         else :
@@ -593,6 +831,7 @@ if __name__=="__main__" :
     global indir, plotConfig, requestRegion, requestPlot, outdir, dbg
     parser = OptionParser()
     parser.add_option("-c", "--plotConfig", dest="plotConfig",default="")
+    parser.add_option("-s", "--doSys", action="store_true", dest="doSys", default=False)
     parser.add_option("-i", "--indir", dest="indir", default="")
     parser.add_option("-r", "--requestRegion", dest="requestRegion", default="")
     parser.add_option("-p", "--requestPlot", dest="requestPlot", default="")
@@ -602,6 +841,7 @@ if __name__=="__main__" :
     (options, args) = parser.parse_args()
     indir           = options.indir
     plotConfig      = options.plotConfig
+    doSys           = options.doSys
     requestRegion   = options.requestRegion
     requestPlot     = options.requestPlot
     outdir          = options.outdir
@@ -621,6 +861,7 @@ if __name__=="__main__" :
     print " plot config      :  %s          "%plotConfig
     print " requested region :  %s          "%requestRegion
     print " requested plot   :  %s          "%requestPlot
+    print " systematics      :  %s          "%doSys
     print " output directory :  %s          "%outdir
     print " debug            :  %s          "%dbg
     print "                                 "
@@ -632,6 +873,7 @@ if __name__=="__main__" :
     plots = []
     data = None
     backgrounds = []
+    systematics = []
     regions = []
     execfile(conf_file)
     check_for_consistency(plots, regions)
@@ -647,6 +889,20 @@ if __name__=="__main__" :
     print "  Loaded data sample:    "
     data.Print()
     print "+-----------------------+ "
+    if doSys :
+        print "+-----------------------+ "
+        print "  Loaded systematics:     "
+        for s in systematics :
+            s.check()
+            s.Print()
+        print "+-----------------------+ "
+
+        for b in backgrounds :
+            b.addSys(s)
+            if dbg :
+                for s in b.systList :
+                    print s.tree
+                    s.Print()
 
     # make the plots
     if requestRegion != "" :

@@ -144,7 +144,8 @@ def tgraphErrors_divide(g1, g2) :
                 if y1 != 0 : dy1 = g1.GetErrorY(i1)/y1
                 if y2 != 0 : dy2 = g2.GetErrorY(i2)/y2
 
-                if y2 != 0. : g3.SetPoint(iv, x1, y1/y2)
+                if y1 == 0. : g3.SetPoint(iv, x1, -10) # if the ratio is zero, don't draw point at zero (looks bad on ratio pad)
+                elif y2 != 0. : g3.SetPoint(iv, x1, y1/y2)
                 else : g3.SetPoint(iv, x1, y2)
 
             e = ROOT.Double(0.0)
@@ -156,6 +157,41 @@ def tgraphErrors_divide(g1, g2) :
             iv += 1
 
     return g3
+
+def buildRatioErrorBand(g_in, g_out) :
+    g_out.SetMarkerSize(0)
+    for bin in xrange(g_out.GetN()) :
+        y_out = ROOT.Double(1.0)
+        x_out = ROOT.Double(0.0)
+        y_in = ROOT.Double(0.0)
+        x_in = ROOT.Double(0.0)
+
+        g_in.GetPoint(bin, x_in, y_in)
+        g_out.SetPoint(bin, x_in, y_out)
+
+        # set upper error
+        if y_in > 0.0001 :
+            g_out.SetPointEYhigh(bin, g_in.GetErrorYhigh(bin)/y_in)
+           # g_out.GetErrorYhigh(bin) = g_in.GetErrorYhigh(bin) / y_in
+        else :
+            g_out.SetPointEYhigh(bin, 0.0)
+           # g_out.GetErrorYhigh(bin) = 0.0
+
+        # set lower error
+        if y_in > 0.0001 :
+            g_out.SetPointEYlow(bin, g_in.GetErrorYlow(bin)/y_in)
+            #g_out.GetErrorYow(bin) = g_in.GetErrorYlow(bin) / y_in
+        else :
+            g_out.SetPointEYlow(bin, 0.0)
+            #g_out.GetErrorYlow(bin) = 0.0
+
+        if g_out.GetErrorYlow(bin) > 1. :
+            g_out.SetPointEYlow(bin, 1.0)
+            #g_out.GetErrorYlow(bin) = 1.
+        if g_out.GetErrorYhigh(bin) > 1. :
+            g_out.SetPointEYhigh(bin, 1.0)
+            #g_out.GetErrorYhigh(bin) = 1.
+
 
 def add_overflow_to_lastbin(hist) :
     '''
@@ -214,6 +250,46 @@ def divide_histograms(hnum, hden, xtitle, ytitle) :
         error_dn = 1.0 - ( ( c2 - gdata.GetErrorYlow(i-1)) / c2 )
         g.SetPointError(i-1, 0.5 * hratio.GetBinWidth(i), 0.5 * hratio.GetBinWidth(i), error_dn, error_up)
     return g
+
+def add_to_band(g1, g2) :
+
+
+    if g1.GetN()!=g2.GetN() :
+        print "plot_utils::add_to_band WARNING    input graphs do not have the same number of points!"
+
+    eyhigh = ROOT.Double(0.0)
+    eylow  = ROOT.Double(0.0)
+
+    x1 = ROOT.Double(0.0)
+    y1 = ROOT.Double(0.0)
+    y2 = ROOT.Double(0.0)
+    y0 = ROOT.Double(0.0)
+
+    for i in xrange(g1.GetN()) :
+        eyhigh = g2.GetErrorYhigh(i)
+        eylow  = g2.GetErrorYlow(i)
+
+        y1 = ROOT.Double(0.0) 
+        y2 = ROOT.Double(0.0) 
+        g1.GetPoint(i, x1, y1)
+        g2.GetPoint(i, x1, y2)
+
+        if y1 == 0 : y1 = 1
+        if y2 == 0 : y2 = 1
+
+        eyh = ROOT.Double(0.0)
+        eyl = ROOT.Double(0.0)
+
+        y0 = y1 - y2
+        if y0 != 0 :
+            if y0 > 0 :
+                eyh = eyhigh
+                eyh = sqrt(eyh*eyh + y0*y0)
+                g2.SetPointEYhigh(i,eyh)
+            else :
+                eyl = eylow
+                eyl = sqrt(eyl*eyl + y0*y0)
+                g2.SetPointEYlow(i,eyl)
 
 # ----------------------------------------------
 #  TH2F Methods
