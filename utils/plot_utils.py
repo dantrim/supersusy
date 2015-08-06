@@ -257,20 +257,25 @@ def add_to_band(g1, g2) :
     if g1.GetN()!=g2.GetN() :
         print "plot_utils::add_to_band WARNING    input graphs do not have the same number of points!"
 
-    eyhigh = ROOT.Double(0.0)
-    eylow  = ROOT.Double(0.0)
+  #  eyhigh = ROOT.Double(0.0)
+  #  eylow  = ROOT.Double(0.0)
 
-    x1 = ROOT.Double(0.0)
-    y1 = ROOT.Double(0.0)
-    y2 = ROOT.Double(0.0)
-    y0 = ROOT.Double(0.0)
+  #  x1 = ROOT.Double(0.0)
+  #  y1 = ROOT.Double(0.0)
+  #  y2 = ROOT.Double(0.0)
+  #  y0 = ROOT.Double(0.0)
 
     for i in xrange(g1.GetN()) :
+        eyhigh = ROOT.Double(0.0)
+        eylow  = ROOT.Double(0.0)
         eyhigh = g2.GetErrorYhigh(i)
         eylow  = g2.GetErrorYlow(i)
 
-        y1 = ROOT.Double(0.0) 
-        y2 = ROOT.Double(0.0) 
+        x1 = ROOT.Double(0.0)
+        y1 = ROOT.Double(0.0)
+        y2 = ROOT.Double(0.0)
+        y0 = ROOT.Double(0.0)
+
         g1.GetPoint(i, x1, y1)
         g2.GetPoint(i, x1, y2)
 
@@ -355,9 +360,10 @@ def set_palette(name="", ncontours=999) :
         red   = [1.00, 0.84, 0.61, 0.34, 0.00]
         green = [1.00, 0.84, 0.61, 0.34, 0.00]
         blue  = [1.00, 0.84, 0.61, 0.34, 0.00] 
-    elif "redbluevector" :
+    elif name == "redbluevector" :
         #stops = [0.00, 0.34, 0.61, 0.84, 1.00]
-        stops = [0.00, 0.20, 0.5, 0.70, 1.00]
+        stops = [0.00, 0.17, 0.61, 0.84, 1.00]
+        #stops = [0.00, 0.20, 0.5, 0.70, 1.00]
         red   = [0.35, 0.29, 0.29, 0.89, 0.90]
         green = [0.70, 0.57, 0.35, 0.22, 0.05]
         blue  = [0.95, 0.88, 0.70, 0.45, 0.09]

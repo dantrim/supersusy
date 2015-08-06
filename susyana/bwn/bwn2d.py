@@ -20,21 +20,21 @@ backgrounds = []
 
 # ttbar
 ttbar = background.Background("ttbar", "t#bar{t}")
+ttbar.marker = 24
 ttbar.set_debug()
 ttbar.set_file(mcfile)
 ttbar.scale_factor = 1.0
 ttbar.set_color(r.TColor.GetColor("#FC0D1B"))
-#ttbar.set_color(r.TColor.GetColor("#E4817D"))
 ttbar.set_treename("TTbar_CENTRAL")
 ttbar.set_merged_tree(ttbar.treename)
 backgrounds.append(ttbar)
 
 # ww
 ww = background.Background("ww", "WW")
+ww.marker = 26
 ww.set_debug()
 ww.set_file(mcfile)
 ww.scale_factor = 1.0
-#ww.set_color(r.TColor.GetColor("#55BDE6"))
 ww.set_color(r.TColor.GetColor("#41C1FC"))
 ww.set_treename("WW_CENTRAL")
 ww.set_merged_tree(ww.treename)
@@ -42,10 +42,11 @@ backgrounds.append(ww)
 
 # bwn (250, 160)
 bwn250 = background.Background("bwn_250_160", "(250, 160)")
+bwn250.marker = 20
 bwn250.set_debug()
 bwn250.set_file(mcfile)
 bwn250.scale_factor = 1.0
-bwn250.set_color(r.kRed)
+bwn250.set_color(r.kBlue)
 bwn250.set_treename("bwn_250_160_CENTRAL")
 bwn250.setLineStyle(2)
 bwn250.set_merged_tree(bwn250.treename)
@@ -88,178 +89,121 @@ regions.append(reg)
 
 plots = []
 
+##
 #### wwLoose
+##
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "mt2", "wwLoose_mt2")
-p.labels(x="m_{T2} [GeV]", y = "Entries / 5 GeV")
-p.xax(5, 0, 200)
-p.doLogY = True
-p.yax(0.1,100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+samples = ['ttbar', 'ww', 'bwn_250_160']
+for samp in samples :
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "meff", "wwLoose_meff")
-p.labels(x="m_{eff} [GeV]", y = "")
-p.xax(5, 0, 1500)
-p.doLogY = True
-p.yax(0.1,100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+    #### DPB vs cosThetaB
+    p = plot.Plot2D()
+    p.initialize("wwLoose", "DPB", "abs(cosThetaB)", "wwLoose_DPB_cosThetaB_%s_2d"%samp)
+    p.labels(x="#Delta#phi_{#beta}^{R}", y="|cos#theta_{b}|")
+    p.set_sample("%s"%samp)
+    p.xax(0.032,0,3.2)
+    p.yax(0.01,0,1.0)
+    p.defaultCanvas()
+    plots.append(p)
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "R1", "wwLoose_R1")
-p.labels(x="R_{1}", y = "")
-p.xax(0.01, 0, 1)
-p.doLogY = True
-p.yax(0.1,100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+    #### cosThetaB vs cosThetaLL
+    p = plot.Plot2D()
+    p.initialize("wwLoose", "cosThetaB", "cosThetaLL", "wwLoose_cosThetaB_cosThetaLL_%s_2d"%samp)
+    p.labels(x="cos#theta_{ll}", y="cos#theta_{b}")
+    p.set_sample(samp)
+    p.xax(0.1, -1, 1)
+    p.yax(0.1, -1, 1)
+    p.defaultCanvas()
+    plots.append(p)
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "R2", "wwLoose_R2")
-p.leg_is_bottom_left = True
-p.labels(x="R_{2}", y = "")
-p.xax(0.01, 0, 1)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+    #### R1 vs meff
+    p = plot.Plot2D()
+    p.initialize("wwLoose", "R1", "meff", "wwLoose_R1_meff_%s_2d"%samp)
+    p.labels(x="R_{1}", y="m_{eff} [GeV]")
+    p.set_sample(samp)
+    p.xax(0.01, 0, 1)
+    p.yax(5, 0, 1500)
+    p.defaultCanvas()
+    plots.append(p)
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "deltaX", "wwLoose_deltaX")
-p.labels(x="|x_{1}-x_{2}|", y = "")
-p.xax(0.01, 0, 0.2)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+    #### R2 vs meff
+    p = plot.Plot2D()
+    p.initialize("wwLoose", "R2", "meff", "wwLoose_R2_meff_%s_2d"%samp)
+    p.labels(x="R_{2}", y="m_{eff} [GeV]")
+    p.set_sample(samp)
+    p.xax(0.01, 0, 1)
+    p.yax(5, 0, 1500)
+    p.defaultCanvas()
+    plots.append(p)
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "cosThetaB", "wwLoose_cosThetaB")
-p.labels(x="cos#theta_{b}", y = "")
-p.xax(0.05, -1, 1)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+    #### cosThetaRp1 vs cosThetaB
+    p = plot.Plot2D()
+    p.initialize("wwLoose", "cosThetaRp1", "cosThetaB", "wwLoose_cosThetaRp1_cosThetaB_%s_2d"%samp)
+    p.labels(x="cos#theta_{R+1}", y="cos#theta_{b}")
+    p.set_sample(samp)
+    p.xax(0.01, 0, 1)
+    p.yax(0.01, 0, 1)
+    p.defaultCanvas()
+    plots.append(p)
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "cosThetaLL", "wwLoose_cosThetaLL")
-p.leg_is_bottom_right = True
-p.labels(x="cos#theta_{ll}", y = "")
-p.xax(0.05, -1, 1)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+    #### R1 vs R2
+    p = plot.Plot2D()
+    p.initialize("wwLoose", "R1", "R2", "wwLoose_R1_R2_%s_2d"%samp)
+    p.labels(x="R_{1}", y="R_{2}")
+    p.set_sample(samp)
+    p.xax(0.01, 0, 1)
+    p.yax(0.01, 0, 1)
+    p.defaultCanvas()
+    plots.append(p)
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "pBll", "wwLoose_pBll")
-p.labels(x="p_{b}^{ll} [GeV]", y = "")
-p.xax(5, 0, 500)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+    #### pBll vs pTll
+    p = plot.Plot2D()
+    p.initialize("wwLoose", "pBll", "pTll", "wwLoose_pBll_pTll_%s_2d"%samp)
+    p.labels(x="p_{T}^{ll} [GeV]", y="p_{b}^{ll} [GeV]")
+    p.set_sample(samp)
+    p.xax(5, 0, 500)
+    p.yax(5, 0, 500)
+    p.defaultCanvas()
+    plots.append(p)
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "dphi_met_pbll", "wwLoose_dphi_met_pbll")
-p.labels(x="#Delta#phi(#slash{E}_{T}, p_{b}^{ll})", y = "")
-p.xax(0.05, 0, 3.2)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+    #### pBll vs meff
+    p = plot.Plot2D()
+    p.initialize("wwLoose", "pBll", "meff", "wwLoose_pBll_meff_%s_2d"%samp)
+    p.labels(x="p_{b}^{ll} [GeV]", y = "m_{eff} [GeV]")
+    p.set_sample(samp)
+    p.xax(5, 0, 500)
+    p.yax(10, 0, 1000)
+    p.defaultCanvas()
+    plots.append(p)
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "MDR", "wwLoose_MDR")
-p.labels(x="M_{#Delta}^{R} [GeV]", y = "")
-p.xax(5, 0, 200)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+    #### DPB vs dphi_met_pbll
+    p = plot.Plot2D()
+    p.initialize("wwLoose", "DPB", "dphi_met_pbll", "wwLoose_DBP_dphi_met_pbll_%s_2d"%samp)
+    p.labels(x="#Delta#phi_{#beta}^{R}", y="|#Delta#phi(#slash{E}_{T},p_{b}^{ll})|")
+    p.set_sample(samp)
+    p.xax(0.05,0,3.2)
+    p.yax(0.05,0,3.2)
+    p.defaultCanvas()
+    plots.append(p)
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "abs(cosThetaRp1)", "wwLoose_cosThetaRp1")
-p.labels(x="|cos#theta_{R+1}|", y = "")
-p.xax(0.05, 0, 1)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+    #### shatr vs R2
+    p = plot.Plot2D()
+    p.initialize("wwLoose", "shatr", "R2", "wwLoose_shatr_R2_%s_2d"%samp)
+    p.labels(x="#sqrt{#hat{s}}_{R} [GeV]", y="R_{2}")
+    p.set_sample(samp)
+    p.xax(20,0,500)
+    p.yax(0.05,0,1)
+    p.defaultCanvas()
+    plots.append(p)
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "DPB", "wwLoose_DPB")
-p.leg_is_left = True
-p.labels(x="|#Delta#phi_{#beta}^{R}|", y = "")
-p.xax(0.05, 0, 3.2)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
-
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "shatr", "wwLoose_shatr")
-p.labels(x="#sqrt{#hat{s}_{R}} [GeV]", y = "")
-p.xax(5, 0, 1200)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
+    #### shatr vs deltax
+    p = plot.Plot2D()
+    p.initialize("wwLoose", "shatr", "deltaX", "wwLoose_shatr_deltaX_%s_2d"%samp)
+    p.labels(x="#sqrt{#hat{s}}_{R} [GeV]", y="|x_{1}-x_{2}|")
+    p.set_sample(samp)
+    p.xax(20,0,500)
+    p.yax(0.005,0,0.1)
+    p.defaultCanvas()
+    plots.append(p)
 
 
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "pTll", "wwLoose_pTll")
-p.labels(x="p_{T}^{ll} [GeV]", y = "")
-p.xax(5, 0, 400)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
-
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "l_pt[0]", "wwLoose_lpt0")
-p.labels(x="Lead lepton p_{T} [GeV]", y = "")
-p.xax(5, 20, 200)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
-
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "l_pt[1]", "wwLoose_lpt1")
-p.labels(x="Sub-lead lepton p_{T} [GeV]", y = "")
-p.xax(5, 20, 200)
-p.doLogY = True
-p.yax(0.1, 100)
-p.setDefaultCanvas(p.name)
-plots.append(p)
-
-p = plot.Plot1D()
-p.setComparison()
-p.initialize("wwLoose", "nBJets", "wwLoose_nBJets")
-p.labels(x="Number of b-jets", y="")
-p.xax(1,0,10)
-p.doLogY = True
-p.yax(0.1,100)
-p.setDefaultCanvas(p.name)
-plots.append(p)

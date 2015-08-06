@@ -105,6 +105,22 @@ syst = systematic.Systematic("PILEUP", "UP", "DOWN")
 syst.setWeightSys() 
 systematics.append(syst)
 
+syst = systematic.Systematic("MUEFFSYST", "UP", "DOWN")
+syst.setWeightSys() 
+systematics.append(syst)
+
+syst = systematic.Systematic("MUEFFSTAT", "UP", "DOWN")
+syst.setWeightSys()
+systematics.append(syst)
+
+syst = systematic.Systematic("ELEFFRECO", "UP", "DOWN")
+syst.setWeightSys()
+systematics.append(syst)
+
+syst = systematic.Systematic("ELEFFID", "UP", "DOWN")
+syst.setWeightSys()
+systematics.append(syst)
+
 
 #############################################
 # Set up the regions

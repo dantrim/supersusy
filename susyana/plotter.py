@@ -56,8 +56,7 @@ def check_for_consistency(plots, regions) :
     else :
         print "check_for_consistency    Plots and regions consistent."
 
-def getSystHists(plot, reg, b) :
-
+def getSystHists(plot, reg, b, nom_yield) :
     for s in b.systList :
         hist_name = ""
         if "abs" in plot.variable :
@@ -85,6 +84,8 @@ def getSystHists(plot, reg, b) :
             # add overflow to these guys' last bins
             pu.add_overflow_to_lastbin(h_up)
             pu.add_overflow_to_lastbin(h_dn)
+
+            print "    %s   (+%.2f, -%.2f)"%(s.name, h_up.Integral(0,-1)-nom_yield, nom_yield-h_dn.Integral(0,-1))
 
             s.up_histo = h_up
             s.down_histo = h_dn
@@ -151,7 +152,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         print "%s: %.2f +/- %.2f"%(b.name, integral, stat_err)
 
         # get the variation histos if plotting syst band
-        if doSys : getSystHists(plot, reg, b)
+        if doSys : getSystHists(plot, reg, b, integral)
         
         # add overflow
         pu.add_overflow_to_lastbin(h)
@@ -218,6 +219,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         # add to the error band the contribution from the up-variations 
         systematics_up = [s.up_name for s in backgrounds[0].systList]
         for up_sys in systematics_up :
+            transient = r.TGraphAsymmErrors()
+            transient.Clear()
             for b in backgrounds :
                 for syst in b.systList :
                     if syst.up_name != up_sys : continue
@@ -229,6 +232,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         # add to the error band the contribution from the down-variations
         systematics_down = [s.down_name for s in backgrounds[0].systList]
         for dn_sys in systematics_down :
+            transient = r.TGraphAsymmErrors()
+            transient.Clear()
             for b in backgrounds :
                 for syst in b.systList :
                     if syst.down_name != dn_sys : continue
@@ -680,7 +685,7 @@ def make_1dprofile(plot, reg, data, backgrounds) :
 
 def make_plots2D(plot, reg, data, backgrounds) :
 
-    check_2d_consistency(plot, data, backgrounds)
+    #check_2d_consistency(plot, data, backgrounds)
 
     # check if we want to do profile vs. TH2F plots
     if plot.do_profile : 
@@ -689,7 +694,8 @@ def make_plots2D(plot, reg, data, backgrounds) :
     print "make_plots2D    Plotting %s"%plot.name 
 
     # set the palette/colors 
-    pu.set_palette(name="redbluevector")
+    #pu.set_palette(name="redbluevector")
+    pu.set_palette(name="")
 
     # get the canvas from the plot
     c = plot.canvas
@@ -710,7 +716,22 @@ def make_plots2D(plot, reg, data, backgrounds) :
         for b in backgrounds :
             if b.name != plot.sample : continue
             name_on_plot = b.displayname
-            h = pu.th2f("h_"+b.name+"_"+plot.xVariable+"_"+plot.yVariable, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, int(plot.n_binsY), plot.y_range_min, plot.y_range_max, plot.x_label, plot.y_label)
+
+            hist_name_x = ""
+            hist_name_y = ""
+            if "abs" in plot.xVariable :
+                x_repl = plot.xVariable.replace("abs(","")
+                x_repl = x_repl.replace(")","")
+                hist_name_x = x_repl
+            else : hist_name_x = plot.xVariable
+
+            if "abs" in plot.yVariable :
+                y_repl = plot.yVariable.replace("abs(","")
+                y_repl = y_repl.replace(")","")
+                hist_name_y = y_repl
+            else : hist_name_y = plot.yVariable
+
+            h = pu.th2f("h_"+b.name+"_"+hist_name_x+"_"+hist_name_y, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, int(plot.n_binsY), plot.y_range_min, plot.y_range_max, plot.x_label, plot.y_label)
 
             # get the cut, and weight the sample (for TH2 the scale_factor is not so important if we normalize)     
             cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
@@ -748,7 +769,7 @@ def make_plots2D(plot, reg, data, backgrounds) :
     # write descriptive text on top of the pad
     pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name,name_on_plot))
 
- #   h.Draw(plot.style)
+    h.Draw(plot.style)
     c.Update()
 
     # redraw the now-invisible axes ticks
@@ -887,7 +908,7 @@ if __name__=="__main__" :
     for b in backgrounds :
         b.Print()
     print "  Loaded data sample:    "
-    data.Print()
+    if data : data.Print()
     print "+-----------------------+ "
     if doSys :
         print "+-----------------------+ "
@@ -895,14 +916,13 @@ if __name__=="__main__" :
         for s in systematics :
             s.check()
             s.Print()
+            for b in backgrounds :
+                b.addSys(s)
+                if dbg :
+                    for s in b.systList :
+                        print s.tree
         print "+-----------------------+ "
 
-        for b in backgrounds :
-            b.addSys(s)
-            if dbg :
-                for s in b.systList :
-                    print s.tree
-                    s.Print()
 
     # make the plots
     if requestRegion != "" :
