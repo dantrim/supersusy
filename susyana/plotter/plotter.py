@@ -8,7 +8,8 @@ import ROOT as r
 r.gROOT.SetBatch(False)
 r.gStyle.SetOptStat(False)
 import sys
-sys.path.append('../../../')
+sys.path.append(os.environ['SUSYDIR'])
+#sys.path.append('../../../')
 #sys.dont_write_bytecode = True
 
 r.TEventList.__init__._creates = False

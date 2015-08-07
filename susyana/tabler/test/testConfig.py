@@ -1,5 +1,7 @@
+import os
 import sys
-sys.path.append('../../../../../')
+#sys.path.append('../../../../../')
+sys.path.append(os.environ['SUSYDIR'])
 import supersusy.utils.background as background
 import supersusy.utils.signal as signal
 import supersusy.utils.region as region
