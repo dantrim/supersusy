@@ -24,6 +24,13 @@ class Background :
         self.scale_factor = 1.0
 
         self.systList = []
+
+        self.is_signal = False
+
+    def setSignal(self) :
+        self.is_signal = True
+    def isSignal(self) :
+        return self.is_signal
         
 
     def __eq__(self, other) :
@@ -139,7 +146,6 @@ class Background :
 
         self.systList.append(this_syst)
         
-
     def Print(self) :
         print 'Background "%s" (tree %s from: %s)'%(self.displayname,self.treename, self.file)
 
