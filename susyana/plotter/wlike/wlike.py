@@ -12,90 +12,81 @@ import supersusy.utils.systematic as systematic
 #############################################
 # Set up the samples
 #############################################
-scratchdir = "/scratch/dantrim/n0211/"
-#datafile = scratchdir + "data15_13TeV.root"
-datafile = scratchdir + "data15_13TeV.root"
-mcfile = scratchdir + "mc15_13TeV.root"
-wjetsfile = scratchdir + "mc15_13TeV_wjets_sherpa.root"
-#wjetsfile = scratchdir + "mc15_13TeV_IPinc.root"
+rawdir = "/gdata/atlas/dantrim/SusyAna/histoAna/run2early/n0213/mc/corrected/Raw/" 
+data_rawdir = "/gdata/atlas/dantrim/SusyAna/histoAna/run2early/n0213/data/corrected/Raw/"
+filelist_dir = "/gdata/atlas/dantrim/SusyAna/n0213val/Superflow/run/filelists/"
 backgrounds = []
 
 #### MC
 # Zjets
-zjets = background.Background("Zjets", "Z+jets")
+zjets = background.Background("zjets", "Z+jets (Sherpa)")
 zjets.set_debug()
-zjets.set_file(mcfile)
 zjets.scale_factor = 1.0
 zjets.set_color(r.TColor.GetColor("#82DE68"))
-zjets.set_treename("Zjets_CENTRAL")
-zjets.set_merged_tree(zjets.treename)
+#zjets.set_treename("Zjets_powheg")
+zjets.set_treename("Zjets_sherpa")
+#zjets.set_chain_from_list(filelist_dir + "zjets_powheg_n0213.txt", rawdir)
+zjets.set_chain_from_list(filelist_dir + "zjets_sherpa_n0213.txt", rawdir)
 backgrounds.append(zjets)
 
-ttbar = background.Background("TTbar", "TTbar")
+ttbar = background.Background("ttbar", "TTbar")
 ttbar.set_debug()
-ttbar.set_file(mcfile)
 ttbar.scale_factor = 1.0
 ttbar.set_color(r.TColor.GetColor("#E67067"))
-ttbar.set_treename("TTbar_CENTRAL")
-ttbar.set_merged_tree(ttbar.treename)
+ttbar.set_treename("ttbar_powheg")
+ttbar.set_chain_from_list(filelist_dir + "ttbar_powheg_n0213.txt", rawdir)
 backgrounds.append(ttbar)
 
 # singletop
-stop = background.Background("ST", "ST")
+stop = background.Background("st", "ST")
 stop.set_debug()
-stop.set_file(mcfile)
 stop.scale_factor = 1.0
 stop.set_color(r.TColor.GetColor("#DE080C"))
-stop.set_treename("ST_CENTRAL")
-stop.set_merged_tree(stop.treename)
+stop.set_treename("ST")
+stop.set_chain_from_list(filelist_dir + "singletop_powheg_n0213.txt", rawdir)
 backgrounds.append(stop)
 
 # wjets
-wjets = background.Background("Wjets", "W+jets")
+wjets = background.Background("wjets", "W+jets (Sherpa)")
 wjets.set_debug()
-wjets.set_file(wjetsfile)
 wjets.scale_factor = 1.0
 wjets.set_color(r.TColor.GetColor("#5E9AD6"))
-wjets.set_treename("Wjets_CENTRAL")
-wjets.set_merged_tree(wjets.treename)
+wjets.set_treename("Wjets_sherpa")
+wjets.set_chain_from_list(filelist_dir + "wjets_sherpa_n0213.txt", rawdir)
 backgrounds.append(wjets)
 
 # ww
-ww = background.Background("WW", "WW")
+ww = background.Background("ww", "WW (Powheg)")
 ww.set_debug()
-ww.set_file(mcfile)
 ww.scale_factor = 1.0
 ww.set_color(r.TColor.GetColor("#315E88"))
-ww.set_treename("WW_CENTRAL")
-ww.set_merged_tree(ww.treename)
+ww.set_treename("WW_powheg")
+ww.set_chain_from_list(filelist_dir + "ww_powheg_n0213.txt", rawdir)
 backgrounds.append(ww)
 
 # wz
-wz = background.Background("WZ", "WZ")
+wz = background.Background("wz", "WZ (Powheg)")
 wz.set_debug()
-wz.set_file(mcfile)
 wz.scale_factor = 1.0
 wz.set_color(r.TColor.GetColor("#F9F549"))
-wz.set_treename("WZ_CENTRAL")
-wz.set_merged_tree(wz.treename)
+wz.set_treename("WZ_powheg")
+wz.set_chain_from_list(filelist_dir + "wz_powheg_n0213.txt", rawdir)
 backgrounds.append(wz)
 
 # zz
-zz = background.Background("ZZ", "ZZ")
+zz = background.Background("zz", "ZZ (Powheg)")
 zz.set_debug()
-zz.set_file(mcfile)
 zz.scale_factor = 1.0
 zz.set_color(r.TColor.GetColor("#FFEF53"))
-zz.set_treename("ZZ_CENTRAL")
-zz.set_merged_tree(zz.treename)
+zz.set_treename("ZZ_powheg")
+zz.set_chain_from_list(filelist_dir + "zz_powheg_n0213.txt", rawdir)
 backgrounds.append(zz)
 
 #### DATA
 data = background.Data()
-data.set_file(datafile)
 data.set_color(r.kBlack)
-data.set_treename("Data_CENTRAL")
-data.set_merged_tree(data.treename)
+data.set_treename("Data")
+data.set_chain_from_list(filelist_dir + "data15_periodA_n0213.txt", data_rawdir)
 
 #############################################
 # Set up the systematics

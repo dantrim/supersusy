@@ -5,7 +5,8 @@ from optparse import OptionParser
 import os
 
 import ROOT as r
-r.gROOT.SetBatch(False)
+r.PyConfig.IgnoreCommandLineOptions = True # don't let root steal cmd-line options
+r.gROOT.SetBatch(True)
 r.gStyle.SetOptStat(False)
 import sys
 sys.path.append(os.environ['SUSYDIR'])
@@ -122,7 +123,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     # stack for MC
     stack = r.THStack("stack_"+plot.name, "")
     # legend
-    leg = pu.default_legend(xl=0.7,yl=0.75,xh=0.97,yh=0.90)
+    leg = pu.default_legend(xl=0.65,yl=0.72,xh=0.93,yh=0.90)
     leg.SetNColumns(2)
 
     # loop through the background MC and add to stack
@@ -684,6 +685,146 @@ def make_1dprofile(plot, reg, data, backgrounds) :
     fullname = out + "/" + outname
     print "%s saved to : %s"%(outname, os.path.abspath(fullname)) 
 
+def make_1dprofileRMS(plot, reg, data, backgrounds ) :
+    print "make_1dprofileRMS    Plotting %s"%plot.name
+
+    r.gStyle.SetOptStat(1100)
+
+    # grab the plot's canvas and pretty up
+    c = plot.canvas
+    c.cd()
+    c.SetGridx(1)
+    c.SetGridy(1)
+    c.SetFrameFillColor(0)
+    c.SetFillColor(0)
+    c.SetLeftMargin(0.13)
+    c.SetRightMargin(0.14)
+    c.SetBottomMargin(1.3*c.GetBottomMargin())
+
+    name_on_plot = ""
+    if plot.sample != "Data" :
+        for b in backgrounds :
+            if b.name != plot.sample : continue
+            name_on_plot += b.displayname
+
+            hist_name_x = ""
+            hist_name_y = ""
+            if "abs" in plot.xVariable :
+                x_repl = plot.xVariable.replace("abs(","")
+                x_repl = x_repl.replace(")","")
+                hist_name_x = x_repl
+            else : hist_name_x = plot.xVariable
+
+            if "abs" in plot.yVariable :
+                y_repl = plot.yVariable.replace("abs(","")
+                y_repl = y_repl.replace(")","")
+                hist_name_y = y_repl
+            else : hist_name_y = plot.yVariable
+
+            hx = pu.th1f("h_"+b.treename+"_"+hist_name_x, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+            hx.Sumw2
+            cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
+            cut = r.TCut(cut)
+            sel = r.TCut("1")
+            cmd = "%s>>+%s"%(plot.xVariable, hx.GetName())
+            b.tree.Draw(cmd, cut * sel)
+
+            g = r.TGraphErrors()
+
+            for i in range(hx.GetNbinsX()) :
+                hy = pu.th1f("h_" + b.treename + "_" + hist_name_y, "", 100, -200, 200,  plot.y_label, "")
+                cut_up = hx.GetBinLowEdge(i+1) + hx.GetBinWidth(i+1)
+                cut_down = hx.GetBinLowEdge(i+1) 
+                cut = "(" + reg.tcut + " && ( %s >= %s && %s <= %s)"%(plot.xVariable, cut_down, plot.xVariable, cut_up)  + ") * eventweight * " + str(b.scale_factor) 
+                cut = r.TCut(cut)
+                sel = r.TCut("1")
+                cmd = "%s>>%s"%(plot.yVariable, hy.GetName())
+                b.tree.Draw(cmd, cut * sel)
+                rms = hy.GetRMS()
+                rms_err = hy.GetRMSError()
+                g.SetPoint(i, hx.GetBinCenter(i+1), rms)
+                g.SetPointError(i, 0.5*hx.GetBinWidth(i+1), rms_err)
+                hy.Delete()
+   
+            g.SetMarkerStyle(8)
+            g.SetMarkerSize(1.15 * g.GetMarkerSize())
+            g.SetMarkerColor(r.TColor.GetColor("#E67067"))
+            g.GetYaxis().SetRangeUser(plot.y_range_min, plot.y_range_max)
+
+            g.Draw("ap")
+            r.gPad.Update()
+            g.Draw("ap") 
+            g.GetYaxis().SetTitle(plot.y_label)
+            g.GetXaxis().SetTitle(plot.x_label)
+            
+
+    if plot.sample == "Data" :
+        name_on_plot = "Data"
+        hist_name_x = ""
+        hist_name_y = ""
+        if "abs" in plot.xVariable :
+            x_repl = plot.xVariable.replace("abs(","")
+            x_repl = x_repl.replace(")","")
+            hist_name_x = x_repl
+        else : hist_name_x = plot.xVariable
+
+        if "abs" in plot.yVariable :
+            y_repl = plot.yVariable.replace("abs(","")
+            y_repl = y_repl.replace(")","")
+            hist_name_y = y_repl
+        else : hist_name_y = plot.yVariable
+
+        hx = pu.th1f("h_data_"+hist_name_x, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+        hx.Sumw2
+        cut = "(" + reg.tcut + ") * eventweight"
+        cut = r.TCut(cut)
+        sel = r.TCut("1")
+        cmd = "%s>>+%s"%(plot.xVariable, hx.GetName())
+        data.tree.Draw(cmd, cut * sel)
+
+        g = r.TGraphErrors()
+
+        for i in range(hx.GetNbinsX()) :
+            hy = pu.th1f("h_data_" + hist_name_y, "", 100, -200, 200,  plot.y_label, "")
+            cut_up = hx.GetBinLowEdge(i+1) + hx.GetBinWidth(i+1)
+            cut_down = hx.GetBinLowEdge(i+1) 
+            cut = "(" + reg.tcut + " && ( %s >= %s && %s <= %s)"%(plot.xVariable, cut_down, plot.xVariable, cut_up)  + ") * eventweight" 
+            cut = r.TCut(cut)
+            sel = r.TCut("1")
+            cmd = "%s>>%s"%(plot.yVariable, hy.GetName())
+            data.tree.Draw(cmd, cut * sel)
+            rms = hy.GetRMS()
+            rms_err = hy.GetRMSError()
+            g.SetPoint(i, hx.GetBinCenter(i+1), rms)
+            g.SetPointError(i, 0.5*hx.GetBinWidth(i+1), rms_err)
+            hy.Delete()
+
+        g.SetMarkerStyle(8)
+        g.SetMarkerSize(1.15 * g.GetMarkerSize())
+        g.SetMarkerColor(r.TColor.GetColor("#5E9AD6"))
+        g.GetYaxis().SetRangeUser(plot.y_range_min, plot.y_range_max)
+
+        g.Draw("ap")
+        r.gPad.Update()
+        g.Draw("ap") 
+        g.GetYaxis().SetTitle(plot.y_label)
+        g.GetXaxis().SetTitle(plot.x_label)
+
+
+
+    pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name, name_on_plot))
+    c.Update()
+    r.gPad.RedrawAxis()
+
+    # set output
+    outname = plot.name + ".eps"
+    out = indir + "/plots/" + outdir
+    c.SaveAs(outname)
+    utils.mv_file_to_dir(outname, out, True)
+    fullname = out + "/" + outname
+    print "%s saved to : %s"%(outname, os.path.abspath(fullname))
+
+
 def make_plots2D(plot, reg, data, backgrounds) :
 
     #check_2d_consistency(plot, data, backgrounds)
@@ -691,6 +832,9 @@ def make_plots2D(plot, reg, data, backgrounds) :
     # check if we want to do profile vs. TH2F plots
     if plot.do_profile : 
         make_1dprofile(plot, reg, data, backgrounds)
+        return
+    elif plot.do_profileRMS :
+        make_1dprofileRMS(plot, reg, data, backgrounds)
         return
     print "make_plots2D    Plotting %s"%plot.name 
 
@@ -898,6 +1042,7 @@ if __name__=="__main__" :
     systematics = []
     regions = []
     execfile(conf_file)
+
     check_for_consistency(plots, regions)
 
     # print out the loaded backgrounds and plots
