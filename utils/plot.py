@@ -118,6 +118,7 @@ class Plot2D :
         self.y_range_min = 0.0
         self.y_range_max = 0.0 
         self.do_profile = False
+        self.do_profileRMS = False
 
         self.style = "colz"
 
@@ -145,6 +146,13 @@ class Plot2D :
         Set whether to do a profile plot
         '''
         self.do_profile = True
+
+    def doProfileRMS(self) :
+        '''
+        Set whether to do a profile plot
+        with RMS on the y-axis
+        '''
+        self.do_profileRMS = True
 
     def xax(self, width=1.0, min=0.0, max=50.0) :
         '''

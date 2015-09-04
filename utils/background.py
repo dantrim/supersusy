@@ -11,6 +11,7 @@ r.TEventList.__init__._creates = False
 class Background :
     def __init__(self, name = "", displayname = "") :
         self.dbg = False
+        self.dsid = ""
         self.treename = ""
         self.name = name
         self.displayname = displayname
@@ -120,6 +121,29 @@ class Background :
         chain.Add(self.file)
         self.tree = chain
 
+    def set_chain_from_list(self, list, directory) :
+        '''
+        Provide the filelist for the background process
+        you would like the chain for. Will look in 
+        'directory' for all of the root files
+        '''
+        dsids = []
+        lines = open(list).readlines()
+        for line in lines :
+             dsids.append(line[line.find('mc15_13TeV.')+11 : line.find('mc15_13TeV.')+17])
+        rawdir_files = glob.glob(directory + "*.root")
+        bkg_files = []
+        for dataset_id in dsids :
+            for f in rawdir_files :
+                if 'entrylist' in f : continue
+                if dataset_id in f :
+                    bkg_files.append(f)
+                    break
+        chain = r.TChain('superNt')
+        for file in bkg_files :
+            chain.Add(file)
+        self.tree = chain
+
 
     def addSys(self, syst=None) :
         '''
@@ -197,6 +221,29 @@ class Data :
         infile = r.TFile.Open(self.file)
         chain = r.TChain(name)
         chain.Add(self.file)
+        self.tree = chain
+
+    def set_chain_from_list(self, list, directory) :
+        '''
+        Provide the filelist for the background process
+        you would like the chain for. Will look in 
+        'directory' for all of the root files
+        '''
+        dsids = []
+        lines = open(list).readlines()
+        for line in lines :
+             dsids.append(line[line.find('data15_13TeV.00')+15 : line.find('data15_13TeV.')+21])
+        rawdir_files = glob.glob(directory + "*.root")
+        bkg_files = []
+        for dataset_id in dsids :
+            for f in rawdir_files :
+                if 'entrylist' in f : continue
+                if dataset_id in f :
+                    bkg_files.append(f)
+                    break
+        chain = r.TChain('superNt')
+        for file in bkg_files :
+            chain.Add(file)
         self.tree = chain
 
     def Print(self) :

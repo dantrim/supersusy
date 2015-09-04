@@ -3,8 +3,10 @@ import glob
 import sys
 sys.path.append('../..')
 
-class Signal :
-    def __init__(self) :
+import supersusy.utils.background as background
+
+class Signal() :
+    def __init__(self, name = "", displayname ="") :
         self.dbg = False
         self.file = ""
         self.grid = ""
@@ -57,7 +59,7 @@ class Signal :
         self.tree = chain
 
     def set_mass_info(self) :
-        if self.grid=="tN1" :
+        if self.grid=="tN1" or self.grid=="bWN" :
             txtfile="../susyinfo/tN1/masses_tN1.txt"
             lines = open(txtfile).readlines()
             fields = lines[0].split()
@@ -82,7 +84,7 @@ class Signal :
             print "Signal.set_displayname_from_masses ERROR    You must set the signal point masses before calling this function! Exitting."
             sys.exit()
 
-        if self.grid=="tN1" :
+        if self.grid=="tN1" or self.grid=="bWN" :
             self.displayname = "(%.0f, %.0f)"%(float(self.mA), float(self.mB)) 
         else :
             print "Signal.set_displayname_from_masses ERROR    Requested grid (%s) not supported. Exitting."%(self.grid)
