@@ -5,7 +5,6 @@ from math import floor
 import sys
 sys.path.append('../..')
 
-
 class Plot1D :
     def __init__(self) :
         self.is2D = False
@@ -28,6 +27,7 @@ class Plot1D :
 
         self.canvas = None
         self.ratioCanvas = None
+        self.doubleRatioCanvas = None
 
     def initialize(self, region = "", variable = "", name = "") :
         self.region = region
@@ -72,6 +72,24 @@ class Plot1D :
     def setRatioCanvas(self, name) :
         self.ratioCanvas = RatioCanvas(name)
 
+    def setDoubleRatioCanvas(self, name) :
+        self.doubleRatioCanvas = DoubleRatioCanvas(name)
+
+    def getCanvas(self) :
+        """
+        Return the canvas
+        """
+        set_up_canvases = []
+        if self.canvas != None : set_up_canvases.append(self.canvas)
+        if self.ratioCanvas != None : set_up_canvases.append(self.ratioCanvas)
+        if self.doubleRatioCanvas != None : set_up_canvases.append(self.doubleRatioCanvas)
+        if len(set_up_canvases) == 0 or len(set_up_canvases) > 1 :
+            print "Plot getCanvas ERROR    Attempting to return a non-existent or ill-defined canvas!"
+            print "Plot getCanvas ERROR    >>> Exiting."
+            sys.exit()
+        if self.canvas != None : return self.canvas
+        elif self.ratioCanvas != None : return self.ratioCanvas
+        elif self.doubleRatioCanvas != None : return self.doubleRatioCanvas
 
     def default_name() :
         '''
@@ -262,5 +280,72 @@ class RatioCanvas :
         self.canvas = can
         self.upper_pad = up
         self.lower_pad = dn
+
+class DoubleRatioCanvas :
+    def __init__(self, name) :
+        self.name = "c_" + name
+        self.canvas = r.TCanvas(self.name, self.name, 300, 350)
+        self.upper_pad = r.TPad("upper", "upper", 0.0, 0.0, 1.0, 1.0)
+        self.middle_pad = r.TPad("middle", "middle", 0.0, 0.0, 1.0, 1.0)
+        self.lower_pad = r.TPad("lower", "lower", 0.0, 0.0, 1.0, 1.0)
+        self.set_pad_dimensions()
+
+    def set_pad_dimensions(self) :
+        can = self.canvas
+        up  = self.upper_pad
+        mid = self.middle_pad
+        dn = self.lower_pad
+
+        can.cd()
+        up_height = 0.90
+        mid_height_low = 0.25
+        mid_height_high = 0.40
+        dn_height = 0.25
+
+        up.SetPad(0.0, mid_height_high, 1.0, 1.0)
+        mid.SetPad(0.0, mid_height_low, 1.0, mid_height_high)
+        dn.SetPad(0.0, 0.0, 1.0, mid_height_low)
+
+        up.SetTickx(0)
+        mid.SetGrid(0)
+        mid.SetTicky(0)
+        dn.SetGrid(0)
+        dn.SetTicky(0)
+
+        up.SetFrameFillColor(0)
+        up.SetFillColor(0)
+
+        # set right margins
+        right_margin = 0.05
+        up .SetRightMargin(right_margin)
+        mid.SetRightMargin(right_margin)
+        dn .SetRightMargin(right_margin)
+
+        # set left margins
+        left_margin = 0.14
+        up .SetLeftMargin(left_margin)
+        mid.SetLeftMargin(left_margin)
+        dn .SetLeftMargin(left_margin)
+
+        # bottom margins
+        up.SetBottomMargin(0.04)
+        mid.SetBottomMargin(0.15)
+        dn.SetBottomMargin(0.47)
+
+        # set top margins
+        up.SetTopMargin(0.09)
+        mid.SetTopMargin(0.05)
+        dn.SetTopMargin(0.02)
         
+
+
+        up.Draw()
+        mid.Draw()
+        dn.Draw()
+        can.Update()
+
+        self.canvas = can
+        self.upper_pad = up
+        self.middle_pad = mid
+        self.lower_pad = dn
         

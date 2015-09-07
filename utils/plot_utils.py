@@ -3,6 +3,8 @@ from math import sqrt
 ROOT.gROOT.SetBatch(True)
 import array
 
+ROOT.gStyle.SetCanvasPreferGL(ROOT.kTRUE)
+
 
 ROOT.TH1F.__init__._creates = False
 ROOT.TH2F.__init__._creates = False
@@ -37,6 +39,7 @@ def th1f(name, title, nbin, nlow, nhigh, xtitle, ytitle) :
     Book a TH1F and return it
     '''
     h = ROOT.TH1F(name, title, nbin, nlow, nhigh)
+    h.SetFillColorAlpha(ROOT.kRed, 20)
     font = 42
     h.SetTitleFont(font)
 
