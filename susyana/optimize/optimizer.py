@@ -71,11 +71,16 @@ def get_zn_per_bin(h_sig, h_sm) :
     zn_low_to_high = []
     zn_high_to_low = []
 
+    zn_include_right = []
+    zn_include_left = []
+
     for bin in range(h_sm.GetNbinsX()+1) :
 
         # integral low -> high
         nBkg, nSig = r.Double(0.0), r.Double(0.0)
         stat_err = r.Double(0.0)
+
+        # take counts from the left side of the cut value at bin (i.e. Zn for upper-cut)
         nBkg = h_sm.IntegralAndError(0, bin, stat_err)
         nSig = h_sig.Integral(0, bin)
 
@@ -85,11 +90,13 @@ def get_zn_per_bin(h_sig, h_sm) :
             zn_up = r.RooStats.NumberCountingUtils.BinomialExpZ(nSig, nBkg, total_err)
             if zn_up < 0 : zn_up = 0.001
             #zn_up = 1.5
-        zn_low_to_high.append(zn_up)
+        zn_include_left.append(zn_up)
         
         # integral high -> low
         nBkg, nSig = r.Double(0.0), r.Double(0.0)
         stat_err = r.Double(0.0)
+
+        # take counts from the right side of the cut value at bin (i.e. Zn for lower-cut)
         nBkg = h_sm.IntegralAndError(bin,-1, stat_err)
         nSig = h_sig.Integral(bin,-1)
 
@@ -99,9 +106,9 @@ def get_zn_per_bin(h_sig, h_sm) :
             zn_down = r.RooStats.NumberCountingUtils.BinomialExpZ(nSig, nBkg, total_err)
             if zn_down < 0 : zn_down = 0.001
             #zn_down = 0.8
-        zn_high_to_low.append(zn_down)
+        zn_include_right.append(zn_down)
 
-    return zn_low_to_high, zn_high_to_low
+    return zn_include_right, zn_include_left
         
             
 ##########################
@@ -286,6 +293,8 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
       #  ratiocan.upper_pad.Update()
 
         # get the zn-per-bin values
+        # "up" : Zn values for lower-cuts (i.e. SR includes everything to the right of the cut)
+        # "down" : Zn values for upper-cuts (i.e. SR includes everything to the left of the cut)
         zn_values[s.name]['up'], zn_values[s.name]['down'] = get_zn_per_bin(hs, totalSM)
 
         # get the total zn for this selection
