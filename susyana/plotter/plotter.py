@@ -121,6 +121,27 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     rcan.upper_pad.Update()
 
     # stack for MC
+    hax = r.TH1F("axes", "", int(plot.nbins), plot.x_range_min, plot.x_range_max)
+    hax.SetMinimum(plot.y_range_min)
+    hax.SetMaximum(plot.y_range_max)
+    hax.GetXaxis().SetTitle(plot.x_label)
+    hax.GetXaxis().SetTitleFont(42)
+    hax.GetXaxis().SetLabelFont(42)
+    hax.GetXaxis().SetLabelSize(0.035)
+    hax.GetXaxis().SetTitleSize(0.048 * 0.85)
+    hax.GetXaxis().SetTitleOffset(-999)
+    hax.GetXaxis().SetLabelOffset(-999)
+
+    hax.GetYaxis().SetTitle(plot.y_label)
+    hax.GetYaxis().SetTitleFont(42)
+    hax.GetYaxis().SetLabelFont(42)
+    hax.GetYaxis().SetTitleOffset(1.4)
+    hax.GetYaxis().SetLabelOffset(0.013)
+    hax.GetYaxis().SetLabelSize(1.2 * 0.035)
+    hax.GetYaxis().SetTitleSize(0.055 * 0.85)
+    hax.Draw()
+    rcan.upper_pad.Update()
+
     stack = r.THStack("stack_"+plot.name, "")
     # legend
     leg = pu.default_legend(xl=0.65,yl=0.72,xh=0.93,yh=0.90)
@@ -137,6 +158,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         else : hist_name = plot.variable
         h = pu.th1f("h_"+b.treename+"_"+hist_name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
         h.SetLineColor(r.kBlack)
+        h.GetXaxis().SetLabelOffset(-999)
         h.SetFillColor(b.color)
         h.SetFillStyle(1001)
         h.Sumw2
@@ -146,7 +168,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         cut = r.TCut(cut)
         sel = r.TCut("1")
         cmd = "%s>>+%s"%(plot.variable, h.GetName())
-        b.tree.Draw(cmd, cut * sel)
+        b.tree.Draw(cmd, cut * sel, "goff")
 
         # print the yield +/- stat error
         stat_err = r.Double(0.0)
@@ -175,7 +197,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     cut = r.TCut(cut)
     sel = r.TCut("1")
     cmd = "%s>>+%s"%(plot.variable, hd.GetName())
-    data.tree.Draw(cmd, cut * sel)
+    data.tree.Draw(cmd, cut * sel, "goff")
+    hd.GetXaxis().SetLabelOffset(-999)
 
     # print the yield +/- stat error
     stat_err = r.Double(0.0)
@@ -246,24 +269,24 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
 
 
     # draw the MC stack and do cosmetcis
-    stack.Draw("HIST")
-    stack.GetXaxis().SetTitle(plot.x_label)
-    stack.GetYaxis().SetTitle(plot.y_label)
-    stack.GetXaxis().SetTitleFont(42)
-    stack.GetYaxis().SetTitleFont(42)
-    stack.GetXaxis().SetLabelFont(42)
-    stack.GetYaxis().SetLabelFont(42)
-    stack.GetYaxis().SetTitleOffset(1.4)
-    stack.GetYaxis().SetLabelOffset(0.013)
+    stack.Draw("HIST SAME")
+ #   stack.GetXaxis().SetTitle(plot.x_label)
+ #   stack.GetYaxis().SetTitle(plot.y_label)
+ #   stack.GetXaxis().SetTitleFont(42)
+ #   stack.GetYaxis().SetTitleFont(42)
+ #   stack.GetXaxis().SetLabelFont(42)
+ #   stack.GetYaxis().SetLabelFont(42)
+ #   stack.GetYaxis().SetTitleOffset(1.4)
+ #   stack.GetYaxis().SetLabelOffset(0.013)
     stack.SetMinimum(plot.y_range_min)
     stack.SetMaximum(plot.y_range_max)
-    stack.GetXaxis().SetLabelSize(0.035)
-    stack.GetYaxis().SetLabelSize(1.2 * 0.035)
-    stack.GetXaxis().SetTitleSize(0.048 * 0.85)
-    stack.GetYaxis().SetTitleSize(0.055 * 0.85)
-    #throw away x-axis labels from the upper-canvas
-    stack.GetXaxis().SetTitleOffset(-999)
-    stack.GetXaxis().SetLabelOffset(-999)
+ #   stack.GetXaxis().SetLabelSize(0.035)
+ #   stack.GetYaxis().SetLabelSize(1.2 * 0.035)
+ #   stack.GetXaxis().SetTitleSize(0.048 * 0.85)
+ #   stack.GetYaxis().SetTitleSize(0.055 * 0.85)
+ #   #throw away x-axis labels from the upper-canvas
+ #   stack.GetXaxis().SetTitleOffset(-999)
+ #   stack.GetXaxis().SetLabelOffset(-999)
     rcan.upper_pad.Update()
 
     # draw the error band
@@ -285,8 +308,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
 
     # add some text/labels
     pu.draw_text_on_top(text=plot.name)
-    pu.draw_text(text="#it{ATLAS} Simulation",x=0.18,y=0.85)
-    pu.draw_text(text="13 TeV, 84.64 pb^{-1}",x=0.18,y=0.8)
+    pu.draw_text(text="#it{ATLAS} Work in Progress",x=0.18,y=0.85)
+    pu.draw_text(text="13 TeV, 78.3 pb^{-1}",x=0.18,y=0.8)
     pu.draw_text(text=reg.displayname, x=0.18,y=0.75)
 
     r.gPad.SetTickx()
