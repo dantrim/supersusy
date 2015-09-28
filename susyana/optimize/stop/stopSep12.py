@@ -136,7 +136,12 @@ reg = region.Region("stop", "Stop2l")
 
 
 #reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && DPB>(0.4*abs(cosThetaB) + 2) && nBJets==0 && mt2>80 && R2>0.65"
-reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && DPB>(2*abs(cosThetaB) + 1.8) && nBJets==0 && mt2>80 && R2>0.65"
+#reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && DPB>(2*abs(cosThetaB) + 1.8) && nBJets==0 && mt2>80 && R2>0.65"
+
+#sep 14
+#reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && mt2>80 && R2>0.65 && DPB>(1.0*abs(cosThetaB) + 1.8) && nBJets==0"
+reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && mt2>80 && R2>0.65 && DPB>(1.0*abs(cosThetaB) + 1.8)"
+
 #reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && DPB>(3*abs(cosThetaB) + 2) && nBJets==0 && mt2>80 && R2>0.65"
 #reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && abs(cosThetaB)<0.4 && DPB>2.2 && nBJets==0 && mt2>70"
 
@@ -160,7 +165,26 @@ regions.append(reg)
 #################################################
 plots = []
 
-#### simple vars
+p = plot.Plot1D()
+p.initialize("stop", "mt2", "stop_mt2")
+p.labels(x="mt2", y = "Entries")
+p.xax(5, 0, 150)
+p.doLogY = True
+p.yax(0.01, 100000)
+p.setDoubleRatioCanvas(p.name)
+plots.append(p)
+
+p = plot.Plot1D()
+p.initialize("stop", "R2", "stop_R2")
+p.labels(x="R2", y = "Entries")
+p.xax(0.05,0,1)
+p.doLogY = True
+p.yax(0.01, 100000)
+p.setDoubleRatioCanvas(p.name)
+plots.append(p)
+
+
+##### simple vars
 p = plot.Plot1D()
 p.initialize("stop", "l_pt[0]", "stop_lpt0")
 p.labels(x="lpt0 [GeV]", y="Entries")
@@ -253,15 +277,6 @@ p.setDoubleRatioCanvas(p.name)
 plots.append(p)
 
 p = plot.Plot1D()
-p.initialize("stop", "mt2", "stop_mt2")
-p.labels(x="mt2", y = "Entries")
-p.xax(5, 0, 150)
-p.doLogY = True
-p.yax(0.01, 100000)
-p.setDoubleRatioCanvas(p.name)
-plots.append(p)
-
-p = plot.Plot1D()
 p.initialize("stop", "abs(deltaX)", "stop_deltaX")
 p.labels(x="deltaX", y = "Entries")
 p.xax(0.01, 0, 0.1)
@@ -274,16 +289,6 @@ plots.append(p)
 p = plot.Plot1D()
 p.initialize("stop", "abs(cosThetaB)", "stop_cosThetaB")
 p.labels(x="|cosThetaB|", y = "Entries")
-p.xax(0.05,0,1)
-p.doLogY = True
-p.yax(0.01, 100000)
-p.setDoubleRatioCanvas(p.name)
-plots.append(p)
-
-
-p = plot.Plot1D()
-p.initialize("stop", "R2", "stop_R2")
-p.labels(x="R2", y = "Entries")
 p.xax(0.05,0,1)
 p.doLogY = True
 p.yax(0.01, 100000)

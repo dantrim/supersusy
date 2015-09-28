@@ -425,17 +425,79 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
     else : leg = pu.default_legend(xl=0.7,yl=0.7,xh=0.97,yh=0.87)
 
     histos = []
+    maxy = []
+
+#    for b in backgrounds :
+#        nbjets = ["==0", "==1", "==2", "==3"]
+#        colors = { "==0" : r.kBlue, "==1" : r.kRed, "==2" : r.kMagenta, "==3" : r.kCyan }
+#        for i, nbj in enumerate(nbjets) :
+#            h = pu.th1f("h_" + nbj, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+#            h.SetLineColor(colors[nbj])
+#            h.SetLineWidth(2)
+#            h.SetLineStyle(1)
+#            h.SetFillColor(0)
+#            h.Sumw2
+#
+#            if i==1 :
+#                cut = "(" + reg.tcut + " && nBJets%s && bj_pt[0]>80"%nbj + ") * " + str(b.scale_factor)
+#            elif i==2 :
+#                cut = "(" + reg.tcut + " && nBJets%s && bj_pt[0]>80 && bj_pt[1]>80"%nbj + ") * " + str(b.scale_factor)
+#            
+#            else :
+#                cut = "(" + reg.tcut + " && nBJets%s"%nbj + ") * " + str(b.scale_factor)
+#            cut = r.TCut(cut)
+#            cut.Print()
+#            sel = r.TCut("1")
+#            cmd = "%s>>+%s"%(plot.variable, h.GetName())
+#            b.tree.Draw(cmd, cut * sel)
+#
+#            print "%s : %.2f"%(nbj, h.Integral())
+#            h.Scale(1/h.Integral())
+#            
+#            # setup the axes
+#            x = h.GetXaxis()
+#            x.SetTitle(plot.x_label)
+#            x.SetTitleSize(0.048 * 0.85)
+#            x.SetLabelSize(0.035)
+#            x.SetLabelOffset(1.15 * 0.02)
+#            x.SetTitleOffset(0.95 * x.GetTitleOffset())
+#            x.SetLabelFont(42)
+#            x.SetTitleFont(42)
+#
+#            y = h.GetYaxis()
+#            y.SetTitle("Arb. units")
+#            y.SetTitleSize(0.055 * 0.85)
+#            y.SetLabelSize(1.2 * 0.035)
+#            y.SetLabelOffset(0.013)
+#            y.SetTitleOffset(1.4)
+#            y.SetLabelFont(42)
+#            y.SetTitleFont(42)
+#
+#            leg.AddEntry(h, nbj, "l")
+#            histos.append(h)
+#            c.Update()
+#            maxy.append(h.GetMaximum())
+#    maxy_ = 1.25* max(maxy)
+
+        
+
+
     for b in backgrounds :
         hist_name = ""
         if "abs" in plot.variable :
             replace_var = plot.variable.replace("abs(","")
             replace_var = replace_var.replace(")","")
             hist_name = replace_var
+        elif "RPT_0/RPZ_0" in plot.variable :
+            hist_name = "RPTZratio"
+        elif "pTT_t_0 / (pTT_t_0 + MDR_v1_t1_0)" :
+            hist_name = "RPT2"
         else : hist_name = plot.variable
         h = pu.th1f("h_"+b.treename+"_"+hist_name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
         h.SetLineColor(b.color)
         h.SetLineWidth(2)
         h.SetLineStyle(b.line_style)
+        h.SetFillColor(0)
         h.Sumw2
 
         # cut and make the sample weighted, applying any scale_factor
@@ -478,13 +540,18 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
         leg.AddEntry(h, b.displayname, "l")
         histos.append(h)
         c.Update()
+        maxy.append(h.GetMaximum())
+
+    maxy_ = 1.25*max(maxy)
 
     is_first = True
     for hist in histos :
         if is_first :
             is_first = False
+            hist.SetMaximum(maxy_)
             hist.Draw("hist")
         hist.Draw("hist same")
+        hist.SetMaximum(maxy_)
 
     # legend
     leg.Draw()
@@ -599,8 +666,8 @@ def make_plots1D(plot, reg, data, backgrounds) :
         leg.Draw()
 
         pu.draw_text_on_top(text=plot.name)
-        pu.draw_text(text="#it{ATLAS} Simulation",x=0.18,y=0.85)
-        pu.draw_text(text="13 TeV, ~6 pb^{-1}",x=0.18, y=0.8)
+        pu.draw_text(text="#it{ATLAS} Work in Progress",x=0.18,y=0.85)
+        pu.draw_text(text="13 TeV, 78.3 pb^{-1}",x=0.18, y=0.8)
         pu.draw_text(text=reg.displayname, x=0.18,y=0.75)
         c.Update()
         r.gPad.RedrawAxis()
@@ -938,6 +1005,8 @@ def make_plots2D(plot, reg, data, backgrounds) :
     pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name,name_on_plot))
 
     h.Draw(plot.style)
+    pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name,name_on_plot))
+
     c.Update()
 
     # redraw the now-invisible axes ticks

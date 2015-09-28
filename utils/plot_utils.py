@@ -3,6 +3,8 @@ from math import sqrt
 ROOT.gROOT.SetBatch(True)
 import array
 
+import supersusy.utils.plot as plot
+
 ROOT.gStyle.SetCanvasPreferGL(ROOT.kTRUE)
 
 
@@ -28,6 +30,10 @@ def basic_canvas(name = "c", width = 768, height = 768, nxpads = 1, nypads = 1) 
     c.cd(1)
     c.Modified()
     return c
+
+def ratio_canvas(name = "c") :
+    ratio_can = plot.RatioCanvas(name)
+    return ratio_can
 
 
 
@@ -375,6 +381,11 @@ def set_palette(name="", ncontours=999) :
         red   = [1/256.,    2/256.,     2/256.,   58/256.,  90/256.,  115/256., 138/256., 158/256.,180/256.,200/256., 219/256.]
         green = [158/256.,  150/256.,   140/256., 131/256., 120/256., 110/256., 97/256.,  82/256., 62/256., 34/256.,  2/256.]
         blue  = [237/256.,  224/256.,   213/256., 200/256., 190/256., 178/256., 167/256., 156/256.,146/256.,134/256., 123/256.]
+    elif name == "bluetowhite" :
+        stops = [0.0, 0.125, 0.25, 0.375, 0.5, 0.66, 0.83, 1.00, 1.00]
+        red   = [23/256.,  46/256.,  69/256.,  92/256., 124/256., 157/256., 190/256., 222/256.]
+        green = [32/256.,  63/256.,  95/256., 126/256., 152/256., 178/256., 203/256., 229/256.]
+        blue  = [57/256., 115/256., 172/256., 229/256., 235/256., 240/256., 245/256., 250/256.]
     else :
         stops = [0.00, 0.34, 0.61, 0.84, 1.00]
         red   = [0.00, 0.00, 0.87, 1.00, 0.51]

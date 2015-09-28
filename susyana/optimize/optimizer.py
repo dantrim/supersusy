@@ -289,6 +289,10 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
         replace_var = plot.variable.replace("abs(","")
         replace_var = replace_var.replace(")","")
         hist_name = replace_var
+    elif "MDR_v1_t1_0 - MDR_i1_t1_0" in plot.variable :
+        hist_name = "RATIO"
+    elif "RPT_0/RPZ_0" in plot.variable :
+        hist_name = "RPTZratio"
     else : hist_name = plot.variable
 
     for b in backgrounds :
@@ -567,9 +571,9 @@ if __name__=="__main__" :
     backgrounds = backgrounds_new
 
     ### go over methods
-    if method == "zn_ratio" :
+    if method == "zn_plots" or method == "zn" or method == "fasimov_plots" or method == "fasimov" :
         if len(plots) == 0 :
-            print "optimizer ERROR    Attempting to make the zn_ratio plots without having configured any plots!"
+            print "optimizer ERROR    Attempting to make the zn_plots plots without having configured any plots!"
             print "optimizer ERROR    >>> Exiting."
             sys.exit()
         region_names = [x.name for x in regions]
@@ -578,11 +582,147 @@ if __name__=="__main__" :
             print "optmizer ERROR    To make the zn-ratio plots a requested region is required."
             print "optmizer ERROR    >>> Exiting."
             sys.exit()
-        for configured_plot in plots :
-            if not configured_plot.doubleRatioCanvas :
-                print "optmizer ERROR    Attempting to make the zn_ratio plot %s without the required 'double ratio canvas'"%configured_plot.name
-                print "optmizer ERROR    >>> Exiting."
-                sys.exit()
-            for possible_regions in regions :
-                if configured_plot.region != requestRegion : continue 
-            make_znRatioPlots(backgrounds, signals, requestRegion, configured_plot) 
+        for possible_region in regions :
+            if possible_region.name != requestRegion : continue
+            set_event_lists(possible_region, backgrounds, signals)
+            for configured_plot in plots :
+
+                if not configured_plot.doubleRatioCanvas :
+                    print "optmizer ERROR    Attempting to make the zn_plots plot %s without the required 'double ratio canvas'"%configured_plot.name
+                    print "optmizer ERROR    >>> Exiting."
+                    sys.exit()
+                if configured_plot.region != requestRegion : continue
+                make_znRatioPlots(backgrounds, signals, requestRegion, configured_plot) 
+
+
+## scan
+ #   ### go over methods
+ #   if method == "zn_plots" or method == "zn" or method == "fasimov_plots" or method == "fasimov" :
+ #       if len(plots) == 0 :
+ #           print "optimizer ERROR    Attempting to make the zn_plots plots without having configured any plots!"
+ #           print "optimizer ERROR    >>> Exiting."
+ #           sys.exit()
+ #     #  region_names = [x.name for x in regions]
+ #     #  if requestRegion not in region_names :
+ #     #      print "optmizer ERROR    The requested region ('%s') is not in the configured regions"%requestRegion
+ #     #      print "optmizer ERROR    To make the zn-ratio plots a requested region is required."
+ #     #      print "optmizer ERROR    >>> Exiting."
+ #     #      sys.exit()
+ #       original_cut = "" 
+ #       is_first = True
+ #       initials = ["1.0", "1.2", "1.4", "1.6", "1.8", "2.0", "2.2", "2.4", "2.6", "2.8", "3.0"]
+ #       finals = ["1.0", "1.4", "1.8", "2.0", "2.2", "2.4", "2.5"]
+ #       for init in initials :
+ #           for fin in finals :
+ #               for possible_region in regions :
+ #                   if possible_region.name != requestRegion : continue
+ #                   if is_first :
+ #                       original_cut = possible_region.tcut
+ #                       is_first = False
+
+ #                   current_cut = original_cut + " && DPB>(%s*abs(cosThetaB) + %s)"%(str(init), str(fin))
+ #                   possible_region.tcut = current_cut
+ #                   print "scan: %s %s"%(str(init), str(fin))
+
+ #                   print "REGION: %s"%possible_region.tcut
+ #                   #set_event_lists(possible_region, backgrounds, signals)
+ #                   for configured_plot in plots[:1] :
+
+ #                       if not configured_plot.doubleRatioCanvas :
+ #                           print "optmizer ERROR    Attempting to make the zn_plots plot %s without the required 'double ratio canvas'"%configured_plot.name
+ #                           print "optmizer ERROR    >>> Exiting."
+ #                           sys.exit()
+ #     #                  if configured_plot.region != requestRegion : continue
+ #                       make_znRatioPlots(backgrounds, signals, requestRegion, configured_plot) 
+ #       
+ #       
+## scan
+#    ### go over methods
+#    if method == "zn_plots" or method == "zn" or method == "fasimov_plots" or method == "fasimov" :
+#        if len(plots) == 0 :
+#            print "optimizer ERROR    Attempting to make the zn_plots plots without having configured any plots!"
+#            print "optimizer ERROR    >>> Exiting."
+#            sys.exit()
+#      #  region_names = [x.name for x in regions]
+#      #  if requestRegion not in region_names :
+#      #      print "optmizer ERROR    The requested region ('%s') is not in the configured regions"%requestRegion
+#      #      print "optmizer ERROR    To make the zn-ratio plots a requested region is required."
+#      #      print "optmizer ERROR    >>> Exiting."
+#      #      sys.exit()
+#        original_cut = "" 
+#        is_first = True
+#        r_values = ["0.5", "0.55", "0.6", "0.65"]
+#        mt2_values = ["45", "50", "55", "60", "65", "70", "75", "80"]
+#        for rval in r_values :
+#            for mt2val in mt2_values :
+#                for possible_region in regions :
+#                    if possible_region.name != requestRegion : continue
+#                    if is_first :
+#                        original_cut = possible_region.tcut
+#                        is_first = False
+#
+#                    current_cut = original_cut + " && mt2>%s && R2>%s"%(str(mt2val), str(rval))
+#                    possible_region.tcut = current_cut
+#                    print "scan: r2=%s mt2=%s"%(str(rval), str(mt2val))
+#
+#                    print "REGION: %s"%possible_region.tcut
+#                    #set_event_lists(possible_region, backgrounds, signals)
+#                    for configured_plot in plots[:1] :
+#
+#                        if not configured_plot.doubleRatioCanvas :
+#                            print "optmizer ERROR    Attempting to make the zn_plots plot %s without the required 'double ratio canvas'"%configured_plot.name
+#                            print "optmizer ERROR    >>> Exiting."
+#                            sys.exit()
+#      #                  if configured_plot.region != requestRegion : continue
+#                        make_znRatioPlots(backgrounds, signals, requestRegion, configured_plot) 
+#        
+#        
+## scan
+#    ### go over methods
+#    if method == "zn_plots" or method == "zn" or method == "fasimov_plots" or method == "fasimov" :
+#        if len(plots) == 0 :
+#            print "optimizer ERROR    Attempting to make the zn_plots plots without having configured any plots!"
+#            print "optimizer ERROR    >>> Exiting."
+#            sys.exit()
+#      #  region_names = [x.name for x in regions]
+#      #  if requestRegion not in region_names :
+#      #      print "optmizer ERROR    The requested region ('%s') is not in the configured regions"%requestRegion
+#      #      print "optmizer ERROR    To make the zn-ratio plots a requested region is required."
+#      #      print "optmizer ERROR    >>> Exiting."
+#      #      sys.exit()
+#        original_cut = "" 
+#        is_first = True
+#        x_values = ["1.0", "1.2", "1.4"]
+#        y_values = ["1.8", "2.0", "2.2"]
+#        r_values = ["0.5", "0.55", "0.6", "0.65"]
+#        #mt2_values = ["45", "50", "55", "60", "65", "70", "75", "80"]
+#        mt2_values = [ "40", "50", "60", "70", "80"]
+#        region_number = 0
+#        for rval in r_values :
+#            for mt2val in mt2_values :
+#                for xval in x_values :
+#                    for yval in y_values :
+#                        for possible_region in regions :
+#                            if possible_region.name != requestRegion : continue
+#                            if is_first :
+#                                original_cut = possible_region.tcut
+#                                is_first = False
+#
+#                            current_cut = original_cut + " && mt2>%s && R2>%s && DPB>(%s*abs(cosThetaB) + %s)"%(str(mt2val), str(rval), str(xval), str(yval))
+#                            possible_region.tcut = current_cut
+#                            print "scan: mt2=%s r2=%s x=%s y=%s"%(str(mt2val), str(rval), str(xval), str(yval))
+#                            print "region number: %d"%region_number
+#
+#                            print "REGION: %s"%possible_region.tcut
+#                            #set_event_lists(possible_region, backgrounds, signals)
+#                            for configured_plot in plots[:1] :
+#
+#                                if not configured_plot.doubleRatioCanvas :
+#                                    print "optmizer ERROR    Attempting to make the zn_plots plot %s without the required 'double ratio canvas'"%configured_plot.name
+#                                    print "optmizer ERROR    >>> Exiting."
+#                                    sys.exit()
+#      #                          if configured_plot.region != requestRegion : continue
+#                                make_znRatioPlots(backgrounds, signals, requestRegion, configured_plot) 
+#                            region_number += 1
+#        
+#        

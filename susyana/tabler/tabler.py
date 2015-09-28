@@ -6,10 +6,10 @@ from optparse import OptionParser
 import os
 
 import ROOT as r
-r.gROOT.SetBatch(False)
+r.PyConfig.IgnoreCommandLineOptions = True
+r.gROOT.SetBatch(True)
 r.gStyle.SetOptStat(False)
 import sys
-#sys.path.append('../../../')
 sys.path.append(os.environ['SUSYDIR'])
 
 r.TEventList.__init__._creates = False
@@ -144,7 +144,7 @@ def make_cutflow(reg, data, backgrounds) :
             # of the current cut
             efficiency = ""
             if icut == 0 : efficiency = "1.00"
-            elif icut != 0 : efficiency = "%.2f"%(bkgYield / float(table[icut-1][ib+1]) * 1.0)
+            elif icut != 0 and float(table[icut-1][ib+1]) > 0: efficiency = "%.2f"%(bkgYield / float(table[icut-1][ib+1]) * 1.0)
             eff_list.append(efficiency)
 
             # add an entry to this row
@@ -152,6 +152,7 @@ def make_cutflow(reg, data, backgrounds) :
 
         # add the efficiencies for this cut
         efficiencies.append(eff_list)
+        print cut
         table.append(line)
 
     # add the efficiencies to the row values by editting the current table

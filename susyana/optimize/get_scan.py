@@ -11,9 +11,13 @@ r.PyConfig.IgnoreCommandLineOptions = True
 r.gROOT.SetBatch(True)
 r.gStyle.SetOptStat(False)
 
+
+import supersusy.utils.plot_utils as pu
+
 r.TCanvas.__init__._creates = False
 r.TH1F.__init__._creates = False
 r.TGraph2D.__init__._creates = False
+r.TLatex.__init__._creates = False
 
 
 regions = ['ttbar', 'st', 'ww', 'wz', 'bwn250_160']
@@ -108,29 +112,84 @@ if __name__=="__main__" :
 
     table = []
     reg_yields = sorted(reg_yields, key=lambda x: x.init)
-    for r in reg_yields :
+    for reg in reg_yields :
         line = []
-        scan_ = "(%s, %s)"%(r.init, r.fin)
+        scan_ = "(%s, %s)"%(reg.init, reg.fin)
         line.append(scan_)
-        for process in r.bkgyields :
+        for process in reg.bkgyields :
             process_yield = "%.2f +/- %.2f"%(float(process.tot_yield), float(process.tot_error))
             line.append(process_yield)
-        total_region_yield = "%.2f +/- %.2f"%(float(r.tot_yield), float(r.tot_error))
+        total_region_yield = "%.2f +/- %.2f"%(float(reg.tot_yield), float(reg.tot_error))
         line.append(total_region_yield)
 
-        sig_error_line = "%2.f %%"%(float(r.bkgyields[-1].tot_error) / float(r.bkgyields[-1].tot_yield) * 100.)
+        sig_error_line = "%2.f %%"%(float(reg.bkgyields[-1].tot_error) / float(reg.bkgyields[-1].tot_yield) * 100.)
         line.append(sig_error_line)
 
-        frac_error_line = "%2.f %%"%(float(r.tot_error)/(float(r.tot_yield)) * 100.)
+        frac_error_line = "%2.f %%"%(float(reg.tot_error)/(float(reg.tot_yield)) * 100.)
         line.append(frac_error_line)
 
 
-        s_over_b_line = "%.2f"%float(r.s_over_b)
+        s_over_b_line = "%.2f"%float(reg.s_over_b)
         line.append(s_over_b_line)
-        sig_line = "%.2f"%float(r.significance)
+        sig_line = "%.2f"%float(reg.significance)
         line.append(sig_line)
         table.append(line)
 
     print tabulate(table, headers, tablefmt="rst", numalign="right", stralign="left")
-    
+
+    ### make plot
+    can = pu.basic_canvas()
+    can.cd()
+
+    h_frame = pu.th2f("axes", "", 11, 0, 11, 7, 0, 7, "X", "Y")
+    h_frame.GetXaxis().SetLabelOffset(-999)
+    h_frame.GetYaxis().SetLabelOffset(-999)
+    h_frame.Draw("axis")
+
+    pu.set_palette()
+
+    h_stat = pu.th2f("stat_sig", "", 11, 0, 11, 7, 0, 7, "X", "Y")
+    h_stat.GetZaxis().SetLabelSize(0.8 * h_stat.GetZaxis().GetLabelSize())
+ #   h_stat.GetXaxis().SetLabelOffset(-999)
+ #   h_stat.GetYaxis().SetLabelOffset(-999)
+
+    initials = ["1.0", "1.2", "1.4", "1.6", "1.8", "2.0", "2.2", "2.4", "2.6", "2.8", "3.0"] 
+    finals = ["1.0", "1.4", "1.8", "2.0", "2.2", "2.4", "2.5"]
+    x_map = {}
+    y_map = {}
+
+
+    for ii, init in enumerate(initials) :
+        x_map[float(init)] = ii
+    for yy , fin in enumerate(finals) :
+        y_map[float(fin)] = yy
+    for reg in reg_yields :
+        hbin_x = h_stat.GetXaxis().FindBin(x_map[float(reg.init)])
+        h_stat.GetXaxis().SetBinLabel(x_map[float(reg.init)]+1, reg.init)
+        h_stat.GetXaxis().CenterLabels(True)
+
+        hbin_y = h_stat.GetYaxis().FindBin(y_map[float(reg.fin)])
+        h_stat.GetYaxis().SetBinLabel(y_map[float(reg.fin)]+1, reg.fin)
+        h_stat.GetYaxis().CenterLabels()
+
+
+        h_stat.SetBinContent(hbin_x, hbin_y, float(reg.significance))
+
+
+    h_stat.Draw("colz")
+
+    tex = r.TLatex(0.0, 0.0, '')
+    tex.SetTextFont(42)
+    tex.SetTextSize(0.3 * tex.GetTextSize())
+    for reg in reg_yields :
+        # write s/b and deltaB/b
+        info_1 = "s/b: %.2f"%float(reg.s_over_b)
+        info_2 = "#deltaB: %.2f"%(float(reg.tot_error)/float(reg.tot_yield) * 100.)
+        info_3 = "bkg: %.2f"%float(reg.tot_yield)
+        tex.DrawLatex(x_map[float(reg.init)]+0.1, y_map[float(reg.fin)]+0.70, info_1)
+        tex.DrawLatex(x_map[float(reg.init)]+0.1, y_map[float(reg.fin)]+0.50, info_2)
+        tex.DrawLatex(x_map[float(reg.init)]+0.1, y_map[float(reg.fin)]+0.30, info_3)
+
+    pu.draw_text_on_top("#Delta#phi_{#beta}^{R} > ( X * |cos#theta_{B}| + Y ) \t\t\tZ = Significance", pushup=1.02)
+    can.SaveAs("test.eps")
 
