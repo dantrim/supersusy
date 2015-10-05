@@ -50,7 +50,8 @@ def check_for_consistency(plots, regions) :
             bad_regions.append(current_region)
     if len(bad_regions) > 0 :
         print 'check_for_consistency ERROR    You have configured a plot for a region that is not defined. Here is the list of "bad regions":'
-        print bad_regions
+        for x in bad_regions :
+            print x.simplename
         print 'check_for_consistency ERROR    The regions that are defined in the configuration ("%s") are:'%plotConfig
         print configured_regions
         print "check_for_consistency ERROR    Exitting."
@@ -1051,22 +1052,24 @@ def make_plots(plots, regions, data, backgrounds) :
                 list.SaveAs(save_name)
                 #list.SaveAs(list_name + ".root")
         # do data
-        data_list_name = "list_" + reg.simplename + "_" + data.treename
-        data_save_name = "./" + indir + "/lists/" + data_list_name + ".root"
-        if os.path.isfile(data_save_name) :
-            #rfile = r.TFile.Open(data_list_name+".root")
-            rfile = r.TFile.Open(data_save_name)
-            data_list = rfile.Get(data_list_name)
-            print "Data : EventList found at %s"%os.path.abspath(data_save_name)
-            if dbg : data_list.Print()
-            data.tree.SetEventList(data_list)
-        else :
-            draw_list = ">> " + data_list_name
-            data.tree.Draw(draw_list, sel * cut)
-            data_list = r.gROOT.FindObject(data_list_name)
-            data.tree.SetEventList(data_list)
-            #data_list.SaveAs(data_list_name+".root")
-            data_list.SaveAs(data_save_name)
+
+        if data :
+            data_list_name = "list_" + reg.simplename + "_" + data.treename
+            data_save_name = "./" + indir + "/lists/" + data_list_name + ".root"
+            if os.path.isfile(data_save_name) :
+                #rfile = r.TFile.Open(data_list_name+".root")
+                rfile = r.TFile.Open(data_save_name)
+                data_list = rfile.Get(data_list_name)
+                print "Data : EventList found at %s"%os.path.abspath(data_save_name)
+                if dbg : data_list.Print()
+                data.tree.SetEventList(data_list)
+            else :
+                draw_list = ">> " + data_list_name
+                data.tree.Draw(draw_list, sel * cut)
+                data_list = r.gROOT.FindObject(data_list_name)
+                data.tree.SetEventList(data_list)
+                #data_list.SaveAs(data_list_name+".root")
+                data_list.SaveAs(data_save_name)
 
         # now check if we want to do a 1D or 2D plot
         for p in plots_with_region :
