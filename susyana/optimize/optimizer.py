@@ -22,7 +22,6 @@ import supersusy.utils.signal as signal
 import supersusy.utils.background as background
 import supersusy.utils.region as region
 import supersusy.utils.plot as plot
-import supersusy.utils.fasimov as fasimov
 
 def get_optConfig(conf) :
     configuration_file = ""
@@ -85,22 +84,6 @@ def get_zn_for_selection(h_sig, h_sm) :
 
     return zn, nBkg, nSig, total_rel_error
 
-def get_fasimov_for_selection(hsig, hSM) :
-
-    nSig = hsig.Integral(0,-1)
-    stat_err = r.Double(0.0)
-    nBkg = hSM.IntegralAndError(0, -1, stat_err)
-
-    significance = 0.0
-    total_rel_error = 0.0
-    if nBkg > 0 and nSig > 0 :
-        total_rel_error = sqrt( (stat_err/nBkg)**2 + (0.30)**2)
-        total_abs_error = total_rel_error * nBkg
-        significance = fasimov.ExpectedSignificance(nSig, nBkg, total_abs_error)
-    if significance < 0 : significance = 0.001
-
-    return significance, nBkg, nSig, total_rel_error
-        
 ##########################
 ### Zn per bin, up and down
 def get_zn_per_bin(h_sig, h_sm) :
@@ -149,46 +132,6 @@ def get_zn_per_bin(h_sig, h_sm) :
 
     return zn_include_right, zn_include_left
 
-def get_fasimov_per_bin(h_sig, h_sm) :
-    sig_include_right = []
-    sig_include_left = []
-
-    for bin in range(h_sm.GetNbinsX()+1) :
-
-        # integral low -> high
-        nBkg, nSig = r.Double(0.0), r.Double(0.0)
-        stat_err = r.Double(0.0)
-
-        # take counts from the left side of the cut value at bin (i.e. Zn for upper-cut)
-        nBkg = h_sm.IntegralAndError(0, bin, stat_err)
-        nSig = h_sig.Integral(0, bin)
-
-        sig_up = r.Double(0.0)
-        if nBkg > 0 and nSig > 0 :
-            total_err = sqrt( (stat_err/nBkg)**2 + (0.30)**2)
-            total_abs_err = total_err * nBkg
-            sig_up = fasimov.ExpectedSignificance(nSig, nBkg, total_abs_err)
-            if sig_up < 0 : sig_up = 0.001
-        sig_include_left.append(sig_up)
-        
-        # integral high -> low
-        nBkg, nSig = r.Double(0.0), r.Double(0.0)
-        stat_err = r.Double(0.0)
-
-        # take counts from the right side of the cut value at bin (i.e. Zn for lower-cut)
-        nBkg = h_sm.IntegralAndError(bin,-1, stat_err)
-        nSig = h_sig.Integral(bin,-1)
-
-        sig_down = r.Double(0.0)
-        if nBkg > 0 and nSig > 0 :
-            total_err = sqrt( (stat_err/nBkg)**2 + (0.30)**2)
-            total_abs_err = total_err * nBkg
-            sig_down = fasimov.ExpectedSignificance(nSig, nBkg, total_abs_err)
-            if sig_down < 0 : sig_down = 0.001
-        sig_include_right.append(sig_down) 
-
-    return sig_include_right, sig_include_left
-            
 ##########################
 ### set the labels, etc.. for the ratio pads
 def set_ratio_style(histo, where="mid", xlabel="") :
@@ -379,8 +322,6 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
         # "down" : Zn values for upper-cuts (i.e. SR includes everything to the left of the cut)
         if 'zn' in method :
             sig_values[s.name]['up'], sig_values[s.name]['down'] = get_zn_per_bin(hs, totalSM)
-        elif 'fasimov' in method :
-            sig_values[s.name]['up'], sig_values[s.name]['down'] = get_fasimov_per_bin(hs, totalSM)
 
         # get the total zn for this selection
         # and attach the the signal point
@@ -391,16 +332,9 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
             s.n_bkg = nbkg
             s.n_sig = nsig
             s.n_bkgerr = rel_bkgerr
-        if 'fasimov' in method :
-            significance, nbkg, nsig, rel_bkgerr = get_fasimov_for_selection(hs, totalSM)
-            s.sig_val = significance
-            s.n_bkg = nbkg
-            s.n_sig = nsig
-            s.n_bkgerr = rel_bkgerr
 
     signame = ''
     if 'zn' in method : signame = "Zn"
-    elif 'fasimov' in method : signame = "FAsimov"
     print " ++ --------------------------------------- ++ "
     print "     Significance (%s) for selection %s"%(signame, reg.displayname)
     print ""
@@ -411,7 +345,6 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
     print " ++ --------------------------------------- ++ "
 
 #    if method == "zn" : sys.exit()
-#    if method == "fasimov" : sys.exit()
     if method == "zn" or method == "fasimov" : return
 
 
@@ -432,7 +365,7 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
 
     pu.draw_text_on_top(text=reg.tcut, size = 0.02)
     pu.draw_text(text="#it{ATLAS} Work in Progress",x=0.18,y=0.85)
-    pu.draw_text(text="13 TeV, 2.0 fb^{-1}", x=0.18,y=0.8)
+    pu.draw_text(text="13 TeV, 1.7 fb^{-1}", x=0.18,y=0.8)
 
     #########################
     ## now draw zn
@@ -518,7 +451,7 @@ if __name__=="__main__" :
     outdir        = options.outdir
     dbg           = options.dbg
 
-    acceptable_methods = ["zn", "zn_plots", "fasimov", "fasimov_plots"]
+    acceptable_methods = ["zn", "zn_plots"]
     if method not in acceptable_methods :
         print 'optimizer ERROR    You have requested an optimization method that is not yet supported ("%s").'%method
         print 'optimizer ERROR    Currently we only support Zn (BinomialExp) - based optimization routines'
@@ -571,7 +504,7 @@ if __name__=="__main__" :
     backgrounds = backgrounds_new
 
     ### go over methods
-    if method == "zn_plots" or method == "zn" or method == "fasimov_plots" or method == "fasimov" :
+    if method == "zn_plots" or method == "zn" :
         if len(plots) == 0 :
             print "optimizer ERROR    Attempting to make the zn_plots plots without having configured any plots!"
             print "optimizer ERROR    >>> Exiting."

@@ -121,11 +121,17 @@ class Background :
         chain.Add(self.file)
         self.tree = chain
 
-    def set_chain_from_list(self, list, directory) :
+    def set_chain_from_list(self, list, directory, dsid_ = "") :
         '''
         Provide the filelist for the background process
         you would like the chain for. Will look in 
         'directory' for all of the root files
+
+        Typically, when running over a singla sample for plotting
+        we want only one DSID (corresponding to one grid point) but
+        put all grid points in one filelist. Use the dsid_ to
+        grab the desired signal point. You must call "setSignal()"
+        on the background process before calling this.
         '''
         dsids = []
         lines = open(list).readlines()
@@ -134,6 +140,38 @@ class Background :
         rawdir_files = glob.glob(directory + "*.root")
         bkg_files = []
         for dataset_id in dsids :
+            if self.isSignal() and not (dsid_ == dataset_id) : continue
+            for f in rawdir_files :
+                if 'entrylist' in f : continue
+                if dataset_id in f :
+                    bkg_files.append(f)
+                    break
+        chain = r.TChain('superNt')
+        for file in bkg_files :
+            chain.Add(file)
+        self.tree = chain
+
+    def set_chain_from_list_CONDOR(self, clist_dir, raw_directory, dsid_ = "") :
+        '''
+        Provide the directory that contains the .txt files
+        of the condor filelists for the given sample
+
+        Typically, when running over a singla sample for plotting
+        we want only one DSID (corresponding to one grid point) but
+        put all grid points in one filelist. Use the dsid_ to
+        grab the desired signal point. You must call "setSignal()"
+        on the background process before calling this.
+        '''
+        dsids = []
+        if not clist_dir.endswith("/") :
+            clist_dir = clist_dir + "/"
+        con_files = glob.glob(clist_dir + "*.txt")
+        for con in con_files :
+            dsids.append(con[con.find('mc15_13TeV.')+11 : con.find('mc15_13TeV.')+17])
+        rawdir_files = glob.glob(raw_directory + "*.root")
+        bkg_files = []
+        for dataset_id in dsids :
+            if self.isSignal() and not (dsid_ == dataset_id) : continue
             for f in rawdir_files :
                 if 'entrylist' in f : continue
                 if dataset_id in f :
@@ -234,6 +272,28 @@ class Data :
         for line in lines :
              dsids.append(line[line.find('data15_13TeV.00')+15 : line.find('data15_13TeV.')+21])
         rawdir_files = glob.glob(directory + "*.root")
+        bkg_files = []
+        for dataset_id in dsids :
+            for f in rawdir_files :
+                if 'entrylist' in f : continue
+                if dataset_id in f :
+                    bkg_files.append(f)
+                    break
+        chain = r.TChain('superNt')
+        for file in bkg_files :
+            chain.Add(file)
+        self.tree = chain
+
+    def set_chain_from_list_CONDOR(self, clist_dir, raw_directory) :
+        '''
+        Provide the directory that contains the .txt files
+        of the condor filelists for the given sample
+        '''
+        dsids = []
+        con_files = glob.glob(clist_dir + "*.txt")
+        for con in con_files :
+            dsids.append(con[con.find('data15_13TeV.00')+15 : con.find('data15_13TeV.')+21])
+        rawdir_files = glob.glob(raw_directory + "*.root")
         bkg_files = []
         for dataset_id in dsids :
             for f in rawdir_files :
