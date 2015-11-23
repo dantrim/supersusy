@@ -70,11 +70,13 @@ def make_piePlots(region, backgrounds) :
             if b_.displayname == l :
                 colors.append(b_.color)
     labels = labels2
-    #patches, texts = plt.pie(fractions, colors = colors, shadow=True, startangle=90)
-    #plt.pie(fractions, colors = colors, autopct='%1.1f%%', shadow=True, startangle=90)
+    fig = plt.figure()
+    fig.suptitle("%s"%region.displayname)
+    fig.subplots_adjust(top=0.93)
     patches, texts = plt.pie(fractions, colors = colors, shadow=True, startangle=90)
     #patches, texts, blah = plt.pie(fractions, labels = labels, colors = colors, autopct='%1.1f%%', shadow=True, startangle=90)
     plt.legend(patches, labels, loc="best")
+#    plt.title('%s'%region.displayname)
     plt.axis('equal')
     #plt.tight_layout()
     outname = "%s_pie.eps"%region.simplename

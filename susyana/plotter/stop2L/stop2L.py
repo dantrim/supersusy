@@ -11,7 +11,7 @@ import supersusy.utils.region as region
 # Set up the samples
 #############################################
 rawdir = "/data/uclhc/uci/user/dantrim/ntuples/rjigsaw/mc/Raw/"
-data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0216/validation/data/Raw/"
+data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/rjigsaw/data/Raw/"
 #filelist_dir = "/data/uclhc/uci/user/dantrim/n0216val/fine_filelists/"
 filelist_dir = "/data/uclhc/uci/user/dantrim/n0216val/filelists/"
 backgrounds = []
@@ -111,7 +111,7 @@ regions.append(reg)
 
 plots = []
 
-logy = 1000000000
+logy = 100000
 
 rs = ["CRT","CRW","VRT","VRW"]
 

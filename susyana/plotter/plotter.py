@@ -156,6 +156,14 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
             replace_var = plot.variable.replace("abs(","")
             replace_var = replace_var.replace(")","")
             hist_name = replace_var
+        elif "ptvarcone" and "pt" in plot.variable :
+            r_ = plot.variable.split("/")[0][-5:-3]
+            no_ = plot.variable.split("/")[0][-2:]
+            hist_name = "R_ptvarcone%s_%s"%(str(r_), str(no_))
+        elif "etconetopo" and "pt" in plot.variable :
+            r_ = plot.variable.split("/")[0][-5:-3]
+            no_ = plot.variable.split("/")[0][-2:]
+            hist_name = "R_etconetopo%s_%s"%(str(r_), str(no_))
         else : hist_name = plot.variable
         h = pu.th1f("h_"+b.treename+"_"+hist_name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
         h.SetLineColor(r.kBlack)

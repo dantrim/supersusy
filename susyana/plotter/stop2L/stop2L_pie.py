@@ -70,31 +70,31 @@ data.set_chain_from_list_CONDOR(filelist_dir + "data/", data_rawdir)
 regions = []
 reg = region.Region()
 reg.simplename = "SR"
-reg.displayname = "Stop-2#it{l} WW-like SR"
+reg.displayname = "Stop-2l WW-like SR"
 reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && nBJets==0 && l_pt[0]>20 && l_pt[1]>20 && RPT>0.6 && DPB_vSS>2.0 && mt2>90"
 regions.append(reg)
 
 reg = region.Region()
 reg.simplename = "CRT"
-reg.displayname = "Stop-2#it{l} WW-like CRT"
+reg.displayname = "Stop-2l WW-like CRT"
 reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && nBJets>0 && l_pt[0]>20 && l_pt[1]>20 && RPT>0.6 && DPB_vSS<2.0 && mt2>30"
 regions.append(reg)
 
 reg = region.Region()
 reg.simplename = "CRW"
-reg.displayname = "Stop-2#it{l} WW-like CRW"
+reg.displayname = "Stop-2l WW-like CRW"
 reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && nBJets==0 && l_pt[0]>20 && l_pt[1]>20 && RPT<0.2 && DPB_vSS<2.0 && mt2>20"
 regions.append(reg)
 
 reg = region.Region()
 reg.simplename = "VRT"
-reg.displayname = "Stop-2#it{l} WW-like VRT"
+reg.displayname = "Stop-2l WW-like VRT"
 reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && nBJets==0 && l_pt[0]>20 && l_pt[1]>20 && RPT>0.6 && DPB_vSS<2.0 && mt2>30"
 regions.append(reg)
 
 reg = region.Region()
 reg.simplename = "VRW"
-reg.displayname = "Stop-2#it{l} WW-like VRW"
+reg.displayname = "Stop-2l WW-like VRW"
 reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && nBJets==0 && l_pt[0]>20 && l_pt[1]>20 && RPT<0.4 && DPB_vSS>2.0 && mt2>20"
 regions.append(reg)
 
