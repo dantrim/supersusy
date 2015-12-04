@@ -170,7 +170,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         h.GetXaxis().SetLabelOffset(-999)
         h.SetFillColor(b.color)
         h.SetFillStyle(1001)
-        h.Sumw2
+        h.Sumw2()
 
         # cut and make the sample weighted, applying the scale_factor
         cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
@@ -201,7 +201,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
 
     # now get the data points
     hd = pu.th1f("h_data_"+reg.simplename, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-    hd.Sumw2
+    hd.Sumw2()
     cut = "(" + reg.tcut + ")"
     cut = r.TCut(cut)
     sel = r.TCut("1")
@@ -445,7 +445,7 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
 #            h.SetLineWidth(2)
 #            h.SetLineStyle(1)
 #            h.SetFillColor(0)
-#            h.Sumw2
+#            h.Sumw2()
 #
 #            if i==1 :
 #                cut = "(" + reg.tcut + " && nBJets%s && bj_pt[0]>80"%nbj + ") * " + str(b.scale_factor)
@@ -501,13 +501,17 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
             hist_name = "RPTZratio"
         elif "pTT_t_0 / (pTT_t_0 + MDR_v1_t1_0)" :
             hist_name = "RPT2"
+        elif "H_11_SS/H_21_SS" in plot.variable :
+            hist_name = "RH11SSH21SS"
+        elif "H_11_SS/H_11_S1" in plot.variable :
+            hist_name = "RH11SSH11S1"
         else : hist_name = plot.variable
         h = pu.th1f("h_"+b.treename+"_"+hist_name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
         h.SetLineColor(b.color)
         h.SetLineWidth(2)
         h.SetLineStyle(b.line_style)
         h.SetFillColor(0)
-        h.Sumw2
+        h.Sumw2()
 
         # cut and make the sample weighted, applying any scale_factor
         cut = "(" + reg.tcut + ") * " + str(b.scale_factor)
@@ -606,7 +610,7 @@ def make_plots1D(plot, reg, data, backgrounds) :
             h.SetLineWidth(1)
             h.SetFillColor(b.color)
             h.SetFillStyle(b.fillStyle)
-            h.Sumw2
+            h.Sumw2()
 
             cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
             cut = r.TCut(cut)
@@ -632,7 +636,7 @@ def make_plots1D(plot, reg, data, backgrounds) :
 
         #### DATA
         hd = pu.th1f("h_data_"+reg.simplename, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-        hd.Sumw2
+        hd.Sumw2()
         cut = "(" + reg.tcut + ")"
         cut = r.TCut(cut)
         sel = r.TCut("1")
@@ -821,7 +825,7 @@ def make_1dprofileRMS(plot, reg, data, backgrounds ) :
             else : hist_name_y = plot.yVariable
 
             hx = pu.th1f("h_"+b.treename+"_"+hist_name_x, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-            hx.Sumw2
+            hx.Sumw2()
             cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
             cut = r.TCut(cut)
             sel = r.TCut("1")
@@ -874,7 +878,7 @@ def make_1dprofileRMS(plot, reg, data, backgrounds ) :
         else : hist_name_y = plot.yVariable
 
         hx = pu.th1f("h_data_"+hist_name_x, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-        hx.Sumw2
+        hx.Sumw2()
         cut = "(" + reg.tcut + ") * eventweight"
         cut = r.TCut(cut)
         sel = r.TCut("1")

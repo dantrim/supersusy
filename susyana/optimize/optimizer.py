@@ -243,7 +243,7 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
         h.SetLineColor(r.kBlack)
         h.SetFillColor(b.color)
         h.SetFillStyle(1001)
-        h.Sumw2
+        h.Sumw2()
 
         # cut and make the sample weighted, applying the scale_factor
         cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
@@ -291,7 +291,7 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
         hs.SetLineStyle(2)
         hs.SetLineWidth(2) 
         hs.SetFillStyle(0)
-        hs.Sumw2
+        hs.Sumw2()
 
         # cut and make sample weighted, applying the scale_factor
         cut = "(" + reg.tcut + ") * eventweight *" + str(s.scale_factor)
