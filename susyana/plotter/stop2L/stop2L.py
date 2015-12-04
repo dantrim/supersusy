@@ -101,9 +101,11 @@ regions.append(reg)
 
 reg = region.Region()
 reg.simplename = "wwPre"
-reg.displayname = "wwPre (DFOS incl)"
-reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && nSJets>=0 && nBJets==0 && (l_q[0]*l_q[1])<1 && l_pt[0]>20 && l_pt[1]>20"
+reg.displayname = "wwPre OSMM20"
+reg.tcut = "nLeptons==2 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && nMuons==2"
+#reg.tcut = "nLeptons==2 && nMuons==1 && nElectrons==1 && nSJets>=0 && nBJets==0 && (l_q[0]*l_q[1])<1 && l_pt[0]>20 && l_pt[1]>20"
 regions.append(reg)
+
 
 #############################################
 # Set up the plots
@@ -113,7 +115,8 @@ plots = []
 
 logy = 100000
 
-rs = ["CRT","CRW","VRT","VRW"]
+#rs = ["CRT","CRW","VRT","VRW"]
+rs = ["wwPre"]
 
 for rs_ in rs :
     # lepton pT 
