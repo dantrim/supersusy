@@ -200,11 +200,16 @@ def make_JointPlot(plot, region, data, backgrounds) :
     x_arr = tree_array[plot.x_var]
     y_arr = tree_array[plot.y_var]
 
+    sns.set(style="white")
+
     # stats?
     stat_func_ = None
     if plot.stat_func == "kendalltau" :
         from scipy.stats import kendalltau
         stat_func_ = kendalltau
+    elif plot.stat_func == None :
+        from scipy.stats import pearsonr
+        stat_func_ = pearsonr
 
     j_plot_grid = None
     if plot.cmap == None or plot.cmap == "default" :
@@ -213,6 +218,8 @@ def make_JointPlot(plot, region, data, backgrounds) :
     elif plot.cmap == "cubehelix" :
         cmap_ = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse = True)
         j_plot_grid = sns.jointplot(x_arr, y_arr, kind = plot.kind, stat_func=stat_func_, linewidth = plot.line_width, joint_kws={"cmap":cmap_, "n_levels":plot.n_levels, "shade":True}, ylim=[plot.y_range_min, plot.y_range_max], xlim=[plot.x_range_min,plot.x_range_max])
+    elif plot.cmap == "blues" :
+        j_plot_grid = sns.jointplot(x_arr, y_arr, kind = plot.kind, stat_func=stat_func_, linewidth = 1.0, joint_kws={"cmap":"Blues", "n_levels":plot.n_levels, "shade":True, "shade_lowest":False}, ylim=[plot.y_range_min, plot.y_range_max], xlim=[plot.x_range_min,plot.x_range_max])
     else :
         msg("cmap attribute of joint plot not yet added")
         sys.exit()

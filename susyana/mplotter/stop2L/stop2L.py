@@ -126,8 +126,8 @@ for sa in sas :
     p.xax(0, 1)
     p.yax(0, 3.2)
     p.kind = "kde"
-    p.cmap = "cubehelix" 
-    p.stat_func = None
+    #p.cmap = "cubehelix" 
+    p.cmap = "blues"
     plots.append(p)
     
 
