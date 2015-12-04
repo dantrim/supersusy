@@ -96,6 +96,8 @@ class Background :
         tree_name = ""
         if "CENTRAL" in self.file :
             tree_name = "id_" + str(self.dsid)
+        elif "superTruth" in self.file :
+            tree_name = "superTruth"
         else :
             print "Background.set_tree ERROR    File format for signal sample is unexpected. Exitting."
             sys.exit()
