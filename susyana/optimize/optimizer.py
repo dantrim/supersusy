@@ -23,6 +23,8 @@ import supersusy.utils.background as background
 import supersusy.utils.region as region
 import supersusy.utils.plot as plot
 
+SYS_ERR = 0.30
+
 def get_optConfig(conf) :
     configuration_file = ""
     configuration_file = "./" + indir + "/" + conf + ".py"
@@ -44,6 +46,7 @@ def set_event_lists(region, bkg, sig) :
     cut = r.TCut(cut)
     sel = r.TCut("1")
     for b in bkg :
+        print b.treename
         list_name = "list_" + region.name + "_" + b.treename
         draw_list = ">> " + list_name
         b.tree.Draw(draw_list, sel * cut)
@@ -51,6 +54,7 @@ def set_event_lists(region, bkg, sig) :
         b.tree.SetEventList(list)
 
     for s in sig :
+        print s.treename
         list_name = "list_" + region.name + "_" + s.treename
         draw_list = ">> " + list_name
         s.tree.Draw(draw_list, sel * cut)
@@ -78,7 +82,7 @@ def get_zn_for_selection(h_sig, h_sm) :
     zn = r.Double(0.0)
     total_rel_error = 0.0
     if nBkg > 0 and nSig > 0 :
-        total_rel_error = sqrt( (stat_err/nBkg)**2 + (0.30)**2)
+        total_rel_error = sqrt( (stat_err/nBkg)**2 + (SYS_ERR)**2)
         zn = r.RooStats.NumberCountingUtils.BinomialExpZ(nSig, nBkg, total_rel_error)
     if zn < 0 : zn = 0.001
 
@@ -108,7 +112,7 @@ def get_zn_per_bin(h_sig, h_sm) :
 
         zn_up = r.Double(0.0)
         if nBkg > 0 and nSig > 0 :
-            total_err = sqrt( (stat_err/nBkg)**2 + (0.30)**2)
+            total_err = sqrt( (stat_err/nBkg)**2 + (SYS_ERR)**2)
             zn_up = r.RooStats.NumberCountingUtils.BinomialExpZ(nSig, nBkg, total_err)
             if zn_up < 0 : zn_up = 0.001
             #zn_up = 1.5
@@ -124,7 +128,7 @@ def get_zn_per_bin(h_sig, h_sm) :
 
         zn_down = r.Double(0.0)
         if nBkg > 0 and nSig > 0 :
-            total_err = sqrt( (stat_err/nBkg)**2 + (0.30)**2)
+            total_err = sqrt( (stat_err/nBkg)**2 + (SYS_ERR)**2)
             zn_down = r.RooStats.NumberCountingUtils.BinomialExpZ(nSig, nBkg, total_err)
             if zn_down < 0 : zn_down = 0.001
             #zn_down = 0.8
@@ -162,8 +166,8 @@ def set_ratio_style(histo, where="mid", xlabel="") :
 
         # y-axis
         histo.GetYaxis().SetTitle("Z_{n} #uparrow")
-        histo.GetYaxis().SetTitleSize(2.2 * histo.GetYaxis().GetTitleSize())
-        histo.GetYaxis().SetTitleOffset(0.355 * histo.GetYaxis().GetTitleOffset())
+        histo.GetYaxis().SetTitleOffset(0.3 * histo.GetYaxis().GetTitleOffset())
+        histo.GetYaxis().SetTitleSize(4.0 * histo.GetYaxis().GetTitleSize())
         histo.GetYaxis().SetTitleFont(42)
         histo.GetYaxis().SetLabelFont(42)
         histo.GetYaxis().SetLabelSize(0.035)
@@ -236,6 +240,18 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
         hist_name = "RATIO"
     elif "RPT_0/RPZ_0" in plot.variable :
         hist_name = "RPTZratio"
+    elif "H_11_SS/H_21_SS" in plot.variable :
+        hist_name = "RH11SSH21SS"
+    elif "H_11_SS/H_11_S1" in plot.variable :
+        hist_name = "RH11SSH11S1"
+    elif "xH_11_S1/xH_42_SS" in plot.variable :
+        hist_name = "xH_11_S1_over_xH_42_SS"
+    elif "xH_42_SS_T/xH_42_SS" in plot.variable :
+        hist_name = "xH_42_SS_T_over_xH_42_SS"
+    elif "xH_11_SS/xH_42_SS_T" in plot.variable :
+        hist_name = "xH_11_SS_over_xH_42_SS_T"
+    elif "(xNV[0]-xNV[1])/(xNV[0]+xNV[1])" in plot.variable :
+        hist_name = "n_obs_asy"
     else : hist_name = plot.variable
 
     for b in backgrounds :
@@ -243,7 +259,7 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
         h.SetLineColor(r.kBlack)
         h.SetFillColor(b.color)
         h.SetFillStyle(1001)
-        h.Sumw2()
+        h.Sumw2
 
         # cut and make the sample weighted, applying the scale_factor
         cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
@@ -291,7 +307,7 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
         hs.SetLineStyle(2)
         hs.SetLineWidth(2) 
         hs.SetFillStyle(0)
-        hs.Sumw2()
+        hs.Sumw2
 
         # cut and make sample weighted, applying the scale_factor
         cut = "(" + reg.tcut + ") * eventweight *" + str(s.scale_factor)
@@ -381,7 +397,13 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
             hz.SetMarkerStyle(20)
             hz.SetMarkerColor(sig.color)
             hz.SetMarkerSize(0.3 * hz.GetMarkerSize())
-            hz.SetMaximum(2.5)
+            max_y = 2.5
+            for ibin, zn in enumerate(zns) :
+                if zn > 2.5 :
+                    max_y = 4
+                elif zn > 4 :
+                    max_y = 5
+            hz.SetMaximum(max_y)
             hz.SetMinimum(0.0)
             for ibin, zn in enumerate(zns) :
                 hz.SetBinContent(ibin, r.Double(zn))
@@ -487,7 +509,7 @@ if __name__=="__main__" :
     plots = []
 
     execfile(config)
-
+    
     #### parse out the signals
     signals = []
     backgrounds_new = []
@@ -518,6 +540,8 @@ if __name__=="__main__" :
         for possible_region in regions :
             if possible_region.name != requestRegion : continue
             set_event_lists(possible_region, backgrounds, signals)
+            n_plots = len(plots)
+            n_run = 1
             for configured_plot in plots :
 
                 if not configured_plot.doubleRatioCanvas :
@@ -525,6 +549,9 @@ if __name__=="__main__" :
                     print "optmizer ERROR    >>> Exiting."
                     sys.exit()
                 if configured_plot.region != requestRegion : continue
+                print 20*"-"
+                print "plots [%d/%d]"%(n_run, n_plots)
+                n_run+=1
                 make_znRatioPlots(backgrounds, signals, requestRegion, configured_plot) 
 
 

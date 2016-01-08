@@ -114,6 +114,7 @@ def getCutYield(tcut, bkg, cutNumber) :
 ## make cutflow table
 def make_cutflow(reg, data, backgrounds) :
     print "make_cutflow    region: %s (%s)"%(reg.name,reg.displayname)
+    print "                cut   : %s"%(reg.cutFlow[0])
 
     headers = ['Cut']
     for bkg in backgrounds :

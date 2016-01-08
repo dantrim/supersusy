@@ -213,7 +213,8 @@ def make_JointPlot(plot, region, data, backgrounds) :
 
     j_plot_grid = None
     if plot.cmap == None or plot.cmap == "default" :
-        j_plot_grid = sns.jointplot(x_arr, y_arr, kind = plot.kind, stat_func=stat_func_, color = plot.color, linewidth = plot.line_width, joint_kws={"n_levels":plot.n_levels, "shade":True}, ylim=[plot.y_range_min,plot.y_range_max], xlim=[plot.x_range_min,plot.x_range_max])
+        j_plot_grid = sns.jointplot(x_arr, y_arr, kind = plot.kind, stat_func=stat_func_, color = plot.color, linewidth = plot.line_width, ylim=[plot.y_range_min,plot.y_range_max], xlim=[plot.x_range_min,plot.x_range_max])
+        #j_plot_grid = sns.jointplot(x_arr, y_arr, kind = plot.kind, stat_func=stat_func_, color = plot.color, linewidth = plot.line_width, joint_kws={"n_levels":plot.n_levels, "shade":True}, ylim=[plot.y_range_min,plot.y_range_max], xlim=[plot.x_range_min,plot.x_range_max])
 
     elif plot.cmap == "cubehelix" :
         cmap_ = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse = True)
@@ -245,6 +246,6 @@ if __name__=="__main__" :
     backgrounds = []
     regions = []
     #conf_file = get_plotConfig(plotConfig)
-    execfile("./stop2L/stop2L.py")
+    execfile("./rjigsaw/rjigsaw_cos_comp.py")
     #execfile(conf_file)
     main()

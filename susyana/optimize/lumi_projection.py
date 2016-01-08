@@ -11,61 +11,102 @@ r.TH1F.__init__._creates = False
 
 if __name__ == "__main__" :
 
-    ######### PROJECTSION FROM SEPTEMBER 15
-    # lumi projectsionf ro (250, 160)
+#    ######### PROJECTSION FROM SEPTEMBER 22
+#    ## "nLeptons==2 && nElectrons==1 && nMuons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && DPB_vTT_0 > 2. && RPT_0 > 0.60 && nBJets==0 && mt2>90"
+#
+#    # lumi projectsionf ro (250, 160)
+#    x0 = collections.OrderedDict()
+#    x0[1]  = 1.40 
+#    x0[2]  = 1.93
+#    x0[4]  = 2.47
+#    x0[6]  = 2.75
+#    x0[10] = 3.05
+#    
+#
+#    # lumi projections for (300, 180)
+#    x1 = collections.OrderedDict()
+#    x1[1]  = 0.6 
+#    x1[2]  = 0.91
+#    x1[4]  = 1.23
+#    x1[6]  = 1.40
+#    x1[10] = 1.6
+#
+#    # lumi projections for (300, 150)
+#    x2 = collections.OrderedDict()
+#    x2[1]  = 0.06 
+#    x2[2]  = 0.24
+#    x2[4]  = 0.41
+#    x2[6]  = 0.49
+#    x2[10] = 0.6
+
+#    ################### 20 %
+#
+#    # lumi (250,160) 20%
+#    x0 = collections.OrderedDict()
+#    x0[3.34] = 2.90
+#    x0[6.0] = 3.58
+#    x0[8.0] = 3.91
+#    x0[10.0] = 4.15
+#
+#    # lumi (300,180) 20%
+#    x1 = collections.OrderedDict()
+#    x1[3.34] = 1.22
+#    x1[6.0]  = 1.57
+#    x1[8.0]  = 1.75
+#    x1[10.0] = 1.88
+#
+#    # lumi (300,150) 20%
+#    x2 = collections.OrderedDict()
+#    x2[3.34] = 0.39
+#    x2[6.0]  = 0.58
+#    x2[8.0]  = 0.67
+#    x2[10.0] = 0.73
+
+#    ################### 30 %
+#
+#    # lumi (250,160) 30%
+#    x0 = collections.OrderedDict()
+#    x0[3.34] = 2.68
+#    x0[6.0]  = 3.22
+#    x0[8.0]  = 3.46
+#    x0[10.0] = 3.64
+#
+#    # lumi (300,180) 30%
+#    x1 = collections.OrderedDict()
+#    x1[3.34] = 1.11
+#    x1[6.0]  = 1.40
+#    x1[8.0]  = 1.53
+#    x1[10.0] = 1.63
+#
+#    # lumi (300,150) 30%
+#    x2 = collections.OrderedDict()
+#    x2[3.34] = 0.33
+#    x2[6.0]  = 0.48
+#    x2[8.0]  = 0.55
+#    x2[10.0] = 0.60
+
+    ################### 40 %
+
+    # lumi (250,160) 40%
     x0 = collections.OrderedDict()
-    x0[1]  = 1.4
-    x0[2]  = 1.83
-    x0[4]  = 2.23
-    x0[6]  = 2.42
-    x0[10] = 2.62
-    
+    x0[3.34] = 2.42
+    x0[6.0]  = 2.84
+    x0[8.0]  = 3.02
+    x0[10.0] = 3.14
 
-    # lumi projections for (300, 180)
+    # lumi (300,180) 40%
     x1 = collections.OrderedDict()
-    x1[1]  = 0.37 
-    x1[2]  = 0.57
-    x1[4]  = 0.74
-    x1[6]  = 0.83
-    x1[10] = 0.92
+    x1[3.34] = 0.98
+    x1[6.0]  = 1.21
+    x1[8.0]  = 1.31
+    x1[10.0] = 1.38
 
-    # lumi projections for (300, 150)
+    # lumi (300,150) 40%
     x2 = collections.OrderedDict()
-    x2[1]  = 0.0 
-    x2[2]  = 0.0
-    x2[4]  = 0.05
-    x2[6]  = 0.08
-    x2[10] = 0.11
-
-    ######### PROJECTSION FROM SEPTEMBER 22
-    ## "nLeptons==2 && nElectrons==1 && nMuons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && DPB_vTT_0 > 2. && RPT_0 > 0.60 && nBJets==0 && mt2>90"
-
-    # lumi projectsionf ro (250, 160)
-    x0 = collections.OrderedDict()
-    x0[1]  = 1.40 
-    x0[2]  = 1.93
-    x0[4]  = 2.47
-    x0[6]  = 2.75
-    x0[10] = 3.05
-    
-
-    # lumi projections for (300, 180)
-    x1 = collections.OrderedDict()
-    x1[1]  = 0.6 
-    x1[2]  = 0.91
-    x1[4]  = 1.23
-    x1[6]  = 1.40
-    x1[10] = 1.6
-
-    # lumi projections for (300, 150)
-    x2 = collections.OrderedDict()
-    x2[1]  = 0.06 
-    x2[2]  = 0.24
-    x2[4]  = 0.41
-    x2[6]  = 0.49
-    x2[10] = 0.6
-
-
+    x2[3.34] = 0.26
+    x2[6.0]  = 0.38
+    x2[8.0]  = 0.43
+    x2[10.0] = 0.47
 
     c = r.TCanvas("c1", "", 600, 700)
     c.cd()
@@ -89,7 +130,7 @@ if __name__ == "__main__" :
         g.SetName(name)
         g.SetMinimum(0.0)
         g.SetMaximum(5.0)
-        g.GetXaxis().SetTitle("Integrated Lumi [fb^{-1}]")
+        g.GetXaxis().SetTitle("Integrated Lumi [fb^{-1}] (#sigma_{sys} = 20 %%)")
         g.GetYaxis().SetTitle("Significance")
         g.SetLineWidth(2)
         g.SetLineColor(color)

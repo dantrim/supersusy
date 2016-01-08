@@ -50,8 +50,8 @@ def check_for_consistency(plots, regions) :
             bad_regions.append(current_region)
     if len(bad_regions) > 0 :
         print 'check_for_consistency ERROR    You have configured a plot for a region that is not defined. Here is the list of "bad regions":'
-        for x in bad_regions :
-            print x.simplename
+        for blah in bad_regions :
+            print blah.simplename
         print 'check_for_consistency ERROR    The regions that are defined in the configuration ("%s") are:'%plotConfig
         print configured_regions
         print "check_for_consistency ERROR    Exitting."
@@ -145,7 +145,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
 
     stack = r.THStack("stack_"+plot.name, "")
     # legend
-    leg = pu.default_legend(xl=0.65,yl=0.72,xh=0.93,yh=0.90)
+    leg = pu.default_legend(xl=0.62,yl=0.68,xh=0.93,yh=0.90)
+    #leg = pu.default_legend(xl=0.65,yl=0.72,xh=0.93,yh=0.90)
     leg.SetNColumns(2)
 
     # loop through the background MC and add to stack
@@ -156,21 +157,15 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
             replace_var = plot.variable.replace("abs(","")
             replace_var = replace_var.replace(")","")
             hist_name = replace_var
-        elif "ptvarcone" and "pt" in plot.variable :
-            r_ = plot.variable.split("/")[0][-5:-3]
-            no_ = plot.variable.split("/")[0][-2:]
-            hist_name = "R_ptvarcone%s_%s"%(str(r_), str(no_))
-        elif "etconetopo" and "pt" in plot.variable :
-            r_ = plot.variable.split("/")[0][-5:-3]
-            no_ = plot.variable.split("/")[0][-2:]
-            hist_name = "R_etconetopo%s_%s"%(str(r_), str(no_))
+        elif "xH_11_SS/xH_42_SS_T" in plot.variable :
+            hist_name = "xH_11_SS_over_xH_42_SS_T"
         else : hist_name = plot.variable
         h = pu.th1f("h_"+b.treename+"_"+hist_name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
         h.SetLineColor(r.kBlack)
         h.GetXaxis().SetLabelOffset(-999)
         h.SetFillColor(b.color)
         h.SetFillStyle(1001)
-        h.Sumw2()
+        h.Sumw2
 
         # cut and make the sample weighted, applying the scale_factor
         cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
@@ -188,7 +183,11 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         if doSys : getSystHists(plot, reg, b, integral)
         
         # add overflow
-        pu.add_overflow_to_lastbin(h)
+        if "xH_11_SS/xH_42_SS_T" not in plot.variable :
+            pu.add_overflow_to_lastbin(h)
+        elif "xH_11_SS/xH_42_SS_T" in plot.variable :
+            for ni in xrange(10) :
+                print "IGNORING OVERFLOW BIN"
         leg.AddEntry(h, b.displayname, "fl")
         histos.append(h)
         rcan.upper_pad.Update()
@@ -201,7 +200,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
 
     # now get the data points
     hd = pu.th1f("h_data_"+reg.simplename, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-    hd.Sumw2()
+    hd.Sumw2
     cut = "(" + reg.tcut + ")"
     cut = r.TCut(cut)
     sel = r.TCut("1")
@@ -214,7 +213,11 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     integral = hd.IntegralAndError(0,-1,stat_err)
     print "Data: %.2f +/- %.2f"%(integral, stat_err)
     # add overflow
-    pu.add_overflow_to_lastbin(hd)
+    if "xH_11_SS/xH_42_SS_T" not in plot.variable :
+        pu.add_overflow_to_lastbin(hd)
+    elif "xH_11_SS/xH_42_SS_T" in plot.variable :
+        for ni in xrange(10) :
+            print "IGNORING OVERFLOW BIN"
     gdata = pu.convert_errors_to_poisson(hd)
     gdata.SetLineWidth(2)
     gdata.SetMarkerStyle(20)
@@ -445,7 +448,7 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
 #            h.SetLineWidth(2)
 #            h.SetLineStyle(1)
 #            h.SetFillColor(0)
-#            h.Sumw2()
+#            h.Sumw2
 #
 #            if i==1 :
 #                cut = "(" + reg.tcut + " && nBJets%s && bj_pt[0]>80"%nbj + ") * " + str(b.scale_factor)
@@ -488,8 +491,6 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
 #            maxy.append(h.GetMaximum())
 #    maxy_ = 1.25* max(maxy)
 
-        
-
 
     for b in backgrounds :
         hist_name = ""
@@ -505,16 +506,22 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
             hist_name = "RH11SSH21SS"
         elif "H_11_SS/H_11_S1" in plot.variable :
             hist_name = "RH11SSH11S1"
+        elif "xH_11_S1/xH_42_SS" in plot.variable :
+            hist_name = "RxH11S1xH42SS"
+        elif "xH_42_SS_T/xH_42_SS" in plot.variable :
+            hist_name = "RxH42SSTxH42SS"
+        elif "xH_11_SS/xH_42_SS_T" in plot.variable :
+            hist_name = "RxH11SSxH42SST"
         else : hist_name = plot.variable
         h = pu.th1f("h_"+b.treename+"_"+hist_name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
         h.SetLineColor(b.color)
         h.SetLineWidth(2)
         h.SetLineStyle(b.line_style)
         h.SetFillColor(0)
-        h.Sumw2()
+        h.Sumw2
 
         # cut and make the sample weighted, applying any scale_factor
-        cut = "(" + reg.tcut + ") * " + str(b.scale_factor)
+        cut = "(" + reg.tcut + ") * eventweight *" + str(b.scale_factor)
         cut = r.TCut(cut)
         sel = r.TCut("1")
         cmd = "%s>>+%s"%(plot.variable, h.GetName())
@@ -610,7 +617,7 @@ def make_plots1D(plot, reg, data, backgrounds) :
             h.SetLineWidth(1)
             h.SetFillColor(b.color)
             h.SetFillStyle(b.fillStyle)
-            h.Sumw2()
+            h.Sumw2
 
             cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
             cut = r.TCut(cut)
@@ -636,7 +643,7 @@ def make_plots1D(plot, reg, data, backgrounds) :
 
         #### DATA
         hd = pu.th1f("h_data_"+reg.simplename, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-        hd.Sumw2()
+        hd.Sumw2
         cut = "(" + reg.tcut + ")"
         cut = r.TCut(cut)
         sel = r.TCut("1")
@@ -825,7 +832,7 @@ def make_1dprofileRMS(plot, reg, data, backgrounds ) :
             else : hist_name_y = plot.yVariable
 
             hx = pu.th1f("h_"+b.treename+"_"+hist_name_x, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-            hx.Sumw2()
+            hx.Sumw2
             cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
             cut = r.TCut(cut)
             sel = r.TCut("1")
@@ -878,7 +885,7 @@ def make_1dprofileRMS(plot, reg, data, backgrounds ) :
         else : hist_name_y = plot.yVariable
 
         hx = pu.th1f("h_data_"+hist_name_x, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-        hx.Sumw2()
+        hx.Sumw2
         cut = "(" + reg.tcut + ") * eventweight"
         cut = r.TCut(cut)
         sel = r.TCut("1")
@@ -971,12 +978,20 @@ def make_plots2D(plot, reg, data, backgrounds) :
                 x_repl = plot.xVariable.replace("abs(","")
                 x_repl = x_repl.replace(")","")
                 hist_name_x = x_repl
+            elif "xH_11_SS/xH_42_SS_T" in plot.xVariable :
+                hist_name_x = "xH_11_SS_over_xH_42_SS_T"
+            elif "xH_42_SS_T/xH_42_SS" in plot.xVariable:
+                hist_name_x = "xH_42_SS_T_over_xH_42_SS"
             else : hist_name_x = plot.xVariable
 
             if "abs" in plot.yVariable :
                 y_repl = plot.yVariable.replace("abs(","")
                 y_repl = y_repl.replace(")","")
                 hist_name_y = y_repl
+            elif "xH_11_SS/xH_42_SS_T" in plot.yVariable :
+                hist_name_y = "xH_11_SS_over_xH_42_SS_T"
+            elif "xH_42_SS_T/xH_42_SS" in plot.yVariable :
+                hist_name_y = "xH_42_SS_T_over_xH_42_SS"
             else : hist_name_y = plot.yVariable
 
             h = pu.th2f("h_"+b.name+"_"+hist_name_x+"_"+hist_name_y, "", int(plot.n_binsX), plot.x_range_min, plot.x_range_max, int(plot.n_binsY), plot.y_range_min, plot.y_range_max, plot.x_label, plot.y_label)
