@@ -321,7 +321,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     # add some text/labels
     pu.draw_text_on_top(text=plot.name)
     pu.draw_text(text="#it{ATLAS} Work in Progress",x=0.18,y=0.85)
-    pu.draw_text(text="13 TeV, 3.3 fb^{-1}",x=0.18,y=0.8)
+    pu.draw_text(text="13 TeV, 3.2 fb^{-1}",x=0.18,y=0.8)
     pu.draw_text(text=reg.displayname, x=0.18,y=0.75)
 
     r.gPad.SetTickx()
