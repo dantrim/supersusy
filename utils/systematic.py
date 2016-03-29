@@ -26,6 +26,7 @@ class Systematic :
         # or object/kin sys
         self.weight_sys = False
         self.kin_sys = False
+        self.one_side = False
 
         # placeholders for various
         # trees
@@ -62,6 +63,15 @@ class Systematic :
 
     def isKinSys(self) :
         return self.kin_sys
+
+    def setOneSided(self) :
+        '''
+        Set this systematic as onesided
+        '''
+        self.one_side = True
+
+    def isOneSided(self) :
+        return self.one_side
 
     def setUpYield(self, up_yield) :
         self.up_yield = up_yield

@@ -185,31 +185,41 @@ class Background :
         self.tree = chain
 
 
-    def addSys(self, syst=None) :
+    def addSys(self, syst_=None) :
         '''
         Add a systematic to this background
         '''
-        this_syst = systematic.Systematic(syst.name, syst.up_name, syst.down_name)
-        if syst.isWeightSys() :
+        this_syst = systematic.Systematic(syst_.name, syst_.up_name, syst_.down_name)
+        if syst_.isWeightSys() :
             this_syst.setWeightSys()
             this_syst.tree = self.tree
 
-        elif syst.isKinSys() :
+        elif syst_.isKinSys() and not syst_.isOneSided() :
             this_syst.setKinSys()
             file = self.file
-            up_tree_name = self.name + "_" + syst.name + syst.up_name
-            down_tree_name = self.name + "_" + syst.name + syst.down_name
+            up_tree_name = self.name + "_" + syst_.name + "_" + syst_.up_name
+            down_tree_name = self.name + "_" + syst_.name + "_" + syst_.down_name
 
             upchain = r.TChain(up_tree_name)
             downchain = r.TChain(down_tree_name)
 
             upchain.Add(self.file)
             downchain.Add(self.file)
-            syst.tree_up = upchain
-            syst.tree_down = downchain
+            this_syst.tree_up = upchain
+            this_syst.tree_down = downchain
 
-        self.systList.append(this_syst)
+        elif syst_.isKinSys() and syst_.isOneSided() :
+            this_syst.setKinSys()
+            file = self.file
+            up_tree_name = self.name + "_" + syst_.name
+
+            upchain = r.TChain(up_tree_name)
+
+            upchain.Add(self.file)
+            this_syst.tree_up = upchain
         
+        self.systList.append(this_syst)
+
     def Print(self) :
         print 'Background "%s" (tree %s from: %s)'%(self.displayname,self.treename, self.file)
 
@@ -295,7 +305,7 @@ class Data :
         con_files = glob.glob(clist_dir + "*.txt")
         for con in con_files :
             dsids.append(con[con.find('data15_13TeV.00')+15 : con.find('data15_13TeV.')+21])
-        rawdir_files = glob.glob(raw_directory + "*.root")
+        rawdir_files = glob.glob(raw_directory + "CENTRAL*.root")
         bkg_files = []
         for dataset_id in dsids :
             for f in rawdir_files :
