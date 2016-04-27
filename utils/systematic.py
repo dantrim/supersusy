@@ -19,8 +19,8 @@ class Systematic :
         # i.e.
         #    syst_<name><up_name>
         self.name = syst_name
-        self.up_name = up_name
-        self.down_name = down_name
+        self.up_name = ""
+        self.down_name = ""
 
         # toggles to set whether to treat as a weight
         # or object/kin sys
@@ -46,10 +46,13 @@ class Systematic :
         a weight systematic
         '''
         self.weight_sys = True
-        if "syst_" not in self.name :
-            self.name = "syst_" + self.name
-            self.up_name = self.name + self.up_name
-            self.down_name = self.name + self.down_name
+        self.name = "syst_" + self.name
+        self.up_name = self.name + "UP"
+        self.down_name = self.name + "DOWN"
+        #if "syst_" not in self.name :
+        #    self.name = "syst_" + self.name
+        #    self.up_name = self.name + self.up_name
+        #    self.down_name = self.name + self.down_name
 
     def isWeightSys(self) :
         return self.weight_sys
@@ -60,6 +63,12 @@ class Systematic :
         a kinematic/object systematic
         '''
         self.kin_sys = True
+        if "SoftTrk_Scale" not in self.name :
+            self.up_name = self.name + "_UP"
+            self.down_name = self.name + "_DN"
+        else :
+            self.up_name = self.name + "Up"
+            self.down_name = self.name + "Down"
 
     def isKinSys(self) :
         return self.kin_sys

@@ -43,7 +43,7 @@ def check_for_consistency(plots, regions) :
     bad_regions = []
     configured_regions = []
     for r in regions :
-        configured_regions.append(r.simplename)
+        configured_regions.append(r.name)
     for p in plots :
         current_region = p.region
         if current_region not in configured_regions :
@@ -51,7 +51,7 @@ def check_for_consistency(plots, regions) :
     if len(bad_regions) > 0 :
         print 'check_for_consistency ERROR    You have configured a plot for a region that is not defined. Here is the list of "bad regions":'
         for blah in bad_regions :
-            print blah.simplename
+            print blah.name
         print 'check_for_consistency ERROR    The regions that are defined in the configuration ("%s") are:'%plotConfig
         print configured_regions
         print "check_for_consistency ERROR    Exitting."
@@ -71,8 +71,14 @@ def getSystHists(plot, reg, b, nom_yield) :
         h_dn = pu.th1f("h_"+b.treename+"_"+hist_name+"_"+s.name+"_dn", "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
 
         if s.isWeightSys() :
-            cut_up = "(" + reg.tcut + ") * eventweight * " + str(s.up_name) + " * " + str(b.scale_factor)
-            cut_dn = "(" + reg.tcut + ") * eventweight * " + str(s.down_name) + " * " + str(b.scale_factor)
+            name_up = s.up_name
+            if "syst_syst_" in name_up :
+                name_up = name_up.replace("syst_syst_", "syst_")
+            name_dn = s.down_name
+            if "syst_syst_" in name_dn :
+                name_dn = name_dn.replace("syst_syst_", "syst_")
+            cut_up = "(" + reg.tcut + ") * eventweight * " + str(name_up) + " * " + str(b.scale_factor)
+            cut_dn = "(" + reg.tcut + ") * eventweight * " + str(name_dn) + " * " + str(b.scale_factor)
 
             cut_up = r.TCut(cut_up)
             cut_dn = r.TCut(cut_dn)
@@ -96,18 +102,27 @@ def getSystHists(plot, reg, b, nom_yield) :
         elif s.isKinSys() :
             cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
             cut = r.TCut(cut)
-            self = r.TCut("1")
+            sel = r.TCut("1")
             cmd_up = "%s>>%s"%(plot.variable, h_up.GetName())
             cmd_dn = "%s>>%s"%(plot.variable, h_dn.GetName())
 
             s.tree_up.Draw(cmd_up, cut * sel)
-            s.tree_down.Draw(cmd_dn, cut * sel)
-
             pu.add_overflow_to_lastbin(h_up)
-            pu.add_overflow_to_lastbin(h_dn)
-
             s.up_histo = h_up
-            s.down_histo = h_dn
+
+            is_one_side = False
+            if "JER" in syst.name : is_one_side = True
+            if "ResoPerp" in syst.name or "ResoPara" in syst.name : is_one_side = True
+            if not is_one_side :
+                s.tree_down.Draw(cmd_dn, cut * sel)
+                pu.add_overflow_to_lastbin(h_dn)
+                s.down_histo = h_dn
+            
+
+            if is_one_side :
+                print "    %s (+%.2f)"%(s.name, h_up.Integral(0,-1)-nom_yield)
+            else :
+                print "    %s  (+%.2f, -%.2f)"%(s.name, h_up.Integral(0,-1)-nom_yield, nom_yield-h_dn.Integral(0,-1))
 
 def make_plotsRatio(plot, reg, data, backgrounds) :
 
@@ -183,11 +198,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         if doSys : getSystHists(plot, reg, b, integral)
         
         # add overflow
-        if "xH_11_SS/xH_42_SS_T" not in plot.variable :
-            pu.add_overflow_to_lastbin(h)
-        elif "xH_11_SS/xH_42_SS_T" in plot.variable :
-            for ni in xrange(10) :
-                print "IGNORING OVERFLOW BIN"
+        pu.add_overflow_to_lastbin(h)
+
         leg.AddEntry(h, b.displayname, "fl")
         histos.append(h)
         rcan.upper_pad.Update()
@@ -199,7 +211,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     rcan.upper_pad.Update()
 
     # now get the data points
-    hd = pu.th1f("h_data_"+reg.simplename, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+    hd = pu.th1f("h_data_"+reg.name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
     hd.Sumw2
     cut = "(" + reg.tcut + ")"
     cut = r.TCut(cut)
@@ -213,11 +225,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     integral = hd.IntegralAndError(0,-1,stat_err)
     print "Data: %.2f +/- %.2f"%(integral, stat_err)
     # add overflow
-    if "xH_11_SS/xH_42_SS_T" not in plot.variable :
-        pu.add_overflow_to_lastbin(hd)
-    elif "xH_11_SS/xH_42_SS_T" in plot.variable :
-        for ni in xrange(10) :
-            print "IGNORING OVERFLOW BIN"
+    pu.add_overflow_to_lastbin(hd)
+
     gdata = pu.convert_errors_to_poisson(hd)
     gdata.SetLineWidth(2)
     gdata.SetMarkerStyle(20)
@@ -250,7 +259,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         # totalSystHisto will hold each samples'
         # variation
         totalSysHisto = totalSM.Clone()
-        totalSysHisto.Reset()
+        totalSysHisto.Reset("ICE")
         transient = r.TGraphAsymmErrors()
 
         # add to the error band the contribution from the up-variations 
@@ -263,6 +272,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
                     if syst.up_name != up_sys : continue
                     totalSysHisto.Add(syst.up_histo)
             transient = pu.th1_to_tgraph(totalSysHisto)
+            print "> ",up_sys
             pu.add_to_band(transient, nominalAsymErrors)
             totalSysHisto.Reset()
 
@@ -274,8 +284,13 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
             for b in backgrounds :
                 for syst in b.systList :
                     if syst.down_name != dn_sys : continue
+
+                    if "JER" in syst.name : continue
+                    if "ResoPerp" in syst.name or "ResoPara" in syst.name : continue
+
                     totalSysHisto.Add(syst.down_histo)
             transient = pu.th1_to_tgraph(totalSysHisto)
+            print "> ",dn_sys
             pu.add_to_band(transient, nominalAsymErrors)
             totalSysHisto.Reset()
 
@@ -642,7 +657,7 @@ def make_plots1D(plot, reg, data, backgrounds) :
         c.Update()
 
         #### DATA
-        hd = pu.th1f("h_data_"+reg.simplename, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+        hd = pu.th1f("h_data_"+reg.name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
         hd.Sumw2
         cut = "(" + reg.tcut + ")"
         cut = r.TCut(cut)
@@ -1052,16 +1067,16 @@ def make_plots(plots, regions, data, backgrounds) :
         # first check that there are plots for the given region
         plots_with_region = []
         for p in plots :
-            if p.region == reg.simplename : plots_with_region.append(p)
+            if p.region == reg.name : plots_with_region.append(p)
         if len(plots_with_region)==0 : continue
 
         # set event lists, if they already exist load it. otherwise make it and save
-        print "Setting EventLists for %s"%reg.simplename
+        print "Setting EventLists for %s"%reg.name
         cut = reg.tcut
         cut = r.TCut(cut)
         sel = r.TCut("1")
         for b in backgrounds :
-            list_name = "list_" + reg.simplename + "_" + b.treename
+            list_name = "list_" + reg.name + "_" + b.treename
             save_name = "./" + indir + "/lists/" + list_name + ".root"
 
             # check if the list already exists
@@ -1078,10 +1093,56 @@ def make_plots(plots, regions, data, backgrounds) :
                 b.tree.SetEventList(list)
                 list.SaveAs(save_name)
                 #list.SaveAs(list_name + ".root")
+
+        # systematics trees
+        if doSys :
+            cut = reg.tcut
+            cut = r.TCut(cut)
+            sel = r.TCut("1")
+            for b in backgrounds :
+                for s in b.systList :
+                    if not s.isKinSys() : continue
+
+                    # up variation
+                    list_name_up = "list_" + reg.name + "_" + b.treename + "_" + s.name + "_UP"
+                    save_name_up = "./" + indir + "/lists/" + list_name_up + ".root"
+
+                    if os.path.isfile(save_name_up) :
+                        rfile = r.TFile.Open(save_name_up)
+                        list = rfile.Get(list_name_up)
+                        print "%s : EventList found at %s"%(b.name, os.path.abspath(save_name_up))
+                        if dbg : list.Print()
+                        s.tree_up.SetEventList(list)
+                    else :
+                        draw_list = ">> " + list_name_up
+                        s.tree_up.Draw(draw_list, sel*cut)
+                        list = r.gROOT.FindObject(list_name_up)
+                        s.tree_up.SetEventList(list)
+                        list.SaveAs(save_name_up)
+
+                    # down variation
+                        
+                    list_name_dn = "list_" + reg.name + "_" + b.treename + "_" + s.name + "_DN"
+                    save_name_dn = "./" + indir + "/lists/" + list_name_dn + ".root"
+
+                    if not s.isOneSided() :
+                        if os.path.isfile(save_name_dn) :
+                            rfile = r.TFile.Open(save_name_dn)
+                            list = rfile.Get(list_name_dn)
+                            print "%s : EventList found at %s"%(b.name, os.path.abspath(save_name_dn))
+                            if dbg : list.Print()
+                            s.tree_down.SetEventList(list)
+                        else :
+                            draw_list = ">> " + list_name_dn
+                            s.tree_down.Draw(draw_list, sel*cut)
+                            list = r.gROOT.FindObject(list_name_dn)
+                            s.tree_down.SetEventList(list)
+                            list.SaveAs(save_name_dn)
+
         # do data
 
         if data :
-            data_list_name = "list_" + reg.simplename + "_" + data.treename
+            data_list_name = "list_" + reg.name + "_" + data.treename
             data_save_name = "./" + indir + "/lists/" + data_list_name + ".root"
             if os.path.isfile(data_save_name) :
                 #rfile = r.TFile.Open(data_list_name+".root")

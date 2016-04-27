@@ -69,6 +69,13 @@ def getSystHistos(plot_, reg, bkg, syst, histname) :
         
 
     if syst.isWeightSys() :
+        #weight_up = "eventweight * pupw_up"
+        #weight_dn = "eventweight * pupw_down"
+        #weight_up = "eventweight * pupw * syst_PILEUPUP"
+        #weight_dn = "eventweight * pupw * syst_PILEUPDOWN"
+        #cut_up = "(" + reg.tcut + ") * " + weight_up + " * " + str(bkg.scale_factor)
+        #cut_dn = "(" + reg.tcut + ") * " + weight_dn + " * " + str(bkg.scale_factor)
+
         cut_up = "(" + reg.tcut + ") * eventweight * " + str(syst.up_name) + " * " + str(bkg.scale_factor)
         cut_dn = "(" + reg.tcut + ") * eventweight * " + str(syst.down_name) + " * " + str(bkg.scale_factor)
         cut_up = r.TCut(cut_up)
@@ -136,8 +143,8 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
     hax.GetXaxis().SetLabelFont(42)
     hax.GetXaxis().SetLabelSize(0.035)
     hax.GetXaxis().SetTitleSize(0.048 * 0.85)
- #   hax.GetXaxis().SetTitleOffset(-999)
- #   hax.GetXaxis().SetLabelOffset(-999)
+    hax.GetXaxis().SetTitleOffset(-999)
+    hax.GetXaxis().SetLabelOffset(-999)
 
     hax.GetYaxis().SetTitle(plot_.y_label)
     hax.GetYaxis().SetTitleFont(42)
@@ -185,8 +192,7 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
         h.SetLineColor(r.kBlack)
         h.SetLineWidth(2*h.GetLineWidth())
         h.SetFillStyle(0)
-    #    h.GetXaxis().SetLabelOffset(-999)
-    #    h.Sumw2()
+        h.GetXaxis().SetLabelOffset(-999)
 
         # cut and make the sample wait
         cut = "(" + region.tcut + ") * eventweight * " + str(b.scale_factor)
@@ -242,6 +248,7 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
     nom_total.SetLineColor(r.kBlack)
     nom_total.SetLineWidth(1*nom_total.GetLineWidth())
     nom_total.SetFillStyle(0)
+    leg.AddEntry(nom_total, "Nominal", "l")
 
     up_total = up_stack.GetStack().Last().Clone("up_total")
     up_total.SetMaximum(plot_.y_range_max)
@@ -249,6 +256,12 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
     up_total.SetLineColor(46)
     up_total.SetLineWidth(1*up_total.GetLineWidth())
     up_total.SetFillStyle(0)
+    var_up = ""
+    if "JER" in syst.name :
+        var_up = "Variation"
+    else :
+        var_up = "Up-Variation"
+    leg.AddEntry(up_total, var_up, "l")
 
     if "JER" not in syst.name :
         down_total = down_stack.GetStack().Last().Clone("down_total")
@@ -257,6 +270,7 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
         down_total.SetLineColor(38)
         down_total.SetLineWidth(1*down_total.GetLineWidth())
         down_total.SetFillStyle(0)
+        leg.AddEntry(down_total, "Down-Variation", "l")
 
     ############################# draw!
     nom_total.Draw("hist")
@@ -268,6 +282,55 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
     r.gPad.SetTickx()
     r.gPad.SetTicky()
     rcan.upper_pad.Update()
+
+    ############################ words
+    pu.draw_text(text="#it{ATLAS} Preliminary", x= 0.18, y = 0.85)
+    pu.draw_text(text="13 TeV, 3.2/fb", x=0.18,y=0.8)
+    pu.draw_text(text=region.displayname, x=0.18,y=0.75)
+    pu.draw_text(text=syst.name,x=0.18,y=0.7)
+    rcan.upper_pad.Update()
+
+
+    ############################# ratios
+    rcan.lower_pad.cd()
+
+    up_ratio = up_total.Clone("up_ratio")
+    up_ratio.Divide(nom_total)
+
+    down_ratio = down_total.Clone("down_ratio")
+    down_ratio.Divide(nom_total)
+
+    ## axis for lower pad
+    yax = up_ratio.GetYaxis()
+    yax.SetRangeUser(0,2)
+    yax.SetTitle("Variation/Nominal")
+    yax.SetTitleSize(nom_total.GetYaxis().GetTitleSize())
+ #   yax.SetTitleSize(0.14 * 0.5)
+    yax.SetLabelSize(nom_total.GetYaxis().GetLabelSize())
+ #   yax.SetLabelSize(0.13)
+    yax.SetLabelOffset(1.2 * nom_total.GetYaxis().GetLabelOffset())
+ #   yax.SetLabelOffset(0.98 * 0.013)
+#    yax.SetTitleOffset(0.45)
+    yax.SetTitleOffset(nom_total.GetYaxis().GetTitleOffset())
+    yax.SetLabelFont(42)
+    yax.SetTitleFont(42)
+    yax.SetNdivisions(5)
+
+    xax = up_ratio.GetXaxis()
+    xax.SetTitleSize(1.2 * 0.14)
+    xax.SetLabelSize(0.13)
+    xax.SetLabelOffset(1.15*0.02)
+    xax.SetTitleOffset(0.85 * xax.GetTitleOffset())
+    xax.SetLabelFont(42)
+    xax.SetTitleFont(42)
+
+
+    up_ratio.Draw("hist")
+    down_ratio.Draw("hist same")
+    rcan.lower_pad.Update()
+    
+
+    
 
 
     ########################### save

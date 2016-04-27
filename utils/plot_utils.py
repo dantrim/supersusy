@@ -299,10 +299,12 @@ def add_to_band(g1, g2) :
             if y0 > 0 :
                 eyh = eyhigh
                 eyh = sqrt(eyh*eyh + y0*y0)
+                print "  -> EYH : ", eyh
                 g2.SetPointEYhigh(i,eyh)
             else :
                 eyl = eylow
                 eyl = sqrt(eyl*eyl + y0*y0)
+                print "  -> EYL : ", eyl
                 g2.SetPointEYlow(i,eyl)
 
 # ----------------------------------------------

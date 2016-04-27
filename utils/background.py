@@ -95,7 +95,7 @@ class Background :
     def set_tree(self) :
         tree_name = ""
         if "CENTRAL" in self.file :
-            tree_name = "id_" + str(self.dsid)
+            tree_name = "superNt"
         elif "superTruth" in self.file :
             tree_name = "superTruth"
         else :
@@ -192,13 +192,22 @@ class Background :
         this_syst = systematic.Systematic(syst_.name, syst_.up_name, syst_.down_name)
         if syst_.isWeightSys() :
             this_syst.setWeightSys()
+            if "syst_syst_" in this_syst.name :
+                name = this_syst.name.replace("syst_syst_", "syst_")
+                this_syst.name = name
             this_syst.tree = self.tree
 
         elif syst_.isKinSys() and not syst_.isOneSided() :
             this_syst.setKinSys()
             file = self.file
-            up_tree_name = self.name + "_" + syst_.name + "_" + syst_.up_name
-            down_tree_name = self.name + "_" + syst_.name + "_" + syst_.down_name
+            up_tree_name = self.name + "_" + syst_.up_name
+            down_tree_name = self.name + "_" + syst_.down_name
+            #spacer = "_"
+            #if "SoftTrk_Scale" in this_syst.name : spacer = ""
+            #up_tree_name = self.name + "_" + syst_.name + spacer + syst_.up_name
+            #down_tree_name = self.name + "_" + syst_.name + spacer + syst_.down_name
+            #up_tree_name = self.name + "_" + syst_.name + "_" + syst_.up_name
+            #down_tree_name = self.name + "_" + syst_.name + "_" + syst_.down_name
 
             upchain = r.TChain(up_tree_name)
             downchain = r.TChain(down_tree_name)
