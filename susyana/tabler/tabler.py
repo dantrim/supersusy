@@ -49,10 +49,10 @@ def set_eventlists(regions, backgrounds, data) :
 
     for reg in regions :
         # set event lists, if they already exist then load them
-        print "Setting EventLists for %s"%reg.simplename
+        print "Setting EventLists for %s"%reg.name
         cut = ""
         if reg.isCutFlow() :
-            print "Not setting event list for region (%s) marked as a cutflow!"%(reg.simplename)
+            print "Not setting event list for region (%s) marked as a cutflow!"%(reg.name)
             continue 
         else :
             cut = reg.tcut
@@ -60,7 +60,7 @@ def set_eventlists(regions, backgrounds, data) :
         cut = r.TCut(cut)
         sel = r.TCut("1")
         for b in backgrounds :
-            list_name = "list_" + reg.simplename + "_" + b.treename
+            list_name = "list_" + reg.name + "_" + b.treename
             save_name = "./" + indir + "/lists/" + list_name + ".root"
 
             # check if the list exists
@@ -78,7 +78,7 @@ def set_eventlists(regions, backgrounds, data) :
                 list.SaveAs(save_name)
 
         if data :
-            data_list_name = "list_" + reg.simplename + "_" + data.treename
+            data_list_name = "list_" + reg.name + "_" + data.treename
             data_save_name = "./" + indir + "/lists/" + data_list_name + ".root"
             if os.path.isfile(data_save_name) :
                 rfile = r.TFile.Open(data_save_name)
@@ -97,11 +97,12 @@ def set_eventlists(regions, backgrounds, data) :
 ## get the yield for a bkg provided a specific cut
 def getCutYield(tcut, bkg, cutNumber) :
     # create a canvas to prevent ROOT from telling us its doing things
-    c = r.TCanvas("c_"+b.treename+"_cutflow_"+str(cutNumber), "", 800, 600)
+    c = r.TCanvas("c_"+bkg.treename+"_cutflow_"+str(cutNumber), "", 800, 600)
     c.cd()
 
-    h = pu.th1f("h_"+b.treename+"_cutflow_"+str(cutNumber), "", 4, 0, 1,"","")
-    cut = "(" + tcut + ") * eventweight * " + str(b.scale_factor)
+    h = pu.th1f("h_"+bkg.treename+"_cutflow_"+str(cutNumber), "", 4, 0, 1,"","")
+    #cut = "(" + tcut + ") * " + str(b.scale_factor)
+    cut = "(" + tcut + ") * eventweight * " + str(bkg.scale_factor)
     cut = r.TCut(cut)
     sel = r.TCut("1")
     cmd = "isMC>>%s"%h.GetName()
@@ -181,13 +182,14 @@ def get_yield(background, tcut, isData) :
 
     cut = ""
     if not isData :
-        cut = "(" + tcut + ") * eventweight * " + str(b.scale_factor)
+        #cut = "(" + tcut + ") * " + str(b.scale_factor)
+        cut = "(" + tcut + ") * eventweight * " + str(background.scale_factor)
     else :
         cut = "(" + tcut + ")"
 
     cut = r.TCut(cut)
     sel = r.TCut("1")
-    h = pu.th1f("h_"+b.treename+"_yield_", "", 4, 0, 1,"","")
+    h = pu.th1f("h_"+background.treename+"_yield_", "", 4, 0, 1,"","")
     cmd = "%s>>%s"%("isMC", h.GetName())
     background.tree.Draw(cmd, cut * sel, "goff") 
 
