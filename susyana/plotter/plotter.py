@@ -160,7 +160,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
 
     stack = r.THStack("stack_"+plot.name, "")
     # legend
-    leg = pu.default_legend(xl=0.62,yl=0.68,xh=0.93,yh=0.90)
+    leg = pu.default_legend(xl=0.55,yl=0.65,xh=0.93,yh=0.90)
+    #leg = pu.default_legend(xl=0.62,yl=0.68,xh=0.93,yh=0.90)
     #leg = pu.default_legend(xl=0.65,yl=0.72,xh=0.93,yh=0.90)
     leg.SetNColumns(2)
 
@@ -200,7 +201,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         # add overflow
         pu.add_overflow_to_lastbin(h)
 
-        leg.AddEntry(h, b.displayname, "fl")
+        leg.AddEntry(h, b.displayname, "f")
         histos.append(h)
         rcan.upper_pad.Update()
 
@@ -334,10 +335,13 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     r.gPad.RedrawAxis()
 
     # add some text/labels
-    pu.draw_text_on_top(text=plot.name)
-    pu.draw_text(text="#it{ATLAS} Work in Progress",x=0.18,y=0.85)
-    pu.draw_text(text="13 TeV, 3.2 fb^{-1}",x=0.18,y=0.8)
-    pu.draw_text(text=reg.displayname, x=0.18,y=0.75)
+    #pu.draw_text_on_top(text=plot.name)
+    pu.draw_text(text="#bf{#it{ATLAS}} Internal",x=0.18,y=0.85, size=0.06)
+    pu.draw_text(text="13 TeV, 3.2/fb",x=0.18,y=0.79, size=0.04)
+    pu.draw_text(text=reg.displayname,      x=0.18,y=0.74, size=0.04)
+    #pu.draw_text(text="#it{ATLAS} Internal",x=0.18,y=0.85)
+    #pu.draw_text(text="13 TeV, 3.2 fb^{-1}",x=0.18,y=0.8)
+    #pu.draw_text(text=reg.displayname, x=0.18,y=0.75)
 
     r.gPad.SetTickx()
     r.gPad.SetTicky()
@@ -447,9 +451,11 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
 
     leg = None
     if plot.leg_is_left : leg = pu.default_legend(xl=0.2,yl=0.7,xh=0.47, yh=0.87)
-    elif plot.leg_is_bottom_right : leg = pu.default_legend(xl=0.7, yl=0.2,xh=0.97,yh=0.37)
+    elif plot.leg_is_bottom_right : leg = pu.default_legend(xl=0.7, yl=0.17,xh=0.97,yh=0.41)
+    #elif plot.leg_is_bottom_right : leg = pu.default_legend(xl=0.7, yl=0.2,xh=0.97,yh=0.37)
     elif plot.leg_is_bottom_left : leg = pu.default_legend(xl=0.2,yl=0.2,xh=0.47,yh=0.37)
-    else : leg = pu.default_legend(xl=0.7,yl=0.7,xh=0.97,yh=0.87)
+    else : leg = pu.default_legend(xl=0.7,yl=0.65,xh=0.97,yh=0.87)
+    #else : leg = pu.default_legend(xl=0.7,yl=0.7,xh=0.97,yh=0.87)
 
     histos = []
     maxy = []
@@ -579,6 +585,19 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
 
     maxy_ = 1.25*max(maxy)
 
+    if "cosThetaB" in plot.name :
+        maxy_ = 0.15
+    elif "DPB_vSS" in plot.name :
+        maxy_ = 0.1
+    elif "gamInvRp1" in plot.name :
+        maxy_ = 0.6
+    elif "MDR" in plot.name :
+        maxy_ = 10
+    elif "RPT" in plot.name :
+        maxy_ = 8
+    else :
+        maxy_ = 100
+
     is_first = True
     for hist in histos :
         if is_first :
@@ -591,7 +610,9 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
     # legend
     leg.Draw()
 
-    pu.draw_text_on_top(text=plot.name)
+    pu.draw_text(text="#it{ATLAS} Internal",x=0.18,y=0.83, size = 0.06)
+    pu.draw_text(text="DF Preselection + b-veto",x=0.18,y=0.78)
+    #pu.draw_text_on_top(text=plot.name)
 
     outname = plot.name + ".eps"
     c.SaveAs(outname)
@@ -1045,10 +1066,11 @@ def make_plots2D(plot, reg, data, backgrounds) :
     g.Draw(plot.style)
 
     # write descriptive text on top of the pad
-    pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name,name_on_plot))
+    #pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name,name_on_plot))
 
     h.Draw(plot.style)
-    pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name,name_on_plot))
+    pu.draw_text_on_top(text="DF pre-selection + b-veto: #bf{%s}"%(name_on_plot))
+    #pu.draw_text_on_top(text="%s : #bf{%s}"%(plot.name,name_on_plot))
 
     c.Update()
 
