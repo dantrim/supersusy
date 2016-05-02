@@ -147,8 +147,9 @@ def set_ratio_style(histo, where="mid", xlabel="") :
 
         # y-axis
         histo.GetYaxis().SetTitle("Z_{n} #downarrow")
-        histo.GetYaxis().SetTitleOffset(0.3 * histo.GetYaxis().GetTitleOffset())
-        histo.GetYaxis().SetTitleSize(4.0 * histo.GetYaxis().GetTitleSize())
+        histo.GetYaxis().SetTitleOffset(0.2 * histo.GetYaxis().GetTitleOffset())
+        #histo.GetYaxis().SetTitleOffset(0.3 * histo.GetYaxis().GetTitleOffset())
+        histo.GetYaxis().SetTitleSize(1.52*4.0 * histo.GetYaxis().GetTitleSize())
         histo.GetYaxis().SetTitleFont(42)
         histo.GetYaxis().SetLabelFont(42)
         histo.GetYaxis().SetLabelSize(2.0 * histo.GetYaxis().GetLabelSize())
@@ -224,7 +225,8 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
     stack = r.THStack("stack_"+plot.name, "")
 
     # legend
-    leg = pu.default_legend(xl=0.65, yl=0.72, xh=0.93, yh=0.90)
+    leg = pu.default_legend(xl=0.5, yl=0.6, xh=0.93, yh=0.90)
+    #leg = pu.default_legend(xl=0.65, yl=0.72, xh=0.93, yh=0.90)
     leg.SetNColumns(2)
 
     ### loop through the background MC and add to stack
@@ -292,7 +294,8 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
     
     histos_leg = sorted(histos, key = lambda h: h.Integral(), reverse = True)
     for hl in histos_leg :
-        leg.AddEntry(hl, hist_dict[hl.GetName()], "fl")
+        leg.AddEntry(hl, hist_dict[hl.GetName()], "f")
+        #leg.AddEntry(hl, hist_dict[hl.GetName()], "fl")
     ### total SM histo
     totalSM = stack.GetStack().Last().Clone("totalSM")
 
@@ -383,9 +386,10 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
     ratiocan.canvas.Update()
     r.gPad.RedrawAxis()
 
-    pu.draw_text_on_top(text=reg.tcut, size = 0.02)
-    pu.draw_text(text="#it{ATLAS} Work in Progress",x=0.18,y=0.85)
-    pu.draw_text(text="13 TeV, 1.7 fb^{-1}", x=0.18,y=0.8)
+    #pu.draw_text_on_top(text=reg.tcut, size = 0.02)
+    pu.draw_text(text="#it{ATLAS} Internal",x=0.18,y=0.83, size = 0.06)
+    pu.draw_text(text="13 TeV, 10/fb", x=0.18,y=0.73, size = 0.06)
+    #pu.draw_text(text="13 TeV, 10 fb^{-1}", x=0.18,y=0.8)
 
     #########################
     ## now draw zn
