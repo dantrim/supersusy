@@ -32,7 +32,7 @@ backgrounds = []
 
 lumi = {}
 lumi[3.21] = 1.0
-lumi[10.0] = 6.23
+lumi[10.0] = 3.12
 
 lumi_val = 10.0
 
@@ -43,12 +43,28 @@ ttbar.set_treename("ttbar_powheg")
 ttbar.set_chain_from_list_CONDOR(filelist_dir + "ttbar/", rawdir)
 backgrounds.append(ttbar)
 
+## singletop
+stop = background.Background("st", "Single top")
+stop.scale_factor = lumi[lumi_val]
+stop.set_treename("ST")
+stop.set_chain_from_list_CONDOR(filelist_dir + "singletop/", rawdir)
+backgrounds.append(stop)
+
+## diboson
+diboson = background.Background("vv", "VV (Sherpa)")
+diboson.scale_factor = lumi[lumi_val]
+diboson.set_treename("diboson_sherpa")
+diboson.set_chain_from_list_CONDOR(filelist_dir + "diboson_sherpa/", rawdir)
+backgrounds.append(diboson)
+
 
 ###############################################
 # prepare the signal configuration
 ###############################################
 
-signal_file_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0222/apr17/mc/Raw/" 
+#signal_file_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0222/apr17/mc/Raw/" 
+signal_file_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0222/apr17/sigB/Raw/"
+#signal_grid = "bWN"
 signal_grid = "bWNnew"
 signal_scale_factor = lumi[lumi_val]
 
@@ -76,13 +92,13 @@ znreg.setParent(True)
 
 # subregions
 znregEE = znregion.ZnRegion("mwsel_ee", "mwsel_ee", 1.1)
-znregEE.setTcut(isEEOS + " && nBJets==0")
+znregEE.setTcut(isEEOS + " && MDR>90 && RPT>0.65 && gamInvRp1>0.65 && DPB_vSS>(1.1*abs(cosThetaB)+1.8) && nBJets==0")
 
 znregMM = znregion.ZnRegion("mwsel_mm", "mwsel_mm", 1.2)
-znregMM.setTcut(isMMOS + " && nBJets==0")
+znregMM.setTcut(isMMOS + " && MDR>90 && RPT>0.65 && gamInvRp1>0.65 && DPB_vSS>(1.1*abs(cosThetaB)+1.8) && nBJets==0")
 
 znregDF = znregion.ZnRegion("mwsel_df", "mwsel_df", 1.3)
-znregDF.setTcut(isDFOS + " && nBJets==0")
+znregDF.setTcut(isDFOS + " && MDR>90 && RPT>0.65 && gamInvRp1>0.65 && DPB_vSS>(1.1*abs(cosThetaB)+1.8) && nBJets==0")
 
 
 
@@ -93,6 +109,32 @@ znreg.add_orthogonal_subregion(znregDF)
 
 regions.append(znreg)
 
+
+####################
+## mtselection
+####################
+
+znregMT = znregion.ZnRegion("mtsel", "mtsel", 2)
+znregMT.setParent(True)
+
+# subregions
+znregMTEE = znregion.ZnRegion("mtsel_ee", "mtsel_ee", 2.1)
+znregMTEE.setTcut(isEEOS + " && MDR>110 && RPT>0.65 && gamInvRp1>0.65 && DPB_vSS>(1.1*abs(cosThetaB)+1.8) && nBJets>0")
+
+znregMTMM = znregion.ZnRegion("mtsel_mm", "mtsel_mm", 2.2)
+znregMTMM.setTcut(isMMOS + " && MDR>110 && RPT>0.65 && gamInvRp1>0.65 && DPB_vSS>(1.1*abs(cosThetaB)+1.8) && nBJets>0")
+
+znregMTDF = znregion.ZnRegion("mtsel_df", "mtsel_df", 2.3)
+znregMTDF.setTcut(isDFOS + " && MDR>110 && RPT>0.65 && gamInvRp1>0.65 && DPB_vSS>(1.1*abs(cosThetaB)+1.8) && nBJets>0")
+
+
+
+# add mwsel subregions
+znregMT.add_orthogonal_subregion(znregMTEE)
+znregMT.add_orthogonal_subregion(znregMTMM)
+znregMT.add_orthogonal_subregion(znregMTDF)
+
+regions.append(znregMT)
 
 
 

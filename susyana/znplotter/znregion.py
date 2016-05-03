@@ -50,6 +50,8 @@ class ZnRegion :
         self.orthogonal_subregions.append(region_)
         if self.dbg() :
             print "ZnRegion::add_orthogonal_subregion    %s added subregion %s"%(self.name, region_.name)
+    def get_subregions(self) :
+        return self.orthogonal_subregions
 
     def getTcut(self) :
         return self.tcut

@@ -27,6 +27,8 @@ import supersusy.utils.background as background
 import supersusy.susyana.znplotter.znregion as znregion
 import supersusy.susyana.znplotter.znsignal as znsignal
 
+import array
+
 
 def get_optConfig(conf_) :
     configuration_file = ""
@@ -135,7 +137,7 @@ def get_yield(bkg_, tcut, region_name) :
     cut = "(" + tcut + ") * eventweight * " + str(bkg_.scale_factor)
     cut = r.TCut(cut)
     sel = r.TCut("1")
-    h = pu.th1f("h_" + bkg_.name + "_yield_" + region_name, "", 4, 0, 1, "", "")
+    h = pu.th1f("h_" + bkg_.name + "_yield_" + region_name, "", 4, 0, 4, "", "")
     cmd = "%s>>%s"%("isMC", h.GetName())
     bkg_.tree.Draw(cmd, cut * sel, "goff") 
 
@@ -153,7 +155,8 @@ def get_signal_yield(sig_, tcut, region_name, extra_weight = "") :
         cut = "(" + tcut + ") * eventweight * " + str(sig_.scale_factor) 
     cut = r.TCut(cut) 
     sel = r.TCut("1")
-    h = pu.th1f("h_" + sig_.name + "_yield_" + region_name, "", 4, 0, 1, "", "")
+    hname = "%.0f_%.0f"%(sig_.mx, sig_.my)
+    h = pu.th1f("h_" + hname + "_yield_" + region_name, "", 4, 0, 4, "", "")
     cmd = "%s>>%s"%("isMC", h.GetName())
     sig_.tree.Draw(cmd, cut * sel, "goff")
 
@@ -161,11 +164,7 @@ def get_signal_yield(sig_, tcut, region_name, extra_weight = "") :
     integral = h.IntegralAndError(0, -1, err)
     h.Delete()
     return integral
-    
-        
 
-    
-            
 def get_significance(bkgs_, sigs_, reg_, metric = "", rel_uncer = 0.0) :
 
     ###########################
@@ -178,7 +177,10 @@ def get_significance(bkgs_, sigs_, reg_, metric = "", rel_uncer = 0.0) :
         n_bkg_err += stat_err * stat_err
     n_bkg_err = sqrt(n_bkg_err)
 
-    total_rel_error = sqrt( (n_bkg_err/n_bkg)**2 + (rel_uncer)**2)
+    if n_bkg > 0 :
+        total_rel_error = sqrt( (n_bkg_err/n_bkg)**2 + (rel_uncer)**2)
+    else :
+        total_rel_error = rel_uncer
 
     ########################
     ## get the signal yields
@@ -187,11 +189,13 @@ def get_significance(bkgs_, sigs_, reg_, metric = "", rel_uncer = 0.0) :
 
         significance = 0
 
+        #integral = get_signal_yield(sig, reg_.getTcut(), reg_.name, "1")
         integral = get_signal_yield(sig, reg_.getTcut(), reg_.name, "susy3BodyRightPol")
         sig.yields[reg_.name] = integral
 
         if metric == "Zn" :
             zn = r.RooStats.NumberCountingUtils.BinomialExpZ(integral, n_bkg, total_rel_error)
+           # print "%s : %s : %.2f"%(reg_.name, sig.getName(), zn)
             if zn < 0 : zn = 0.001
             significance = zn
 
@@ -202,6 +206,240 @@ def get_significance(bkgs_, sigs_, reg_, metric = "", rel_uncer = 0.0) :
         sig.significance_dict[reg_.name] = significance
 
     
+def combine_subregion_significance(reg_, sigs_) :
+
+    parent_region_name = reg_.name
+    child_region_names = []
+    for ch in reg_.get_subregions() :
+        child_region_names.append(ch.name)
+
+    # now add in quad the sign for each signal point
+    # and store it
+    for s in sigs_ :
+        zn_comb = 0.0
+        for ch in child_region_names :
+            zn_ = s.significance_dict[ch]
+            zn_comb += zn_ * zn_
+        zn_comb = sqrt(zn_comb)
+
+        s.significance_dict[parent_region_name] = zn_comb
+
+def do_pwc_combination(region_names_, sigs_) :
+    """
+    pick the region from the list of parent regions
+    'region_names_' that gives the largest
+    significance for a given point
+    """
+
+    for s in sigs_ :
+        significances = {}
+        for reg_name in region_names_ :
+            significances[reg_name] = s.significance_dict[reg_name]
+
+        # get the region name associated with the largest
+        # significance
+        best_region = max(significances, key = lambda i: significances[i])
+
+        self.best_region = best_region
+        self.best_significance = significances[best_region]
+
+
+def do_quad_combination(region_names_, sigs_) :
+    """
+    add in quadrature the significances for each
+    of the parent regions whose names are provided
+    in 'region_names_'
+    """
+
+    for s in sigs_ :
+        s.best_region = "COMB"
+        zn_comb = 0.0
+        significances = []
+        for reg_name in region_names_ :
+            significances.append(s.significance_dict[reg_name])
+        for signif_ in significances :
+            zn_comb += signif_ * signif_
+        zn_comb = sqrt(zn_comb)
+        s.best_significance = zn_comb
+
+def get_best_significance(regs_, sigs_) :
+
+    parent_region_names = []
+    region_ids = []
+    for reg_ in regs_ :
+        if not reg_.isParent() : continue
+        if reg_.getId() not in region_ids :
+            region_ids.append(reg_.getId())
+        parent_region_names.append(reg_.getName())
+
+    if len(region_ids) < len(parent_region_names) :
+        print "znplotter::get_best_significance    INFO Treating regions as non-orthogonal"
+        print "znplotter::get_best_significance    INFO  -> Will do PWC to combine significances between regions"
+        do_pwc_combination(parent_region_names, sigs_)
+
+    elif len(region_ids) == len(parent_region_names) :
+        print "znplotter::get_best_significance    INFO Treating regions as orthogonal"
+        print "znplotter::get_best_significance    INFO  -> Will add in quadrature the significance of parent regions for the combination"
+        do_quad_combination(parent_region_names, sigs_)
+
+    else :
+        print "znplotter::get_best_significance    ERROR Unhandled situation!"
+        sys.exit()
+
+
+################################################################
+## PLOTTING
+################################################################
+
+# set color palette to please your eyes
+def set_palette(name='', ncontours=999) :
+    if name == "gray" or name == "grayscale" :
+        stops = [0.00, 0.34, 0.61, 0.84, 1.00]
+        red   = [1.00, 0.84, 0.61, 0.34, 0.00]
+        green = [1.00, 0.84, 0.61, 0.34, 0.00]
+        blue  = [1.00, 0.84, 0.61, 0.34, 0.00] 
+    else :
+        stops = [0.00, 0.34, 0.61, 0.84, 1.00]
+        red   = [0.00, 0.00, 0.87, 1.00, 0.51]
+        green = [0.00, 0.81, 1.00, 0.20, 0.00]
+        blue  = [0.51, 1.00, 0.12, 0.00, 0.00] 
+
+    s = array.array('d', stops)
+    R = array.array('d', red)
+    g = array.array('d', green)
+    b = array.array('d', blue)
+    
+    npoints = len(s)
+    r.TColor.CreateGradientColorTable(npoints, s, R, g, b, ncontours)
+    r.gStyle.SetNumberContours(ncontours)
+
+def make_frame(grid_name) :
+    n_bins = 100
+    frame = r.TH2F("frame", "#scale[0.8]{%s}"%grid_name, n_bins, 100, 450, n_bins, 0, 425)
+
+    frame.SetLabelOffset( 0.012, "X" )
+    frame.SetLabelOffset( 0.012, "Y" )
+
+    frame.GetXaxis().SetTitleOffset( 1.33 )
+    frame.GetYaxis().SetTitleOffset( 1.47 )
+
+    frame.GetXaxis().SetLabelSize( 0.035 )
+    frame.GetYaxis().SetLabelSize( 0.035 )
+    frame.GetXaxis().SetTitleSize( 0.04 )
+    frame.GetYaxis().SetTitleSize( 0.04 )
+
+    frame.GetXaxis().SetTitleFont( 42 )
+    frame.GetYaxis().SetTitleFont( 42 )
+    frame.GetXaxis().SetLabelFont( 42 )
+    frame.GetYaxis().SetLabelFont( 42 )
+
+    r.gPad.SetTicks()
+    r.gPad.SetLeftMargin( 1.2*0.13 )
+    r.gPad.SetRightMargin( 2*0.08 )
+    r.gPad.SetBottomMargin( 1.2*0.120 )
+    r.gPad.SetTopMargin( 1.1*0.060 )
+
+    return frame
+
+def get_forbidden_lines(grid_name) :
+
+    out_lines = []
+    if grid_name == "bWN" or grid_name == "bWNnew" :
+
+        x_low = 100.0
+        y_low = 0.0
+
+        # delta m = m_w + m_b line
+        y_high_w = 350
+        slope = 1.0
+        y_w = slope * x_low - 84.8
+        beginx = x_low
+        endx_w = 1.2*365 
+
+        line_w = r.TLine(beginx, y_w, endx_w, endx_w * slope - 84.8)
+        line_w.SetLineStyle(9)
+        line_w.SetLineWidth(2)
+        line_w.SetLineColor(r.kGray+2)
+        out_lines.append(line_w)
+
+        # delta m = m_t line
+        beginx = 172.5
+        #y_t = slope * x_low - 172.5
+        y_t = 0.0
+        endx_t = 450
+
+        line_t = r.TLine(beginx, y_t, endx_t, endx_t * slope - 172.5)
+        #line_t = r.TLine(beginx, y_t, endx_t, endx_t * slope - 172.5)
+        line_t.SetLineStyle(9)
+        line_t.SetLineWidth(2)
+        line_t.SetLineColor(r.kGray+2)
+        out_lines.append(line_t)
+        
+    else :
+        print "znplotter::get_forbidden_lines    WARNING Unhandled grid provided ('%s')"%grid_name
+        print "znplotter::get_forbidden_lines    WARNING  > Will not provide kinematic boundary lines"
+
+    return out_lines
+
+
+def make_sensitivity_plot(sigs_, regs_, grid_name) :
+
+    set_palette()
+
+    canvas = r.TCanvas("c_sensitivity", "", 768, 768) 
+    canvas.cd()
+
+    frame = make_frame(grid_name)
+    frame.Draw("axis")
+    frame.GetXaxis().SetTitle("m_{#tilde{t}} [GeV]")
+    frame.GetYaxis().SetTitle("m_{#tilde{#chi_{0}}} [GeV]")
+    canvas.Update()
+
+    gr = r.TGraph2D(1)
+    gr.Clear()
+    #gr.SetTitle("g_sensitivity")
+    #gr.SetMarginBinsContent(0)
+    #gr.SetMaxIter(500000);
+    #gr.SetNpx(120)
+    #gr.SetNpy(120)
+    gr.SetMarkerStyle(r.kFullSquare)
+    gr.SetMarkerSize(2*gr.GetMarkerSize())
+
+    for s in sigs_ :
+        significance, x, y = 0.0, 0.0, 0.0
+        significance = s.best_significance
+        x = s.mx
+        y = s.my
+        if significance < 0.0 : significance = 0.0
+      #  if float(x) < 200 :
+      #      print "blah : ", float(x)
+      #      continue
+        gr.SetPoint(gr.GetN(), float(x), float(y), significance)
+
+    if gr.GetN() :
+        gr.Draw("colz same")
+    canvas.Update()
+
+    # for some reason have to do this after drawing the graph
+    tex = r.TLatex(0.0, 0.0, '')
+    tex.SetTextFont(42)
+    tex.SetTextSize(0.3*tex.GetTextSize())
+    for s in sigs_ :
+        significance = s.best_significance
+        if significance < 0.0 : significance = 0.0
+        tex.DrawLatex(float(s.mx), float(s.my), "%.2f"%significance)
+
+    forbidden_lines = get_forbidden_lines(grid_name)
+    for line_ in forbidden_lines :
+        line_.Draw()
+        canvas.Update()
+
+
+
+    #################################
+    # save
+
+    canvas.SaveAs("test.eps")
 
 
 
@@ -304,3 +542,23 @@ if __name__ == "__main__" :
 
     ## at this point we have the significance evaluated at each
     ## point of the grid --> just need to start plotting now
+
+    ## let's first combine any subregions
+    for reg in regions :
+        if reg.isParent() :
+            combine_subregion_significance(reg, signals)
+
+    for s in signals :
+        print s.significance_dict
+
+    ## now we have the significance for each sub-region and the 
+    ## significance for the combination of each sub-region
+
+    ## now find the best significance for a given point
+    ## > if the regions are orthogonal this will just
+    ## > combine them. if not, it will perform the PWC 
+    get_best_significance(regions, signals)
+
+    ## OK now we can start plotting
+    make_sensitivity_plot(signals, regions, signal_grid)
+

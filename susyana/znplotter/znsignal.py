@@ -23,6 +23,8 @@ class ZnSignal :
         self.yields = {} # { "region" : yield }
         self.significance_dict = {} # { "region" : significance }
 
+        self.best_region = ""
+        self.best_significance = 0.0
 
     def setFile(self, file_ = "") :
         self.file = file_
