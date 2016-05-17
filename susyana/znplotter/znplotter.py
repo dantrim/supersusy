@@ -15,6 +15,9 @@ sys.path.append(os.environ['SUSYDIR'])
 from glob import glob
 
 r.TH1F.__init__._creates = False
+r.TH2F.__init__._creates = False
+r.TCanvas.__init__._creates = False
+r.TGraph.__init__._creates = False
 r.TGraph2D.__init__._creates = False
 r.TLatex.__init__._creates = False
 
@@ -162,6 +165,8 @@ def get_signal_yield(sig_, tcut, region_name, extra_weight = "") :
 
     err = r.Double(0.0)
     integral = h.IntegralAndError(0, -1, err)
+    print " SIGNAL Yield (%s)> %s : %.2f +/- %.2f (%.2f)"%(region_name, sig_.getName(), integral, err, sqrt(integral))
+    #integral = integral - err
     h.Delete()
     return integral
 
@@ -189,8 +194,8 @@ def get_significance(bkgs_, sigs_, reg_, metric = "", rel_uncer = 0.0) :
 
         significance = 0
 
-        #integral = get_signal_yield(sig, reg_.getTcut(), reg_.name, "1")
-        integral = get_signal_yield(sig, reg_.getTcut(), reg_.name, "susy3BodyRightPol")
+        integral = get_signal_yield(sig, reg_.getTcut(), reg_.name, "1")
+        #integral = get_signal_yield(sig, reg_.getTcut(), reg_.name, "susy3BodyRightPol")
         sig.yields[reg_.name] = integral
 
         if metric == "Zn" :
@@ -240,8 +245,9 @@ def do_pwc_combination(region_names_, sigs_) :
         # significance
         best_region = max(significances, key = lambda i: significances[i])
 
-        self.best_region = best_region
-        self.best_significance = significances[best_region]
+        s.best_region = best_region
+        print "best region for %s : %s (%.2f)"%(s.getName(), best_region, significances[best_region])
+        s.best_significance = significances[best_region]
 
 
 def do_quad_combination(region_names_, sigs_) :
@@ -315,7 +321,7 @@ def set_palette(name='', ncontours=999) :
 
 def make_frame(grid_name) :
     n_bins = 100
-    frame = r.TH2F("frame", "#scale[0.8]{%s}"%grid_name, n_bins, 100, 450, n_bins, 0, 425)
+    frame = r.TH2F("frame", "", n_bins, 100, 450, 93, 0, 425)
 
     frame.SetLabelOffset( 0.012, "X" )
     frame.SetLabelOffset( 0.012, "Y" )
@@ -381,6 +387,82 @@ def get_forbidden_lines(grid_name) :
 
     return out_lines
 
+def get_contour(sigs_, sigma_ = 2, frame_hist = None) :
+    '''
+    Make a contour for the provided sigma value
+    '''
+
+    if not frame_hist :
+        print "znplotter::get_contour    ERROR Provided frame histogram is empty!"
+        sys.exit()
+
+    pval_ = -1
+    if sigma_ == 2 :
+        # draw a 2 sigma contour (e.g. exclusion)
+        pval_ = 0.05 
+    elif sigma_ == 3 :
+        # draw a 3 sigma contour
+        pval_ = 0.003
+    elif sigma_ == 5 :
+        # draw a 5 sigma contour
+        pval_ = 3e-7
+    else :
+        print "znplotter::get_contour    ERROR Requested sigma value (%.2f) is not handled!"%(sigma_)
+        sys.exit()
+
+    print "znplotter::get_contour    INFO Creating contour for %.2f-sigma"%sigma_
+
+    gr = r.TGraph2D()
+    gr.SetName("g_%dsigma"%sigma_)
+    gr.Clear()
+    #print "SIGS SIZE: ",len(sigs_)
+    for s in sigs_ :
+        significance = s.best_significance
+        if significance < 0.0 : significance = 0.0
+        x = float(s.mx)
+        y = float(s.my)
+        #print "setting contour point graph: (%.2f, %.2f, %.2f)"%(x, y, significance)
+        gr.SetPoint(gr.GetN(), x, y, float(significance))
+
+    #print "GR GET N: ", gr.GetN()
+
+    nbinsX = frame_hist.GetXaxis().GetNbins()
+    nbinsY = frame_hist.GetYaxis().GetNbins()
+    x_min = frame_hist.GetXaxis().GetXmin()
+    x_max = frame_hist.GetXaxis().GetXmax()
+    y_min = frame_hist.GetYaxis().GetXmin()
+    y_max = frame_hist.GetYaxis().GetXmax()
+
+    #print "nx: %d  ny: %d  xmin: %d  xmax: %d  ymin: %d  ymax: %d"%(nbinsX, nbinsY, x_min, x_max, y_min, y_max)
+
+    hist = None
+    hist = r.TH2F("tmp_hist_" + gr.GetName(), "", nbinsX, x_min, x_max, nbinsY, y_min, y_max)
+    hist.SetDirectory(0)
+    gr.SetHistogram(hist)
+    level = r.TMath.NormQuantile(1.0-pval_)
+    if gr.GetZmax() < level : return
+    h = gr.GetHistogram().Clone("tmp_hist_" + gr.GetName())
+    h.SetDirectory(0)
+    nPointsExcluded = len([1 for i in range(gr.GetN()) if gr.GetZ()[i] > level])
+    if nPointsExcluded < 3 :
+        print "znplotter::get_contour    WARNING Less than three points satisfy the contour for %.2f-sigma!"%sigma_
+        print "znplotter::get_contour    WARNING  > Will not draw contour for this level."
+        return None
+
+    c_ = r.TCanvas("tmp_can_" + gr.GetName(), "")
+    c_.cd()
+    #h.Smooth()
+    h.SetContour(1)
+    h.SetContourLevel(0, level)
+    h.Draw("CONT LIST")
+    r.gPad.Update()
+    c_.Draw()
+    contours = r.gROOT.GetListOfSpecials().FindObject("contours")
+    if contours.GetEntries() :
+        cont = contours.At(0).First()
+        contours.Delete()
+        h.Delete()
+        return cont
 
 def make_sensitivity_plot(sigs_, regs_, grid_name) :
 
@@ -404,6 +486,7 @@ def make_sensitivity_plot(sigs_, regs_, grid_name) :
     #gr.SetNpy(120)
     gr.SetMarkerStyle(r.kFullSquare)
     gr.SetMarkerSize(2*gr.GetMarkerSize())
+    gr.SetMaximum(5.0)
 
     for s in sigs_ :
         significance, x, y = 0.0, 0.0, 0.0
@@ -423,7 +506,7 @@ def make_sensitivity_plot(sigs_, regs_, grid_name) :
     # for some reason have to do this after drawing the graph
     tex = r.TLatex(0.0, 0.0, '')
     tex.SetTextFont(42)
-    tex.SetTextSize(0.3*tex.GetTextSize())
+    tex.SetTextSize(1.2*0.3*tex.GetTextSize())
     for s in sigs_ :
         significance = s.best_significance
         if significance < 0.0 : significance = 0.0
@@ -434,7 +517,86 @@ def make_sensitivity_plot(sigs_, regs_, grid_name) :
         line_.Draw()
         canvas.Update()
 
+    ###### get the contour
+    g_exc = None
+    g_3sig = None
+    g_5sig = None
 
+    g_exc =  get_contour(sigs_, sigma_ = 2, frame_hist = frame)
+    g_3sig = get_contour(sigs_, sigma_ = 3, frame_hist = frame)
+    g_5sig = get_contour(sigs_, sigma_ = 5, frame_hist = frame)
+
+    canvas.cd()
+    if g_exc :
+        g_exc.SetName("2-#sigma")
+        g_exc.SetLineWidth(2)
+        g_exc.SetLineStyle(2)
+        g_exc.SetLineColor(r.kRed)
+        g_exc.Draw("l same")
+    else :
+        g_exc = r.TGraph()
+        g_exc.SetName("2-#sigma")
+        g_exc.SetLineWidth(2)
+        g_exc.SetLineStyle(2)
+        g_exc.SetLineColor(r.kRed)
+    canvas.Update()
+
+    if g_3sig :
+        g_3sig.SetName("3-#sigma")
+        g_3sig.SetLineWidth(2)
+        g_3sig.SetLineStyle(1)
+        g_3sig.SetLineColor(r.kBlue)
+        g_3sig.Draw("l same")
+    else :
+        g_3sig = r.TGraph()
+        g_3sig.SetName("3-#sigma")
+        g_3sig.SetLineWidth(2)
+        g_3sig.SetLineStyle(1)
+        g_3sig.SetLineColor(r.kBlue)
+    canvas.Update()
+
+    if g_5sig :
+        g_5sig.SetName("5-#sigma")
+        g_5sig.SetLineWidth(2)
+        g_5sig.SetLineStyle(1)
+        g_5sig.SetLineColor(r.kBlack)
+        g_5sig.Draw("l same")
+    else :
+        g_5sig = r.TGraph()
+        g_5sig.SetName("5-#sigma")
+        g_5sig.SetLineWidth(2)
+        g_5sig.SetLineStyle(1)
+        g_5sig.SetLineColor(r.kBlack)
+    canvas.Update()
+
+
+    ################################
+    # legend
+    leg = pu.default_legend(xl=0.19,yl=0.65,xh=0.45,yh=0.74)
+    if g_exc :
+        leg.AddEntry(g_exc, "2#sigma (exclusion)", "l")
+    if g_3sig :
+        leg.AddEntry(g_3sig, "3#sigma", "l")
+    if g_5sig :
+        leg.AddEntry(g_5sig, "5#sigma", "l")
+    leg.Draw()
+    canvas.Update()
+
+    ##################################
+    # atlas
+    pu.draw_text(text="#bf{#it{ATLAS}} Internal",x=0.2, y = 0.87, size = 0.05)
+    pu.draw_text(text="13 TeV, 10/fb",x=0.2,y=0.82,size=0.04)
+    print 45*"*"
+    print "Hardcoding process formula onto canvas"
+    print 45*"*"
+    formula = "#tilde{t} #rightarrow bW#tilde{#chi}_{0}"
+    pu.draw_text(text=formula,x=0.21,y=0.77,size=0.03)
+    canvas.Update()
+
+    #################################
+    # z-axis
+    z_title = "Significance"
+    pu.draw_text(text=z_title,x=0.98,y=0.66,size=0.035, angle=90.0)
 
     #################################
     # save
