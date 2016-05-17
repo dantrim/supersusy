@@ -329,7 +329,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     hist_sm.Draw("hist same")
 
     # draw the data graph
-    gdata.Draw("option same pz")
+    gdata.Draw("option same pz 0")
     # draw the legend
     leg.Draw()
     r.gPad.RedrawAxis()
@@ -413,7 +413,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     ratio.SetMarkerSize(1.1)
     ratio.SetLineColor(1)
     ratio.SetMarkerSize(1.1)
-    ratio.Draw("option pz")
+    ratio.Draw("option pz 0")
     rcan.lower_pad.Update()
     
     ratioBand.Draw("same && E2")
