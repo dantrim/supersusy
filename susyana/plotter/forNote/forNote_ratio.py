@@ -41,6 +41,17 @@ stop.set_treename("ST")
 stop.set_chain_from_list_CONDOR(filelist_dir+ "singletop/", rawdir)
 backgrounds.append(stop)
 
+# singletop
+stop = background.Background("ttV", "tt+V")
+stop.set_debug()
+stop.scale_factor = lumi_[lumi_val]
+stop.set_fillStyle(0)
+stop.setLineStyle(1)
+stop.set_color(46)
+stop.set_treename("TTV")
+stop.set_chain_from_list_CONDOR(filelist_dir+ "ttV/", rawdir)
+backgrounds.append(stop)
+
 # diboson
 diboson = background.Background("vv", "VV (Sherpa)")
 diboson.set_debug()
@@ -262,28 +273,51 @@ regions.append(reg)
 
 
 
-reg = region.Region()
-reg.name = "crt"
-reg.displayname = "CR-Top"
-reg.tcut = "nLeptons==2 && " + isDF + " && nBJets>0 && MDR>30 && RPT>0.5 && DPB_vSS<(0.8*abs(cosThetaB)+1.8)"
-regions.append(reg)
-
-reg = region.Region()
-reg.name = "vrt"
-reg.displayname = "VR-Top"
-reg.tcut = "nLeptons==2 && " + isDF + " && nBJets==0 && nSJets>0 && MDR>30 && RPT<0.5 && DPB_vSS>(0.8*abs(cosThetaB)+1.8)"
-regions.append(reg)
+isDFOS = "nLeptons==2 && nElectrons==1 && nMuons==1 && l_pt[0]>20 && l_pt[1]>20 && (l_q[0]*l_q[1])<0"
 
 reg = region.Region()
 reg.name = "crv"
 reg.displayname = "CR-VV"
-reg.tcut = "nLeptons==2 && " + isDF + " && nBJets==0 && nSJets==0 && MDR>30 && RPT<0.5 && DPB_vSS<(0.8*abs(cosThetaB)+1.8) && DPB_vSS>(0.8*abs(cosThetaB)+1)"
+
+reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && RPT>0.2 && gamInvRp1>0.5 && nSJets<3"
+
+
+#reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && RPT<0.50 && RPT>0.2 && gamInvRp1>0.5 && nSJets<3"
+#reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && DPB_vSS>(0.85*abs(cosThetaB)+0.5) && RPT<0.5 && RPT>0.1 && gamInvRp1>0.5 && nSJets<3"
+
+#reg.tcut = isDFOS + " && nBJets==0 && nSJets<3 && MDR>40 && DPB_vSS>1.5 && abs(cosThetaB)>0.55 && RPT<0.5" 
+#reg.tcut = isDFOS + " && nBJets==0 && nSJets<3 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && DPB_vSS>(0.85*abs(cosThetaB)+1) && abs(cosThetaB)>0.25"
+
+#reg.tcut = isDFOS + " && nBJets==0 && nSJets<3 && MDR>30 && RPT<0.5 && DPB_vSS>1.8 && abs(cosThetaB)>0.5"
+#reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && gamInvRp1<0.5 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && l_pt[0]>30"
+#reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && RPT<0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && RPT>0.1 && nSJets<3" #&& DPB_vSS>(0.85*abs(cosThetaB)+1) && RPT>0.1 && nSJets<3"
+
+# test 1
+#reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && DPB_vSS>1.8 && RPT<0.5 && RPT>0.1"
+
+# origin
+#reg.tcut = isDFOS + " && nSJets==0 && nBJets==0 && MDR>30 && RPT<0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && DPB_vSS>(0.85*abs(cosThetaB)+1)"
 regions.append(reg)
 
 reg = region.Region()
 reg.name = "vrv"
 reg.displayname = "VR-VV"
-reg.tcut = "nLeptons==2 && " + isDF + " && nBJets==0 && nSJets==0 && MDR>30 && RPT<0.5 && DPB_vSS>(0.8*abs(cosThetaB)+1.8)"
+reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && gamInvRp1>0.5 && nSJets==0"
+#reg.tcut = isDFOS + " && nBJets==0 && nSJets<3 && MDR>30 && RPT<0.5 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && abs(cosThetaB)<0.5"
+#origin
+#reg.tcut = isDFOS + " && nSJets==0 && nBJets==0 && MDR>30 && RPT<0.5 && DPB_vSS>(0.85*abs(cosThetaB)+1.8)"
+regions.append(reg)
+
+reg = region.Region()
+reg.name = "crt"
+reg.displayname = "CR-T"
+reg.tcut = isDFOS + " && nSJets>=0 && nBJets>0 && MDR>30 && RPT>0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8)"
+regions.append(reg)
+
+reg = region.Region()
+reg.name = "vrt"
+reg.displayname = "VR-T"
+reg.tcut = isDFOS + " && nSJets>0 && nBJets==0 && MDR>30 && RPT<0.5 && DPB_vSS>(0.85*abs(cosThetaB)+1.8)"
 regions.append(reg)
 
 
@@ -303,18 +337,29 @@ plots = []
 #    y_ax_min = 0.1
 
 vars = {}
-#vars["l_pt[0]"]         = { "crt" : [20, 0, 500, 1e6],   "vrt" : [15, 0, 300,200],      "crv" : [10, 0, 185, 110],      "vrv" : [10, 0, 200, 180] }
-#vars["l_pt[1]"]         = { "crt" : [12, 0, 200, 1e6],   "vrt" : [8, 0, 220, 200],      "crv" : [5, 0, 80, 110],        "vrv" : [5, 0, 100, 160] }
-vars["MDR"]             = { "dfpreselMT" : [10, 0, 180, 1e7], "dfpresel" : [10, 0, 180, 1e7], "crt" : [10, 0, 200, 1e6],   "vrt" : [5, 0, 140, 140],      "crv" : [5, 0, 100, 120],       "vrv" : [5, 0, 100, 100] }
-vars["DPB_vSS"]         = { "dfpreselMT" : [0.1, 0, 3.2,1e7 ],"dfpresel" : [0.1, 0, 3.2,1e7 ], "crt" : [.1, 0, 2.8, 1e6],   "vrt" : [.1, 1.6, 3.2, 120],   "crv" : [.14, 0.8, 2.7, 80],    "vrv" : [.1, 1.6, 3.2, 100] }
-vars["gamInvRp1"]       = { "dfpreselMT" : [ 0.05, 0, 1,1e7], "dfpresel" : [ 0.05, 0, 1,1e7], "crt" : [.05, 0, 1,  1e6],   "vrt" : [.05, 0, 1,  120],     "crv" : [.05, 0, 1,  70],       "vrv" : [.05, 0, 1,  100] }
-vars["abs(cosThetaB)"]  = { "dfpreselMT" : [ 0.05, 0, 1,1e7], "dfpresel" : [ 0.05, 0, 1,1e7], "crt" : [.05, 0, 1,  1e7],   "vrt" : [.05, 0, 1,  80 ],     "crv" : [.05, 0, 1,  55],       "vrv" : [.05, 0, 1,  80] } 
-vars["RPT"]             = { "dfpreselMT" : [ 0.05, 0, 1,1e7], "dfpresel" : [ 0.05, 0, 1,1e7], "crt" : [.02, 0.5, 1,1e7],   "vrt" : [.04, 0, 0.5, 175],    "crv" : [.02, 0, 0.45,55],      "vrv" : [.02, 0, 0.5,  65] }
-#vars["nSJets"]          = { "crt" : [1, 0, 10, 1e7],     "vrt" : [1, 0, 10,   420],     "crv" : [1, 0, 10,   200],      "vrv" : [1, 0, 10,   200]   }
-vars["nBJets"]          = { "dfpreselMT" : [1, 0, 8, 1e7], "dfpresel" : [1, 0, 8, 1e7], "crt" : [1, 0, 10, 1e7],     "vrt" : [1, 0, 10,   1000],    "crv" : [1, 0, 10,   200],      "vrv" : [1, 0, 10,   200]   }
+vars["l_pt[0]"]         = { "crt" : [20, 0, 500, 1e6],   "vrt" : [15, 20, 300,200],      "crv" : [5, 20, 120, 110],      "vrv" : [4, 20, 80, 40] }
+vars["l_pt[1]"]         = { "crt" : [12, 0, 200, 1e6],   "vrt" : [5, 20, 130, 200],      "crv" : [2, 20, 60, 110],        "vrv" : [2, 20, 60, 50] }
+#vars["l_eta[0]"]        = { "crv" : [0.2, -3, 3, 80] }
+#vars["l_eta[1]"]        = { "crv" : [0.2, -3, 3, 80] }
+vars["MDR"]             = { "dfpreselMT" : [10, 0, 180, 1e7], "dfpresel" : [10, 0, 180, 1e7], "crt" : [10, 30, 200, 1e6],   "vrt" : [5, 30, 115, 110],      "crv" : [5, 30, 100, 100],       "vrv" : [4, 30, 100, 50] }
+vars["DPB_vSS"]         = { "dfpreselMT" : [0.1, 0, 3.2,1e7 ],"dfpresel" : [0.1, 0, 3.2,1e7 ], "crt" : [.1, 0, 2.8, 1e6],   "vrt" : [.1, 1.6, 3.2, 120],   "crv" : [.14, 0, 3.2, 80],    "vrv" : [.1, 1.6, 3.2, 50] }
+#vars["DPB_vSS"]         = { "dfpreselMT" : [0.1, 0, 3.2,1e7 ],"dfpresel" : [0.1, 0, 3.2,1e7 ], "crt" : [.1, 0, 2.8, 1e6],   "vrt" : [.1, 1.6, 3.2, 120],   "crv" : [.14, 0.8, 2.7, 80],    "vrv" : [.1, 1.6, 3.2, 100] }
+vars["gamInvRp1"]       = { "dfpreselMT" : [ 0.05, 0, 1,1e7], "dfpresel" : [ 0.05, 0, 1,1e7], "crt" : [.05, 0, 1,  1e6],   "vrt" : [.05, 0, 1,  120],     "crv" : [.02, 0.5, 1,  75],       "vrv" : [.02, 0.5, 1,  30] }
+vars["abs(cosThetaB)"]  = { "dfpreselMT" : [ 0.05, 0, 1,1e7], "dfpresel" : [ 0.05, 0, 1,1e7], "crt" : [.05, 0, 1,  1e7],   "vrt" : [.05, 0, 1,  80 ],     "crv" : [.05, 0, 1,  60],       "vrv" : [.05, 0, 1,  30] } 
+#vars["RPT"]             = { "dfpreselMT" : [ 0.05, 0, 1,1e7], "dfpresel" : [ 0.05, 0, 1,1e7], "crt" : [.02, 0.5, 1,1e7],   "vrt" : [.04, 0, 0.5, 175],    "crv" : [.04, 0, 1,55],      "vrv" : [.02, 0, 0.5,  65] }
+vars["RPT"]             = { "dfpreselMT" : [ 0.05, 0, 1,1e7], "dfpresel" : [ 0.05, 0, 1,1e7], "crt" : [.02, 0.5, 1,1e7],   "vrt" : [.04, 0, 0.5, 175],    "crv" : [.02, 0.2, 0.5,75],      "vrv" : [.04, 0, 0.5,  40] }
+vars["nSJets"]          = { "crt" : [1, 0, 10, 1e7],     "vrt" : [1, 0, 10,   420],     "crv" : [1, 0, 3,   360],      "vrv" : [1, 0, 5,   250]   }
+vars["nBJets"]          = { "dfpreselMT" : [1, 0, 8, 1e7], "dfpresel" : [1, 0, 8, 1e7], "crt" : [1, 0, 10, 1e7],     "vrt" : [1, 0, 10,   1000],    "crv" : [1, 0, 5,   700],      "vrv" : [1, 0, 5,   250]   }
+#vars["bj_pt[0]"]    = { "crt" : [10, 0, 200, 1e7] }
+#vars["bj_pt[1]"]    = { "crt" : [10, 0, 200, 1e7] }
+#vars["bj_pt[2]"]    = { "crt" : [10, 0, 200, 1e7] }
+#vars["bj_pt[3]"]    = { "crt" : [10, 0, 200, 1e7] }
+#vars["bj_pt[4]"]    = { "crt" : [10, 0, 200, 1e7] }
+#vars["bj_pt[5]"]    = { "crt" : [10, 0, 200, 1e7] }
+#vars["bj_pt[6]"]    = { "crt" : [10, 0, 200, 1e7] }
 
 
-run_reg = "dfpreselMT"
+run_reg = "crt"
 
 nice_names = {}
 nice_names["MDR"] = "E_{V}^{P} [GeV]"
@@ -323,6 +368,18 @@ nice_names["gamInvRp1"] = "1/#gamma_{P}^{PP}"
 nice_names["abs(cosThetaB)"] = "|cos#theta_{b}|"
 nice_names["RPT"] = "R_{p_{T}}"
 nice_names["nBJets"] = "b-Jet Multiplicity"
+nice_names["nSJets"] = "Signal Jet Multiplicity"
+nice_names["l_pt[0]"] = "Leading lepton p_{T} [GeV]"
+nice_names["l_pt[1]"] = "Sub-leading lepton p_{T} [GeV]"
+nice_names["l_eta[0]"] = "Leading lepton #eta"
+nice_names["l_eta[1]"] = "Sub-leading lepton #eta"
+nice_names["bj_pt[0]"] = "bjpt0"
+nice_names["bj_pt[1]"] = "bjpt1"
+nice_names["bj_pt[2]"] = "bjpt2"
+nice_names["bj_pt[3]"] = "bjpt3"
+nice_names["bj_pt[4]"] = "bjpt4"
+nice_names["bj_pt[5]"] = "bjpt5"
+nice_names["bj_pt[6]"] = "bjpt6"
 
 for var, bounds in vars.iteritems() :
     p = plot.Plot1D()
