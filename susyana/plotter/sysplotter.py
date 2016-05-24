@@ -66,7 +66,7 @@ def getSystHistos(plot_, reg, bkg, syst, histname) :
     h_dn = pu.th1f("h_"+bkg.treename+"_"+histname+"_"+syst.name+"_dn","", int(plot_.nbins), plot_.x_range_min, plot_.x_range_max, plot_.x_label, plot_.y_label)
     h_dn.SetFillStyle(0)
     h_dn.SetLineColor(38)
-        
+
 
     if syst.isWeightSys() :
         #weight_up = "eventweight * pupw_up"
@@ -76,8 +76,26 @@ def getSystHistos(plot_, reg, bkg, syst, histname) :
         #cut_up = "(" + reg.tcut + ") * " + weight_up + " * " + str(bkg.scale_factor)
         #cut_dn = "(" + reg.tcut + ") * " + weight_dn + " * " + str(bkg.scale_factor)
 
-        cut_up = "(" + reg.tcut + ") * eventweight * " + str(syst.up_name) + " * " + str(bkg.scale_factor)
-        cut_dn = "(" + reg.tcut + ") * eventweight * " + str(syst.down_name) + " * " + str(bkg.scale_factor)
+        tmp_up = str(syst.up_name)
+        tmp_dn = str(syst.down_name)
+        tmp_up = tmp_up.replace("syst_","")
+        tmp_up = "syst_" + tmp_up
+        tmp_dn = tmp_dn.replace("syst_","")
+        tmp_dn = "syst_" + tmp_dn
+
+        syst.up_name = tmp_up
+        syst.down_name = tmp_dn
+
+        weight_str = ""
+        if "PILEUP" not in syst.name :
+            weight_str = "eventweight"
+        elif "PILEUP" in syst.name :
+            weight_str = "eventweightNOPUPW"
+            syst.up_name = "pupw_up"
+            syst.down_name = "pupw_down"
+
+        cut_up = "(" + reg.tcut + ") * " + weight_str + " * " + str(syst.up_name) + " * " + str(bkg.scale_factor)
+        cut_dn = "(" + reg.tcut + ") * " + weight_str + " * " + str(syst.down_name) + " * " + str(bkg.scale_factor)
         cut_up = r.TCut(cut_up)
         cut_dn = r.TCut(cut_dn)
         sel = r.TCut("1")
@@ -95,6 +113,9 @@ def getSystHistos(plot_, reg, bkg, syst, histname) :
 
         var_yields.append(h_up.Integral(0,-1))
         var_yields.append(h_dn.Integral(0,-1))
+
+        print "up: ",var_yields[0]
+        print "dn: ",var_yields[1]
 
         syst.up_histo = h_up
         syst.down_histo = h_dn
@@ -116,6 +137,8 @@ def getSystHistos(plot_, reg, bkg, syst, histname) :
             pu.add_overflow_to_lastbin(h_dn)
             syst.down_histo = h_dn
             var_yields.append(h_dn.Integral(0,-1))
+
+        print "up: ", var_yields[0]
 
     return var_yields
 
@@ -203,6 +226,7 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
 
         stat_err = r.Double(0.0)
         nom_integral = h.IntegralAndError(0,-1,stat_err)
+        print "nom: ",nom_integral
 
         # add overflow
         pu.add_overflow_to_lastbin(h)
@@ -297,8 +321,10 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
     up_ratio = up_total.Clone("up_ratio")
     up_ratio.Divide(nom_total)
 
-    down_ratio = down_total.Clone("down_ratio")
-    down_ratio.Divide(nom_total)
+    down_ratio = None
+    if "JER" not in syst.name :
+        down_ratio = down_total.Clone("down_ratio")
+        down_ratio.Divide(nom_total)
 
     ## axis for lower pad
     yax = up_ratio.GetYaxis()
@@ -326,7 +352,8 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
 
 
     up_ratio.Draw("hist")
-    down_ratio.Draw("hist same")
+    if down_ratio :
+        down_ratio.Draw("hist same")
     rcan.lower_pad.Update()
     
 
@@ -509,6 +536,7 @@ if __name__=="__main__" :
     for s in systematics :
         s.check()
         s.Print()
+        print " > ", s.name
         for b in backgrounds :
             b.addSys(s)
 

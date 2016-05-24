@@ -138,34 +138,58 @@ def get_signal_grid(file_rawdir, grid_name) :
 
 def get_yield(bkg_, tcut, region_name) :
     cut = "(" + tcut + ") * eventweight * " + str(bkg_.scale_factor)
+    cut_raw = "(" + tcut + ")"
     cut = r.TCut(cut)
+    cut_raw = r.TCut(cut_raw)
     sel = r.TCut("1")
     h = pu.th1f("h_" + bkg_.name + "_yield_" + region_name, "", 4, 0, 4, "", "")
+    h_raw = pu.th1f("h_" + bkg_.name + "_rawyield_" + region_name, "", 4, 0, 4, "", "")
     cmd = "%s>>%s"%("isMC", h.GetName())
+    cmd_raw = "%s>>%s"%("isMC", h_raw.GetName())
     bkg_.tree.Draw(cmd, cut * sel, "goff") 
+    bkg_.tree.Draw(cmd_raw, cut_raw * sel, "goff")
 
     err = r.Double(0.0)
     integral = h.IntegralAndError(0, -1, err)
+
+    err_raw = r.Double(0.0)
+    int_raw = h_raw.IntegralAndError(0,-1, err_raw)
+
+    #print "BKG RAW YIELD %s (%s)> %.2f +/- %.2f (%.2f)"%(region_name, bkg_.name, int_raw, err_raw, sqrt(int_raw))
+    print "BKG YIELD %s (%s)> %.2f +/- %.2f (%.2f)"%(region_name, bkg_.name, integral, err, sqrt(integral))
+
     h.Delete()
     return integral, err
 
 def get_signal_yield(sig_, tcut, region_name, extra_weight = "") :
     extra_ = ""
     cut = ""
+    cut_raw = ""
     if not extra_weight == "" :
         cut = "(" + tcut + ") * eventweight * " + str(sig_.scale_factor) + " * " + str(extra_weight)
+        cut_raw = "(" + tcut + ")"# * " + str(sig_.scale_factor) + " * " + str(extra_weight)
     else :
         cut = "(" + tcut + ") * eventweight * " + str(sig_.scale_factor) 
+        cut_raw = "(" + tcut + ")"# * " + str(sig_.scale_factor) 
     cut = r.TCut(cut) 
+    cut_raw = r.TCut(cut_raw)
     sel = r.TCut("1")
     hname = "%.0f_%.0f"%(sig_.mx, sig_.my)
     h = pu.th1f("h_" + hname + "_yield_" + region_name, "", 4, 0, 4, "", "")
+    h_raw = pu.th1f("h_" + hname + "_raw_" + region_name, "", 4,0,4,"","")
     cmd = "%s>>%s"%("isMC", h.GetName())
+    cmd_raw = "%s>>%s"%("isMC", h_raw.GetName())
     sig_.tree.Draw(cmd, cut * sel, "goff")
+    sig_.tree.Draw(cmd_raw, cut_raw * sel, "goff")
 
     err = r.Double(0.0)
     integral = h.IntegralAndError(0, -1, err)
-    print " SIGNAL Yield (%s)> %s : %.2f +/- %.2f (%.2f)"%(region_name, sig_.getName(), integral, err, sqrt(integral))
+
+    err_raw = r.Double(0.0)
+    int_raw = h_raw.IntegralAndError(0,-1,err_raw)
+    
+    #print " SIGNAL Yield (%s)> %s : %.2f +/- %.2f (%.2f)"%(region_name, sig_.getName(), integral, err, sqrt(integral))
+    print " SIGNAL RAW Yield (%s)> %s : %.2f +/- %.2f (%.2f)"%(region_name, sig_.getName(), int_raw, err_raw, sqrt(int_raw))
     #integral = integral - err
     h.Delete()
     return integral

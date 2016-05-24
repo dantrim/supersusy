@@ -176,11 +176,13 @@ class Background :
             if self.isSignal() and not (dsid_ == dataset_id) : continue
             for f in rawdir_files :
                 if 'entrylist' in f : continue
+                if 'CENTRAL' not in f : continue
                 if dataset_id in f :
                     bkg_files.append(f)
                     break
         chain = r.TChain('superNt')
         for file in bkg_files :
+            print "ADDING FILE: %s"%str(file)
             chain.Add(file)
         self.tree = chain
 

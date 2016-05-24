@@ -37,7 +37,7 @@ def get_plotConfig(conf) :
         sys.exit()
 
 def get_yield(region, bkg) :
-    h_yld = r.TH1F("h_%s_%s"%(region.simplename, bkg.name), "h_%s_%s"%(region.simplename, bkg.name), 3, 0, 3)
+    h_yld = r.TH1F("h_%s_%s"%(region.name, bkg.name), "h_%s_%s"%(region.name, bkg.name), 3, 0, 3)
     cut = "(" + region.tcut + ") * eventweight *" + str(bkg.scale_factor)
     cut = r.TCut(cut)
     sel = r.TCut("1")
@@ -48,7 +48,7 @@ def get_yield(region, bkg) :
     return yield_
 
 def make_piePlots(region, backgrounds) :
-    print "[make_piePlots]    Baking region %s"%region.simplename
+    print "[make_piePlots]    Baking region %s"%region.name
 
     yields = {}
     total_yield = 0.0
@@ -79,7 +79,7 @@ def make_piePlots(region, backgrounds) :
 #    plt.title('%s'%region.displayname)
     plt.axis('equal')
     #plt.tight_layout()
-    outname = "%s_pie.eps"%region.simplename
+    outname = "%s_pie.eps"%region.name
     out = indir + "/plots/" + outdir
     plt.savefig(outname)
     utils.mv_file_to_dir(outname, out, True)
@@ -141,7 +141,7 @@ if __name__ == "__main__" :
 
     if requestedRegion != "" :
         for region_ in regions :
-            if region_.simplename == requestedRegion :
+            if region_.name == requestedRegion :
                 make_piePlots(region_, backgrounds)
     else :
         for region_ in regions :
