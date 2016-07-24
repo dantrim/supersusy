@@ -295,16 +295,17 @@ def add_to_band(g1, g2) :
         eyl = ROOT.Double(0.0)
 
         y0 = y1 - y2
+        #print "    > y0 : ", y0
         if y0 != 0 :
             if y0 > 0 :
                 eyh = eyhigh
                 eyh = sqrt(eyh*eyh + y0*y0)
-                print "  -> EYH : ", eyh
+                #print "    > + ", eyh
                 g2.SetPointEYhigh(i,eyh)
             else :
                 eyl = eylow
                 eyl = sqrt(eyl*eyl + y0*y0)
-                print "  -> EYL : ", eyl
+                #print "    > - ", eyl 
                 g2.SetPointEYlow(i,eyl)
 
 # ----------------------------------------------

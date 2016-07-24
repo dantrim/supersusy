@@ -28,6 +28,10 @@ class Background :
 
         self.is_signal = False
 
+        self.chain_from_condor_list = False
+        self.condor_list_dir = ""
+        self.raw_file_dir = ""
+
     def setSignal(self) :
         self.is_signal = True
     def isSignal(self) :
@@ -164,6 +168,11 @@ class Background :
         grab the desired signal point. You must call "setSignal()"
         on the background process before calling this.
         '''
+
+        self.chain_from_condor_list = True
+        self.condor_list_dir = clist_dir
+        self.raw_file_dir = raw_directory
+
         dsids = []
         if not clist_dir.endswith("/") :
             clist_dir = clist_dir + "/"
@@ -192,42 +201,104 @@ class Background :
         Add a systematic to this background
         '''
         this_syst = systematic.Systematic(syst_.name, syst_.up_name, syst_.down_name)
+        print " > %s add systematic: %s"%(self.name, this_syst.name)
         if syst_.isWeightSys() :
             this_syst.setWeightSys()
-            if "syst_syst_" in this_syst.name :
-                name = this_syst.name.replace("syst_syst_", "syst_")
-                this_syst.name = name
+            this_syst.name = "syst_" + this_syst.name.replace("syst_","")
             this_syst.tree = self.tree
 
         elif syst_.isKinSys() and not syst_.isOneSided() :
+
             this_syst.setKinSys()
-            file = self.file
-            up_tree_name = self.name + "_" + syst_.up_name
-            down_tree_name = self.name + "_" + syst_.down_name
-            #spacer = "_"
-            #if "SoftTrk_Scale" in this_syst.name : spacer = ""
-            #up_tree_name = self.name + "_" + syst_.name + spacer + syst_.up_name
-            #down_tree_name = self.name + "_" + syst_.name + spacer + syst_.down_name
-            #up_tree_name = self.name + "_" + syst_.name + "_" + syst_.up_name
-            #down_tree_name = self.name + "_" + syst_.name + "_" + syst_.down_name
+            # if the sample is from a condor list then each dsid has a separate file
+            if self.chain_from_condor_list :
+                dsids = []
+                clist = self.condor_list_dir
+                raw_file_dir = self.raw_file_dir
+                con_files = glob.glob(clist + "*.txt")
+                for con in con_files :
+                    dsids.append(con[con.find('mc15_13TeV.')+11:con.find('mc15_13TeV.')+17])
+                rawfiles = glob.glob(raw_file_dir + "*.root")
+                bkg_files = []
+                for dataset_id in dsids :
+                    for f in rawfiles :
+                        if 'entrylist' in f : continue
+                        if '%s'%this_syst.name not in f : continue
+                        if dataset_id in f :
+                            bkg_files.append(f)
+                up_files = []
+                down_files = []
+                for f in bkg_files :
+                    if "UP" in f or "Up" in f :
+                        up_files.append(f)
+                    elif "DN" in f or "Down" in f:
+                        down_files.append(f)
+                    else :
+                        print "background addSys    ERROR Unhandled systematic name. Expected 'UP' or 'DOWN' in variation names!"
+                        sys.exit()
 
-            upchain = r.TChain(up_tree_name)
-            downchain = r.TChain(down_tree_name)
+                chainup = r.TChain('superNt')
+                chaindown = r.TChain('superNt')
+                for file_ in up_files :
+                    chainup.Add(file_)
+                for file_ in down_files :
+                    chaindown.Add(file_)
 
-            upchain.Add(self.file)
-            downchain.Add(self.file)
-            this_syst.tree_up = upchain
-            this_syst.tree_down = downchain
+                this_syst.tree_up = chainup
+                this_syst.tree_down = chaindown
+
+            else :
+                # treat the case when using a merged, HFT tree where all systematic trees are in the same file as the nominal case
+                file = self.file
+                up_tree_name = self.name + "_" + syst_.up_name
+                down_tree_name = self.name + "_" + syst_.down_name
+                #spacer = "_"
+                #if "SoftTrk_Scale" in this_syst.name : spacer = ""
+                #up_tree_name = self.name + "_" + syst_.name + spacer + syst_.up_name
+                #down_tree_name = self.name + "_" + syst_.name + spacer + syst_.down_name
+                #up_tree_name = self.name + "_" + syst_.name + "_" + syst_.up_name
+                #down_tree_name = self.name + "_" + syst_.name + "_" + syst_.down_name
+
+                upchain = r.TChain(up_tree_name)
+                downchain = r.TChain(down_tree_name)
+
+                upchain.Add(self.file)
+                downchain.Add(self.file)
+                this_syst.tree_up = upchain
+                this_syst.tree_down = downchain
 
         elif syst_.isKinSys() and syst_.isOneSided() :
+            print "    > One sided"
             this_syst.setKinSys()
-            file = self.file
-            up_tree_name = self.name + "_" + syst_.name
+            this_syst.setOneSided()
 
-            upchain = r.TChain(up_tree_name)
+            if self.chain_from_condor_list :
+                dsids = []
+                clist = self.condor_list_dir
+                raw_file_dir = self.raw_file_dir
+                con_files = glob.glob(clist+"*.txt")
+                for con in con_files :
+                    dsids.append(con[con.find('mc15_13TeV.')+11:con.find('mc15_13TeV.')+17])
+                rawfiles = glob.glob(raw_file_dir+"*.root")
+                bkg_files = []
+                for dataset_id in dsids :
+                    for f in rawfiles :
+                        if 'entrylist' in f : continue
+                        if '%s'%this_syst.name not in f : continue
+                        if dataset_id in f :
+                            bkg_files.append(f)
+                chain_ = r.TChain('superNt')
+                for f in bkg_files :
+                    chain_.Add(f) 
+                this_syst.tree_up = chain_
+            else :
+                file = self.file
+                up_tree_name = self.name + "_" + syst_.name
 
-            upchain.Add(self.file)
-            this_syst.tree_up = upchain
+                upchain = r.TChain(up_tree_name)
+
+                upchain.Add(self.file)
+                this_syst.tree_up = upchain
         
         self.systList.append(this_syst)
 
@@ -293,7 +364,13 @@ class Data :
         dsids = []
         lines = open(list).readlines()
         for line in lines :
-             dsids.append(line[line.find('data15_13TeV.00')+15 : line.find('data15_13TeV.')+21])
+            data_str = ''
+            if 'data15_13TeV' in line :
+                data_str = 'data15_13TeV'
+            elif 'data16_13TeV' in line :
+                data_str = 'data16_13TeV'
+            dsids.append(line[line.find('%s.00'%data_str)+15 : line.find('%s.'%data_str)+21])
+             #dsids.append(line[line.find('data15_13TeV.00')+15 : line.find('data15_13TeV.')+21])
         rawdir_files = glob.glob(directory + "*.root")
         bkg_files = []
         for dataset_id in dsids :
@@ -315,7 +392,12 @@ class Data :
         dsids = []
         con_files = glob.glob(clist_dir + "*.txt")
         for con in con_files :
-            dsids.append(con[con.find('data15_13TeV.00')+15 : con.find('data15_13TeV.')+21])
+            data_str = ''
+            if 'data15_13TeV' in con :
+                data_str = 'data15_13TeV'
+            elif 'data16_13TeV' in con :
+                data_str = 'data16_13TeV'
+            dsids.append(con[con.find('%s.00'%data_str)+15 : con.find('%s.'%data_str)+21])
         rawdir_files = glob.glob(raw_directory + "CENTRAL*.root")
         bkg_files = []
         for dataset_id in dsids :
@@ -326,6 +408,7 @@ class Data :
                     break
         chain = r.TChain('superNt')
         for file in bkg_files :
+            print "ADDING DATA FILE: %s"%str(file)
             chain.Add(file)
         self.tree = chain
 
