@@ -102,7 +102,14 @@ def getCutYield(tcut, bkg, cutNumber) :
 
     h = pu.th1f("h_"+bkg.treename+"_cutflow_"+str(cutNumber), "", 4, 0, 1,"","")
     #cut = "(" + tcut + ") * " + str(b.scale_factor)
-    cut = "(" + tcut + ") * eventweight * " + str(bkg.scale_factor)
+    weight_str = ""
+    if "fakes" in bkg.name :
+        weight_str = "FakeWeight * " + str(bkg.scale_factor)
+        print "fakes weight string = %s"%weight_str
+    else :
+        weight_str = "eventweight"
+    cut = "(" + tcut + ") * %s * "%weight_str + str(bkg.scale_factor)
+    #cut = "(" + tcut + ") * eventweight * " + str(bkg.scale_factor)
     cut = r.TCut(cut)
     sel = r.TCut("1")
     cmd = "isMC>>%s"%h.GetName()
@@ -181,15 +188,28 @@ def make_cutflow(reg, data, backgrounds) :
 def get_yield(background, tcut, isData) :
 
     cut = ""
-    if not isData :
+    if not isData and "fakes" not in background.name:
         #cut = "(" + tcut + ") * " + str(b.scale_factor)
-        cut = "(" + tcut + ") * eventweight * " + str(background.scale_factor)
+        #cut = "(" + tcut + ") * " + str(background.scale_factor)
+        cut = "(" + tcut + ") " 
+        #cut = "(" + tcut + ") * eventweight * " + str(background.scale_factor)
+    elif "fakes" in background.name :
+        cut = "(" + tcut + ") * FakeWeight * " + str(background.scale_factor)
+        print "fakes cut string = %s"%cut
     else :
         cut = "(" + tcut + ")"
 
+
+    #if background.name == "zjets" :
+    #    print 45*"-"
+    #    print "%s scan: "%background.name
+    #    background.tree.Scan("eventweight",tcut)
+
+
     cut = r.TCut(cut)
     sel = r.TCut("1")
-    h = pu.th1f("h_"+background.treename+"_yield_", "", 4, 0, 1,"","")
+    #h = pu.th1f("h_"+background.treename+"_yield_", "", 20, -10, 10,"","")
+    h = pu.th1f("h_"+background.treename+"_yield_", "", 4, 0, 4,"","")
     cmd = "%s>>%s"%("isMC", h.GetName())
     background.tree.Draw(cmd, cut * sel, "goff") 
 
@@ -224,7 +244,7 @@ def make_yieldsTable(reg_, data, backgrounds) :
     for bkg in backgrounds :
         # grab the yield and error
         yld, stat_err = get_yield(bkg, reg_.tcut, False)
-        yld_str = "%.2f +/- %.2f"%(yld, stat_err)
+        yld_str = "%.2f \\pm %.2f"%(yld, stat_err)
         row.append(yld_str)
 
         total_MC_yield += yld
@@ -232,13 +252,16 @@ def make_yieldsTable(reg_, data, backgrounds) :
 
     # get the yield for total MC
     total_MC_stat_err = sqrt(total_MC_stat_err)
-    total_MC_str = "%.2f +/- %.2f"%(total_MC_yield, total_MC_stat_err)
+    total_MC_str = "%.2f \\pm %.2f"%(total_MC_yield, total_MC_stat_err)
     row.append(total_MC_str)
     
     # get the data yield
     if data : 
+        print "GETTING DATA YIELD"
         data_yld, data_stat_err = get_yield(data, reg_.tcut, True)
-        data_yld_str = "%.2f +/- %.2f"%(data_yld, data_stat_err)
+        print data.tree.GetEntries()
+        data_yld_str = "%.2f \\pm %.2f"%(data_yld, data_stat_err)
+        print " > %s"%data_yld_str
         row.append(data_yld_str)
 
     table.append(row)
