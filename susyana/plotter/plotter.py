@@ -89,10 +89,14 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
             if "PILEUPUP" in name_up :
                 weight_up = " eventweightNOPUPW * pupw_up "
             else :
+                #print " +++ getSystHists isWeightSys UP not applying PRW +++ "
+                #weight_up = " eventweightNOPUPW * %s"%(str(name_dn))
                 weight_up = " eventweight * %s"%(str(name_up))
             if "PILEUPDOWN" in name_dn :
                 weight_dn = " eventweightNOPUPW * pupw_down "
             else :
+                #print " +++ getSystHists isWeightSys DOWN not applying PRW +++ "
+                #weight_dn = " eventweightNOPUPW * %s"%(str(name_dn))
                 weight_dn = " eventweight * %s"%(str(name_dn))
             cut_up = "(" + reg.tcut + ") * %s * %s"%(weight_up, str(b.scale_factor))
             cut_dn = "(" + reg.tcut + ") * %s * %s"%(weight_dn, str(b.scale_factor))
@@ -119,6 +123,8 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
             s.down_histo = h_dn
 
         elif s.isKinSys() :
+            #print " +++ getSystHists isKinSys not applying PRW +++ "
+            #cut = "(" + reg.tcut + ") * eventweightNOPUPW * " + str(b.scale_factor)
             cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
             cut = r.TCut(cut)
             sel = r.TCut("1")
@@ -491,7 +497,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
 
     # convert to tgraphs to get the ratio
     #g_data = pu.th1_to_tgraph(hd)
-    g_data = gdata
+    g_data = pu.convert_errors_to_poisson(hd)
+    #g_data = gdata
     g_sm = pu.th1_to_tgraph(h_sm)
     g_ratio = pu.tgraphErrors_divide(g_data, g_sm)
 
@@ -531,8 +538,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
 
     rcan.canvas.Update()
 
-    #outname = plot.name + ".eps"
     outname = plot.name + ".eps"
+    #outname = plot.name + "_nopupw.eps"
     #outname = "amcnlo_" + plot.name + "noGam.eps"
     rcan.canvas.SaveAs(outname)
     out = indir + "/plots/" + outdir
