@@ -167,6 +167,58 @@ def tgraphErrors_divide(g1, g2) :
 
     return g3
 
+def tgraphAsymmErrors_divide(g_num, g_den) :
+    n_num = g_num.GetN()
+    n_den = g_den.GetN()
+    if n_num != n_den :
+        print "tgraphAsymmErrors_divide ERROR    input TGraphs do not have same number of entries!"
+    g3 = ROOT.TGraphAsymmErrors()
+
+    iv = 0
+    for inum in xrange(n_num) :
+        for iden in xrange(n_den) :
+            x_num = ROOT.Double(0.0)
+            y_num = ROOT.Double(0.0)
+            x_den = ROOT.Double(0.0)
+            y_den = ROOT.Double(0.0)
+
+
+            ex = ROOT.Double(0.0)
+            ey_num_up = ROOT.Double(0.0)
+            ey_num_dn = ROOT.Double(0.0)
+            ey_den_up = ROOT.Double(0.0)
+            ey_den_dn = ROOT.Double(0.0)
+
+            g_num.GetPoint(inum, x_num, y_num)
+            g_den.GetPoint(iden, x_den, y_den)
+
+            if x_num != x_den : continue
+            else :
+                if y_num !=0 :
+                    ey_num_up = g_num.GetErrorYhigh(inum)/y_num
+                    ey_num_dn = g_num.GetErrorYlow(inum)/y_num
+                if y_den !=0 :
+                    ey_den_up = g_den.GetErrorYhigh(iden)/y_den
+                    ey_den_dn = g_den.GetErrorYlow(iden)/y_den
+
+                if y_num == 0. : g3.SetPoint(iv, x_num, -10)
+                elif y_den !=0 :
+                    g3.SetPoint(iv, x_num, y_num/y_den)
+                else :
+                    g3.SetPoint(iv, y_num, y_den)
+            ex = g_num.GetErrorX(iv)
+
+            e_up = ROOT.Double(0.0)
+            e_dn = ROOT.Double(0.0)
+            if y_num !=0 and y_den != 0 :
+                e_up = sqrt(ey_num_up*ey_num_up + ey_den_up*ey_den_up)*(y_num/y_den)
+                e_dn = sqrt(ey_num_dn*ey_num_dn + ey_den_dn*ey_den_dn)*(y_num/y_den)
+            g3.SetPointError(iv, ex, ex, e_dn, e_up) 
+
+            iv += 1
+    return g3
+                
+                
 def buildRatioErrorBand(g_in, g_out) :
     g_out.SetMarkerSize(0)
     for bin in xrange(g_out.GetN()) :
@@ -260,7 +312,7 @@ def divide_histograms(hnum, hden, xtitle, ytitle) :
         g.SetPointError(i-1, 0.5 * hratio.GetBinWidth(i), 0.5 * hratio.GetBinWidth(i), error_dn, error_up)
     return g
 
-def add_to_band(g1, g2) :
+def add_to_band(g1, g2) : #, sys_name) :
 
 
     if g1.GetN()!=g2.GetN() :
@@ -300,12 +352,12 @@ def add_to_band(g1, g2) :
             if y0 > 0 :
                 eyh = eyhigh
                 eyh = sqrt(eyh*eyh + y0*y0)
-                #print "    > + ", eyh
+                #print "    > %s + "%sys_name, eyh
                 g2.SetPointEYhigh(i,eyh)
             else :
                 eyl = eylow
                 eyl = sqrt(eyl*eyl + y0*y0)
-                #print "    > - ", eyl 
+                #print "    > %s - "%sys_name, eyl 
                 g2.SetPointEYlow(i,eyl)
 
 # ----------------------------------------------

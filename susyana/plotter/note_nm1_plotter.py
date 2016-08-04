@@ -134,6 +134,18 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
         h_dn.GetXaxis().SetLabelOffset(-999)
         h_dn.GetXaxis().SetTitleOffset(-999)
 
+        for hsys in [h_up, h_dn] :
+            yax = hsys.GetYaxis()
+            xax = hsys.GetXaxis()
+
+            yax.SetTitleSize(0.05)
+            yax.SetLabelSize(0.045)
+            yax.SetLabelOffset(0.008)
+            yax.SetTitleOffset(1.2)
+            yax.SetLabelFont(42)
+            yax.SetTitleFont(42)
+            yax.SetNdivisions(5) 
+        
         if s.isWeightSys() :
             name_up = s.up_name
             name_up = "syst_" + name_up.replace('syst_', "")
@@ -152,11 +164,11 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
 
             norm_factor = "1"
             if "ttbar" in b.name :
-                norm_factor = "1.04"
+                norm_factor = "0.99"
             elif "vv" in b.name  and "SF" in reg.name :
                 norm_factor = "1.27"
             elif "vv" in b.name and "SF" not in reg.name :
-                norm_factor = "1.24"
+                norm_factor = "1.23"
 
             cut_up = "(" + reg.tcut + ") * %s * %s *%s"%(weight_up, str(b.scale_factor), norm_factor)
             cut_dn = "(" + reg.tcut + ") * %s * %s *%s"%(weight_dn, str(b.scale_factor), norm_factor)
@@ -177,6 +189,7 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
             pu.add_overflow_to_lastbin(h_up)
             pu.add_overflow_to_lastbin(h_dn)
 
+
             print "    %s   (+%.2f, -%.2f)"%(s.name, h_up.Integral(0,-1)-nom_yield, nom_yield-h_dn.Integral(0,-1))
 
             s.up_histo = h_up
@@ -186,11 +199,11 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
 
             norm_factor = "1"
             if "ttbar" in b.name :
-                norm_factor = "1.04"
+                norm_factor = "0.99"
             elif "vv" in b.name  and "SF" in reg.name :
                 norm_factor = "1.27"
             elif "vv" in b.name and "SF" not in reg.name :
-                norm_factor = "1.24"
+                norm_factor = "1.23"
 
             cut = "(" + reg.tcut + ") * eventweight * %s * %s"%(str(b.scale_factor), norm_factor)
             cut = r.TCut(cut)
@@ -224,19 +237,20 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
 
     print "make_MDR_nm1_plot    %s"%reg.name
 
-    mdr_nice = "E_{V}^{P} [GeV]"
+    #mdr_nice = "E_{V}^{P} [GeV]"
+    mdr_nice = "M_{#Delta}^{R} [GeV]"
 
     p = plot.Plot1D()
     p.initialize(reg.name, "MDR", "%s_MDR"%(reg.name))
-    p.labels(x=mdr_nice, y = "Entries / bin")
+    p.labels(x=mdr_nice, y = "Entries")
     if reg.name == "srwNM1" :
-        p.yax(0.1, 1500)
+        p.yax(0.1, 10000)
     elif reg.name == "srwNM1SF" :
-        p.yax(0.1, 1000)
+        p.yax(0.1, 20000)
     elif reg.name == "srtNM1" :
-        p.yax(0.1, 5000)
+        p.yax(0.1, 50000)
     elif reg.name == "srtNM1SF" :
-        p.yax(0.1, 5000)
+        p.yax(0.1, 50000)
     p.doLogY = True
     p.setRatioCanvas(p.name)
 
@@ -250,20 +264,16 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
 
     binlow = []
     if reg.name == "srwNM1":
-        binlow = [50,60,70,80,95,110,150]#100,140]#,130]#,130]#75,90,110,130,160]
-        #binlow = [70,80,85,110,140]
+        binlow = [80,95,110,130,150,180]#100,140]#,130]#,130]#75,90,110,130,160]
     elif reg.name == "srwNM1SF" :
-        binlow = [70,80,95,110,130,150]#100,140]#,130]#,130]#75,90,110,130,160]
-        #binlow = [50,60,70,80,95,110,150]#100,140]#,130]#,130]#75,90,110,130,160]
+        binlow = [80,95,110,130,150,180]
+        #binlow = [80,95,110,130,150,180,200]
     elif reg.name == "srtNM1" :
-        binlow = [50,60,70,80,95,110,150]#100,140]#,130]#,130]#75,90,110,130,160]
-        #binlow = [40,50,60,70,80,100,120,150]
-        #binlow = [40,50,60,70,90,120,150]
-        #binlow = [40,50,60,90,110,150]
-        #binlow = [40,50,60,80,110,150]
+        binlow = [70,80,95,110,130,150,180]#100,140]#,130]#,130]#75,90,110,130,160]
     elif reg.name == "srtNM1SF" :
-        binlow = [50,60,70,80,95,110,150]#100,140]#,130]#,130]#75,90,110,130,160]
-        #binlow = [40,50,60,70,90,110,130,160]
+        binlow = [70,80,95,110,130,150,180]
+        #binlow = [70,80,95,110,130,150,180,200]
+        #binlow = [70,80,90,100,110,120,130,140,150,160,170,180,200]
 
     hax = r.TH1F("axes", "", len(binlow)-1, array('d',binlow))
     hax.SetMinimum(p.y_range_min)
@@ -289,7 +299,8 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     stack = r.THStack("stack_"+p.name,"")
 
     # legend
-    leg = pu.default_legend(xl=0.55,yl=0.65,xh=0.93,yh=0.90)
+    leg = pu.default_legend(xl=0.55,yl=0.71,xh=0.93,yh=0.90)
+    #leg = pu.default_legend(xl=0.55,yl=0.65,xh=0.93,yh=0.90)
     leg.SetNColumns(2)
 
     # histos
@@ -321,7 +332,8 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
 
         h.Sumw2()
 
-        h.SetLineColor(r.kBlack)
+        h.SetLineColor(b.color) # stop2L people have no sense
+        #h.SetLineColor(r.kBlack)
         h.GetXaxis().SetLabelOffset(-999)
         h.SetFillColor(b.color)
         h.SetFillStyle(1001)
@@ -335,16 +347,16 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
 
         norm_factor = "1"
         if "ttbar" in b.name :
-            norm_factor = "1.04"
+            norm_factor = "0.99"
         elif "vv" in b.name  and "SF" in reg.name :
-            norm_factor = "1.27"
+            norm_factor = "1.23"
         elif "vv" in b.name and "SF" not in reg.name :
-            norm_factor = "1.24"
+            norm_factor = "1.27"
         cut = "(" + reg.tcut + ") * %s * %s * %s"%(weight_str, str(b.scale_factor), norm_factor)
         cut = r.TCut(cut)
         sel = r.TCut("1")
         cmd = "%s>>+%s"%(p.variable, h.GetName())
-        b.tree.Draw(cmd, cut * sel, "goff")
+        blah = b.tree.Draw(cmd, cut * sel, "goff")
 
         # print yields
         stat_err = r.Double(0.0)
@@ -353,10 +365,18 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
         print "%s: %.2f +/- %.2f"%(b.name, integral, stat_err)
 
         # get variation histos
-        if doSys and 'fakes' not in b.name and (integral>0) : getSystHists(p, reg, b, integral, h)
+        if doSys and 'fakes' not in b.name and (integral>0)  : getSystHists(p, reg, b, integral, h)
+        #if doSys and 'fakes' not in b.name and (integral>0) and "zjets" not in b.name : getSystHists(p, reg, b, integral, h)
 
         # add overflow
         pu.add_overflow_to_lastbin(h)
+
+        # set negative bin yields to 0
+        for ibin in xrange(h.GetXaxis().GetNbins()) :
+            if h.GetBinContent(ibin+1) < 0. :
+                print "Setting bin %d for %s to 0"%(ibin, b.name)
+                h.SetBinContent(ibin+1, 0)
+                h.SetBinError(ibin+1,0)
 
         if "fakes" in b.name :
             h_nom_fake = h.Clone("fakes_nominal_histo")
@@ -372,6 +392,7 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     for h in histos :
         stack.Add(h)
     rcan.upper_pad.Update()
+    #hist_sm = stack.GetStack().Last().Clone("hist_sm")
         
 
     # now get the data points
@@ -395,7 +416,8 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     gdata = pu.convert_errors_to_poisson(hd)
     gdata.SetLineWidth(2)
     gdata.SetMarkerStyle(20)
-    gdata.SetMarkerSize(1.1)
+    gdata.SetMarkerSize(1.5)
+    #gdata.SetMarkerSize(1.1)
     gdata.SetLineColor(1)
     leg.AddEntry(gdata, "Data", "p")
     rcan.upper_pad.Update()
@@ -409,6 +431,7 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     mcError.SetFillStyle(3354)
     mcError.SetFillColor(r.kBlack)
     mcError.SetLineColor(r.TColor.GetColor("#FC0F1D"))
+    mcError.SetLineWidth(3)
     leg.AddEntry(mcError, "Total SM", "fl")
 
     # histogram for total stack
@@ -422,11 +445,11 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
 
 
     tmp = []
+    backgrounds_original = backgrounds
     for b in backgrounds :
         if "bwn" in b.name : continue
         if "fakes" in b.name : continue
-        if "drell" in b.name : continue
-        if "zjets" in b.name : continue
+        #if "zjets" in b.name : continue
         tmp.append(b)
     backgrounds = tmp
     if doSys :
@@ -451,10 +474,12 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
             transient.Clear()
             for b in backgrounds :
                 #if b.name in avoid_bkg : continue
+                #if "zjets" in b.name : continue
                 if "bwn" in b.name : continue
                 if b.isSignal() : continue
                 if 'fakes' in b.name : continue
                 for syst in b.systList :
+                    if "EG_SCALE_ALL" in syst.up_name  and "zjets" in b.name : continue
 
                     new_name = ""
                     if "syst_" in syst.up_name :
@@ -469,8 +494,8 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
             if h_nom_fake :
                 totalSysHisto.Add(h_nom_fake)
             transient = pu.th1_to_tgraph(totalSysHisto)
-            print " > %s: %s"%(b.name, up_sys)
-            pu.add_to_band(transient, nominalAsymErrors)
+            #print " > %s: %s"%(b.name, up_sys)
+            pu.add_to_band(transient, nominalAsymErrors)#, up_sys)
             totalSysHisto.Reset()
 
         # add to the error band the contribution from the down-variations
@@ -487,11 +512,13 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
             transient = r.TGraphAsymmErrors()
             transient.Clear()
             for b in backgrounds :
+                #if "zjets" in b.name : continue
                 if "bwn" in b.name : continue
                 #if b.name in avoid_bkg : continue
                 if b.isSignal() : continue
                 if 'fakes' in b.name : continue
                 for syst in b.systList :
+                    if "EG_SCALE_ALL" in syst.down_name  and "zjets" in b.name : continue
 
                     new_name = ""
                     if "syst_" in syst.down_name :
@@ -510,8 +537,8 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
             if h_nom_fake :
                 totalSysHisto.Add(h_nom_fake)
             transient = pu.th1_to_tgraph(totalSysHisto)
-            print " > %s: %s"%(b.name, dn_sys)
-            pu.add_to_band(transient, nominalAsymErrors)
+            #print " > %s: %s"%(b.name, dn_sys)
+            pu.add_to_band(transient, nominalAsymErrors)#, dn_sys)
             totalSysHisto.Reset()
 
     # draw mc stack
@@ -526,15 +553,19 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     # draw the total bkg line
     hist_sm = stack.GetStack().Last().Clone("hist_sm")
     hist_sm.SetLineColor(r.TColor.GetColor("#FC0F1D"))
-    hist_sm.SetLineWidth(1)
+    hist_sm.SetLineWidth(mcError.GetLineWidth())
     hist_sm.SetLineStyle(1)
     hist_sm.SetFillStyle(0)
     hist_sm.Draw("hist same")
 
+
     ####################################
     # plot signal
+    leg_sig = pu.default_legend(xl=0.55,yl=0.56,xh=0.91,yh=0.71)
+    #leg_sig = pu.default_legend(xl=0.55,yl=0.35,xh=0.93,yh=0.60)
+    leg_sig.SetNColumns(1)
     sig_histos = []
-    for s in backgrounds :
+    for s in backgrounds_original :
         if not s.isSignal() : continue
         hist_name = "MDR"
         h = r.TH1F("h_" + b.treename+"_"+hist_name, "", len(binlow)-1, array('d',binlow))
@@ -560,22 +591,31 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
         # add overflow
         pu.add_overflow_to_lastbin(h)
 
-        leg.AddEntry(h, s.displayname, "l")
+        #h_dummy = r.TH1F("dummy","",2,0,2)
+        #h_dummy.SetFillStyle(1001)
+        #h_dummy.SetFillColor(r.kWhite)
+        #h_dummy.SetLineColor(r.kWhite)
+
+        leg_sig.AddEntry(h, s.displayname, "l")
+        #leg_sig.AddEntry(h_dummy, "", "fl")
         sig_histos.append(h)
         rcan.upper_pad.Update()
 
     # draw the signals
     for hsig in sig_histos :
-        hsig.Draw("hist e same")
+        hsig.Draw("hist same")
 
     # draw the dta graph
     gdata.Draw("option same pz 0")
     leg.Draw()
+    leg_sig.Draw()
     r.gPad.RedrawAxis()
 
     # add some text/labels
-    pu.draw_text(text="#bf{#it{ATLAS}} Internal",x=0.18,y=0.85, size=0.06)
-    pu.draw_text(text="13 TeV, 5.82/fb",x=0.18,y=0.79, size=0.04)
+    #pu.draw_text(text="#it{ATLAS} Preliminary",x=0.18,y=0.85, size=0.06)
+    pu.draw_text(text="ATLAS",x=0.18,y=0.85,size=0.06,font=72)
+    pu.draw_text(text="Preliminary",x=0.325,y=0.85,size=0.06,font=42)
+    pu.draw_text(text="L = 13.3 fb^{-1}, #sqrt{s} = 13 TeV",x=0.18,y=0.79, size=0.04)
     pu.draw_text(text=reg.displayname,      x=0.18,y=0.74, size=0.04)
 
     r.gPad.SetTickx()
@@ -595,17 +635,25 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     yax = h_sm.GetYaxis()
     yax.SetRangeUser(0,2)
     yax.SetTitle("Data/SM")
-    yax.SetTitleSize(0.14)
-    yax.SetLabelSize(0.13)
-    yax.SetLabelOffset(0.98 * 0.013)
-    yax.SetTitleOffset(0.45)
+    
+    yax.SetTitleSize(0.14 * 0.83)
+    yax.SetLabelSize(0.13 * 0.81)
+    yax.SetLabelOffset(0.98 * 0.013 * 1.08)
+    yax.SetTitleOffset(0.45 * 1.2)
     yax.SetLabelFont(42)
     yax.SetTitleFont(42)
     yax.SetNdivisions(5) 
+
+#    print "title size: ", yax.GetTitleSize()
+#    print "label size : ", yax.GetLabelSize()
+#    print "lab off      : ", yax.GetLabelOffset()
+#    print "title off        : ", yax.GetTitleOffset()
+    
     # xaxis
     xax = h_sm.GetXaxis()
-    xax.SetTitleSize(1.2 * 0.14)
-    xax.SetLabelSize(0.13)
+    xax.SetTitleSize(1.1 * 0.14)
+    xax.SetLabelSize(yax.GetLabelSize())
+    #xax.SetLabelSize(0.13)
     xax.SetLabelOffset(1.15*0.02)
     xax.SetTitleOffset(0.85 * xax.GetTitleOffset())
     xax.SetLabelFont(42)
@@ -627,31 +675,56 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
 
     # convert to tgraphs to get the ratio
     #g_data = pu.th1_to_tgraph(hd)
-    g_data = gdata
+    g_data = pu.convert_errors_to_poisson(hd)
+    #g_data = gdata
     g_sm = pu.th1_to_tgraph(h_sm)
-    g_ratio = pu.tgraphErrors_divide(g_data, g_sm)
+    g_ratio = pu.tgraphAsymmErrors_divide(g_data, g_sm)
 
     # For Data/MC only use the statistical error for data
     # since we explicity draw the MC error band
     nominalAsymErrorsNoSys = r.TGraphAsymmErrors(nominalAsymErrors)
     for i in xrange(nominalAsymErrorsNoSys.GetN()) :
-        nominalAsymErrorsNoSys.SetPointError(i-1,0,0,0,0)
-    ratio_raw = pu.tgraphErrors_divide(g_data, nominalAsymErrorsNoSys)
+        nominalAsymErrorsNoSys.SetPointError(i,0,0,0,0)
+        #nominalAsymErrorsNoSys.SetPointError(i-1,0,0,0,0)
+    ratio_raw = pu.tgraphAsymmErrors_divide(g_data, nominalAsymErrorsNoSys)
     ratio = r.TGraphAsymmErrors() 
 
     x1, y1 = r.Double(0.0), r.Double(0.0)
     index = 0
     for i in xrange(ratio_raw.GetN()) :
         ratio_raw.GetPoint(i, x1, y1)
+       # print "raw: (i, x, y) = (%d, %f, %f)"%(int(i),float(x1),float(y1))
+       # xx, yy = r.Double(0.0), r.Double(0.0)
+       # xn, yn = r.Double(0.0), r.Double(0.0)
+       # xg, yg = r.Double(0.0), r.Double(0.0)
+       # g_data.GetPoint(i, xx, yy)
+       # nominalAsymErrorsNoSys.GetPoint(i, xn, yn)
+       # g_sm.GetPoint(i, xg, yg)
+       # print "gdata: (i, x, y) = (%d, %f, %f)"%(int(i),float(xx),float(yy))
+       # print "nomAs: (i, x, y) = (%d, %f, %f)"%(int(i),float(xn),float(yn))
+       # print "g_sm : (i, x, y) = (%d, %f, %f)"%(int(i),float(xg),float(yg))
+        x_, y_ = r.Double(0.0), r.Double(0.0)
+        xx, yy = r.Double(0.0), r.Double(0.0)
+        xr, yr = r.Double(0.0), r.Double(0.0)
+        g_data.GetPoint(i, x_, y_)
+        gdata.GetPoint(i, xx, yy)
+        g_ratio.GetPoint(i, xr, yr)
+        print "gdata   (%f,%f) EYH : %f    EYL: %f"%(xx, yy, gdata.GetErrorYhigh(i), gdata.GetErrorYlow(i))
+        print "g_data  (%f,%f) EYH : %f    EYL: %f"%(x_, y_, g_data.GetErrorYhigh(i), g_data.GetErrorYlow(i)) 
+        print "g_ratio (%f,%f) EYH: %f    EYL: %f"%(xr, yr, g_ratio.GetErrorYhigh(i), g_ratio.GetErrorYlow(i))
+        print 50*"-"
         if y1 > 0. :
             ratio.SetPoint(index, x1, y1)
             ratio.SetPointError(index, ratio_raw.GetErrorXlow(i), ratio_raw.GetErrorXhigh(i), ratio_raw.GetErrorYlow(i), ratio_raw.GetErrorYhigh(i))
             index+=1
-    ratio.SetLineWidth(1)
+    #print "SETTING RATIO_RAW TO RATIO"
+    #ratio = ratio_raw
+    ratio.SetLineWidth(2)
     ratio.SetMarkerStyle(20)
-    ratio.SetMarkerSize(1.1)
+    ratio.SetMarkerSize(1.5)
+    #ratio.SetMarkerSize(1.1)
     ratio.SetLineColor(1)
-    ratio.SetMarkerSize(1.1)
+    ratio.SetMarkerSize(1.5)
     ratio.Draw("option pz 0")
     rcan.lower_pad.Update()
 
@@ -664,7 +737,7 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     #########################################
     # save
     #########################################
-    outname = p.name + ".eps"
+    outname = p.name + "_prelim.eps"
     rcan.canvas.SaveAs(outname)
     out = indir + "/plots/" + outdir
     utils.mv_file_to_dir(outname, out, True)
