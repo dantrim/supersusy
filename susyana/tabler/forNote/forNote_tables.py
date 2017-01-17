@@ -12,11 +12,11 @@ import supersusy.utils.region as region
 #############################################
 # Set up the samples
 #############################################
-rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0226/jul25/mc/Raw/"
+rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0228/a_sep21/mc/Raw/"
 fake_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0226/forFake3/fakes.3body/"
-data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0226/jul25/data/Raw/"
+data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0228/a_sep21/all_data_Nov15/" 
 #sf_diboson_dir = "/data/uclhc/uci/user/dantrim/ntuples/n0224/jun1#/mc/sf_diboson/Raw/"
-filelist_dir = "/data/uclhc/uci/user/dantrim/n0226val/filelists/" #
+filelist_dir = "/data/uclhc/uci/user/dantrim/n0228val/filelists/"
 backgrounds = []                                                  #
                                                                   #
 #### MC
@@ -31,8 +31,9 @@ lumi_[10.0] = 3.12
 lumi_[12.2] =  3.81
 lumi_[13.3] = 4.14
 lumi_[20.0] = 6.23
+lumi_[35.0] = 10.9
 
-lumi_val = 13.3
+lumi_val = 35.0
 
 # ttbro
 ttbar = background.Background("ttbar", "t#bar{t}")
@@ -56,6 +57,17 @@ stop.set_treename("ST")
 stop.set_chain_from_list_CONDOR(filelist_dir+ "singletop/", rawdir)
 backgrounds.append(stop)
 
+# ttV
+ttv = background.Background("ttV", "t+bar{t} V")
+ttv.set_debug()
+ttv.scale_factor = lumi_[lumi_val]
+ttv.set_fillStyle(0)
+ttv.setLineStyle(1)
+ttv.set_color(r.TColor.GetColor("#9bcdfd"))
+ttv.set_treename("TTV")
+ttv.set_chain_from_list_CONDOR(filelist_dir+ "ttV/", rawdir)
+backgrounds.append(ttv)
+
 # diboson
 diboson = background.Background("vv", "VV (Sherpa)")
 diboson.set_debug()
@@ -65,7 +77,11 @@ diboson.setLineStyle(1)
 diboson.set_color(r.TColor.GetColor("#41C1FC"))
 diboson.set_treename("diboson_sherpa")
 #diboson.set_chain_from_list_CONDOR(filelist_dir+ "diboson_sherpa_lvlv/", sf_diboson_dir)
-diboson.set_chain_from_list_CONDOR(filelist_dir+ "diboson_sherpa_lvlv/", rawdir)
+print "USING DIBOSON TEST"
+print "USING DIBOSON TEST"
+print "USING DIBOSON TEST"
+print "USING DIBOSON TEST"
+diboson.set_chain_from_list_CONDOR(filelist_dir+ "diboson_sherpa_lvlv_test/", rawdir)
 backgrounds.append(diboson)
 
 
@@ -212,7 +228,7 @@ backgrounds.append(wjets)
 data = background.Data()
 data.set_color(r.kBlack)
 data.set_treename("Data")
-data.set_chain_from_list_CONDOR(filelist_dir + "n0226_dataToRun/", data_rawdir)
+data.set_chain_from_list_CONDOR(filelist_dir + "data_toRun/", data_rawdir)
 
 
 #############################################
@@ -235,8 +251,8 @@ isSF = "((nMuons==2 || nElectrons==2) && %s"%mll_req
 isDF = "(nElectrons==1 && nMuons==1)"
 inZ = "((nMuons==2 || nElectrons==2) && %s"%mll_req
 
-isDFOS = "nLeptons==2 && nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>25 && l_pt[1]>20"
-isSFOS = "(nLeptons==2 && (nMuons==2 || nElectrons==2) && abs(mll-91.2)>10) && (l_q[0]*l_q[1])<0 && l_pt[0]>25 && l_pt[1]>20"
+isDFOS = "nLeptons==2 && nElectrons==1 && nMuons==1 && l_pt[0]>25 && l_pt[1]>20 && (l_q[0]*l_q[1])<0"
+isSFOS = "(( (nMuons==2 && l_pt[0]>25 && l_pt[1]>20) || (nElectrons==2 && l_pt[0]>25 && l_pt[1]>20)) && abs(mll-91.2)>10 && (l_q[0]*l_q[1])<0)"
 
 isDF = "nLeptons==2 && nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>25 && l_pt[1]>20"
 isEE = "nLeptons==2 && nElectrons==2 && (l_q[0]*l_q[1])<0 && l_pt[0]>25 && l_pt[1]>20 && %s"%mll_req
@@ -245,235 +261,243 @@ isSF = "(nLeptons==2 && ( (nMuons==2 && l_pt[0]>25 && l_pt[1]>20) || (nElectrons
 
 trigger = "((year==2015 && trig_pass2015==1) || (year==2016 && trig_pass2016update==1))"
 
-sr_w_def = "nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && mll>20 && " + trigger 
+
+test_def = "nBJets==0 && abs(mll-91.2)>10 && l_pt[0]>25 && l_pt[1]>20 && (nMuons==2 || nElectrons==2) && mll>40 && (l_q[0]*l_q[1])<0 && " + trigger
 reg = region.Region()
-reg.name = "srwDF"
-reg.displayname = "SRW-DF"
-reg.tcut = isDFOS + " && " + sr_w_def 
+reg.name = "test"
+reg.tcut = test_def
 regions.append(reg)
 
-reg = region.Region()
-reg.name = "srwEE"
-reg.displayname = "SRW-EE"
-reg.tcut = isEE + " && " + sr_w_def 
-regions.append(reg)
+#sr_w_def = "nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && mll>20 && " + trigger 
+##sr_w_def = "nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && mll>20 && " + trigger 
+#reg = region.Region()
+#reg.name = "srwDF"
+#reg.displayname = "SRW-DF"
+#reg.tcut = isDFOS + " && " + sr_w_def 
+#regions.append(reg)
 
-reg = region.Region()
-reg.name = "srwMM"
-reg.displayname = "SRW-MM"
-reg.tcut = isMM + " && " + sr_w_def 
-regions.append(reg)
-
-sr_t_def = "nBJets>0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>110 && mll>20 && " + trigger 
-reg = region.Region()
-reg.name = "srtDF"
-reg.displayname = "SRt-DF"
-reg.tcut = isDFOS + " && " + sr_t_def 
-regions.append(reg)
-
-reg = region.Region()
-reg.name = "srtMM"
-reg.displayname = "SRt-MM"
-reg.tcut = isMM + " && " + sr_t_def 
-regions.append(reg)
-
-reg = region.Region()
-reg.name = "srtEE"
-reg.displayname = "SRt-EE"
-reg.tcut = isEE + " && " + sr_t_def 
-regions.append(reg)
-
-reg = region.Region()
-reg.name = "crvDF"
-reg.displayname = "CRVDF"
-reg.tcut = isDFOS + " && nBJets==0 && MDR>30  && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger 
-regions.append(reg)
-
-reg = region.Region()
-reg.name = "crvSF"
-reg.displayname = "CRVSF"
-reg.tcut = isSFOS + " && nBJets==0 && MDR>30  && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && met>70 && mll>20 && " + trigger
-regions.append(reg)
-
-reg = region.Region()
-reg.name = "vrv"
-reg.displayname = "VRVDF"
-reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && MDR<80 && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger
-regions.append(reg)
-
-reg = region.Region()
-reg.name = "vrvSF"
-reg.displayname = "VRVSF"
-reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && MDR<80  && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && met>70 && mll>20 && " + trigger
-regions.append(reg)
+#reg = region.Region()
+#reg.name = "srwEE"
+#reg.displayname = "SRW-EE"
+#reg.tcut = isEE + " && " + sr_w_def 
+#regions.append(reg)
 #
+#reg = region.Region()
+#reg.name = "srwMM"
+#reg.displayname = "SRW-MM"
+#reg.tcut = isMM + " && " + sr_w_def 
+#regions.append(reg)
 #
-##reg = region.Region()
-##reg.name = "crvSF"
-##reg.displayname = "crvSF"
-##reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && RPT>0.2 && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
-##regions.append(reg)
+#sr_t_def = "nBJets>0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>110 && mll>20 && " + trigger 
+#reg = region.Region()
+#reg.name = "srtDF"
+#reg.displayname = "SRt-DF"
+#reg.tcut = isDFOS + " && " + sr_t_def 
+#regions.append(reg)
 #
-reg = region.Region()
-reg.name = "crt"
-reg.displayname = "CR-T"
-reg.tcut = isDFOS + " && nBJets>0 && MDR>80 && RPT>0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger
-regions.append(reg)
-
-reg = region.Region()
-reg.name = "vrt"
-reg.displayname = "VR-T"
-reg.tcut = isDFOS + " && nBJets==0 && MDR>80 && RPT<0.5 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger 
-regions.append(reg)
-##
-##
-##
-###
-###
-##reg = region.Region()
-##reg.name = "srw_df"
-##reg.displayname = "srw_df"
-##reg.tcut = isDFOS + " && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && trig_pass2016==1 && mll>20" 
-##regions.append(reg)
-##
-##reg = region.Region()
-##reg.name = "srw_mm"
-##reg.displayname = "srw_mm"
-##reg.tcut = isMM + " && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && trig_pass2016==1 && mll>20" 
-##regions.append(reg)
-##
-##reg = region.Region()
-##reg.name = "srw_ee"
+#reg = region.Region()
+#reg.name = "srtMM"
+#reg.displayname = "SRt-MM"
+#reg.tcut = isMM + " && " + sr_t_def 
+#regions.append(reg)
+#
+#reg = region.Region()
+#reg.name = "srtEE"
+#reg.displayname = "SRt-EE"
+#reg.tcut = isEE + " && " + sr_t_def 
+#regions.append(reg)
 #
 #reg = region.Region()
 #reg.name = "crvDF"
 #reg.displayname = "CRVDF"
-#reg.tcut = isDFOS + " && nBJets==0 && MDR>30  && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20"
+#reg.tcut = isDFOS + " && nBJets==0 && MDR>30  && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger 
 #regions.append(reg)
 #
 #reg = region.Region()
 #reg.name = "crvSF"
 #reg.displayname = "CRVSF"
-#reg.tcut = isSFOS + " && nBJets==0 && MDR>30  && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20 && met>70"
+#reg.tcut = isSFOS + " && nBJets==0 && MDR>30  && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && met>70 && mll>20 && " + trigger
+#regions.append(reg)
+#
+#reg = region.Region()
+#reg.name = "vrv"
+#reg.displayname = "VRVDF"
+#reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && MDR<80 && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger
 #regions.append(reg)
 #
 #reg = region.Region()
 #reg.name = "vrvSF"
 #reg.displayname = "VRVSF"
-#reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && MDR<80 && RPT>0.2 && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20"
+#reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && MDR<80  && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && met>70 && mll>20 && " + trigger
+#regions.append(reg)
+##
+##
+###reg = region.Region()
+###reg.name = "crvSF"
+###reg.displayname = "crvSF"
+###reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && RPT>0.2 && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
+###regions.append(reg)
+##
+#reg = region.Region()
+#reg.name = "crt"
+#reg.displayname = "CR-T"
+#reg.tcut = isDFOS + " && nBJets>0 && MDR>80 && RPT>0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20"# && " + trigger
 #regions.append(reg)
 #
-#
+#reg = region.Region()
+#reg.name = "vrt"
+#reg.displayname = "VR-T"
+#reg.tcut = isDFOS + " && nBJets==0 && MDR>80 && RPT<0.5 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger 
+#regions.append(reg)
+###
+###
+###
+####
+####
+###reg = region.Region()
+###reg.name = "srw_df"
+###reg.displayname = "srw_df"
+###reg.tcut = isDFOS + " && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && trig_pass2016==1 && mll>20" 
+###regions.append(reg)
+###
+###reg = region.Region()
+###reg.name = "srw_mm"
+###reg.displayname = "srw_mm"
+###reg.tcut = isMM + " && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && trig_pass2016==1 && mll>20" 
+###regions.append(reg)
+###
+###reg = region.Region()
+###reg.name = "srw_ee"
+##
+##reg = region.Region()
+##reg.name = "crvDF"
+##reg.displayname = "CRVDF"
+##reg.tcut = isDFOS + " && nBJets==0 && MDR>30  && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20"
+##regions.append(reg)
+##
 ##reg = region.Region()
 ##reg.name = "crvSF"
-##reg.displayname = "crvSF"
-##reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && RPT>0.2 && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
-##regions.append(reg)
-#
-##reg = region.Region()
-##reg.name = "crt"
-##reg.displayname = "CR-T"
-##reg.tcut = isDFOS + " && nBJets>0 && MDR>80 && RPT>0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20"
+##reg.displayname = "CRVSF"
+##reg.tcut = isSFOS + " && nBJets==0 && MDR>30  && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20 && met>70"
 ##regions.append(reg)
 ##
 ##reg = region.Region()
-##reg.name = "vrt"
-##reg.displayname = "VR-T"
-##reg.tcut = isDFOS + " && nBJets==0 && MDR>80 && RPT<0.5 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20"
+##reg.name = "vrvSF"
+##reg.displayname = "VRVSF"
+##reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && MDR<80 && RPT>0.2 && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20"
 ##regions.append(reg)
 ##
-##
-##
-##reg = region.Region()
-##reg.name = "vrv"
-##reg.displayname = "VRV"
-##reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && MDR<80 && RPT>0.2 && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20"
-##regions.append(reg)
-###
-###
-##reg = region.Region()
-##reg.name = "srw_df"
-##reg.displayname = "srw_df"
-##reg.tcut = isDFOS + " && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && trig_pass2016==1 && mll>20" 
-##regions.append(reg)
-##
-##reg = region.Region()
-##reg.name = "srw_mm"
-##reg.displayname = "srw_mm"
-##reg.tcut = isMM + " && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && trig_pass2016==1 && mll>20" 
-##regions.append(reg)
-##
-##reg = region.Region()
-##reg.name = "srw_ee"
-##reg.displayname = "srw_ee"
-##reg.tcut = isEE + " && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && trig_pass2016==1 && mll>20" 
-##regions.append(reg)
-##
-##reg = region.Region()
-##reg.name = "srt_df"
-##reg.displayname = "srt_df"
-##reg.tcut = isDFOS + " && nBJets>0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>110 && trig_pass2016==1 && mll>20" 
-##regions.append(reg)
-##
-##reg = region.Region()
-##reg.name = "srt_mm"
-##reg.displayname = "srt_mm"
-##reg.tcut = isMM + " && nBJets>0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>110 && trig_pass2016==1 && mll>20" 
-##regions.append(reg)
-##
-##reg = region.Region()
-##reg.name = "srt_ee"
-##reg.displayname = "srt_ee"
-##reg.tcut = isEE + " && nBJets>0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>110 && trig_pass2016==1 && mll>20" 
-##regions.append(reg)
-#
-#
-##reg = region.Region()
-##reg.name = "ww"
-##reg.displayname = "WW-like"
-##### checking SF CR
-###reg_cut = "nLeptons==2 && " + isSFOS +" && abs(mll-91.2)<10 && MDR>95 && nBJets==0 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && RPT>0.2 && gamInvRp1>0.8"
-##reg_cut = "nLeptons==2 && " + inZ + " && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && MDR>95 && nBJets==0 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && RPT>0.2 && gamInvRp1>0.5"
-##reg.tcut = reg_cut
-##regions.append(reg)
 ##
 ###reg = region.Region()
-###reg.simplename = "sfSRT"
-###reg.displayname = "sfSRT"
-###reg.tcut = isSFOS + " && MDR>110 && nBJets>0 && RPT>0.5 && gamInvRp1>0.7 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
-###regions.append(reg)
-###
-###reg = region.Region()
-###reg.simplename = "dfSRT"
-###reg.displayname = "dfSRT"
-###reg.tcut = isDFOS + " && MDR>110 && nBJets>0 && RPT>0.5 && gamInvRp1>0.7 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
+###reg.name = "crvSF"
+###reg.displayname = "crvSF"
+###reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && RPT>0.2 && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
 ###regions.append(reg)
 ##
 ###reg = region.Region()
-###reg.simplename = "sfSRW"
-###reg.displayname = "sfSRW"
-###reg.tcut = isSFOS + " && MDR>95 && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
+###reg.name = "crt"
+###reg.displayname = "CR-T"
+###reg.tcut = isDFOS + " && nBJets>0 && MDR>80 && RPT>0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20"
 ###regions.append(reg)
 ###
 ###reg = region.Region()
-###reg.simplename = "dfSRW"
-###reg.displayname = "dfSRW"
-###reg.tcut = isDFOS + " && MDR>95 && nBJets==0 && RPT>0.5 && gamInvRp1>0.7 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
+###reg.name = "vrt"
+###reg.displayname = "VR-T"
+###reg.tcut = isDFOS + " && nBJets==0 && MDR>80 && RPT<0.5 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20"
 ###regions.append(reg)
-##
-##
-##
-##reg = region.Region()
-##reg.name = "crv2"
-##reg.displayname = "crv2"
-##reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && RPT>0.2 && gamInvRp1>0.8"
-##regions.append(reg)
+###
+###
 ###
 ###reg = region.Region()
-###reg.name = "vrv2"
-###reg.displayname = "vrv2"
-###reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && gamInvRp1>0.8 && MDR<80" 
+###reg.name = "vrv"
+###reg.displayname = "VRV"
+###reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && MDR<80 && RPT>0.2 && RPT<0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1 && mll>20"
 ###regions.append(reg)
+####
+####
+###reg = region.Region()
+###reg.name = "srw_df"
+###reg.displayname = "srw_df"
+###reg.tcut = isDFOS + " && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && trig_pass2016==1 && mll>20" 
+###regions.append(reg)
+###
+###reg = region.Region()
+###reg.name = "srw_mm"
+###reg.displayname = "srw_mm"
+###reg.tcut = isMM + " && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && trig_pass2016==1 && mll>20" 
+###regions.append(reg)
+###
+###reg = region.Region()
+###reg.name = "srw_ee"
+###reg.displayname = "srw_ee"
+###reg.tcut = isEE + " && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>95 && trig_pass2016==1 && mll>20" 
+###regions.append(reg)
+###
+###reg = region.Region()
+###reg.name = "srt_df"
+###reg.displayname = "srt_df"
+###reg.tcut = isDFOS + " && nBJets>0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>110 && trig_pass2016==1 && mll>20" 
+###regions.append(reg)
+###
+###reg = region.Region()
+###reg.name = "srt_mm"
+###reg.displayname = "srt_mm"
+###reg.tcut = isMM + " && nBJets>0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>110 && trig_pass2016==1 && mll>20" 
+###regions.append(reg)
+###
+###reg = region.Region()
+###reg.name = "srt_ee"
+###reg.displayname = "srt_ee"
+###reg.tcut = isEE + " && nBJets>0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && MDR>110 && trig_pass2016==1 && mll>20" 
+###regions.append(reg)
+##
+##
+###reg = region.Region()
+###reg.name = "ww"
+###reg.displayname = "WW-like"
+###### checking SF CR
+####reg_cut = "nLeptons==2 && " + isSFOS +" && abs(mll-91.2)<10 && MDR>95 && nBJets==0 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && RPT>0.2 && gamInvRp1>0.8"
+###reg_cut = "nLeptons==2 && " + inZ + " && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && MDR>95 && nBJets==0 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && RPT>0.2 && gamInvRp1>0.5"
+###reg.tcut = reg_cut
+###regions.append(reg)
+###
+####reg = region.Region()
+####reg.simplename = "sfSRT"
+####reg.displayname = "sfSRT"
+####reg.tcut = isSFOS + " && MDR>110 && nBJets>0 && RPT>0.5 && gamInvRp1>0.7 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
+####regions.append(reg)
+####
+####reg = region.Region()
+####reg.simplename = "dfSRT"
+####reg.displayname = "dfSRT"
+####reg.tcut = isDFOS + " && MDR>110 && nBJets>0 && RPT>0.5 && gamInvRp1>0.7 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
+####regions.append(reg)
+###
+####reg = region.Region()
+####reg.simplename = "sfSRW"
+####reg.displayname = "sfSRW"
+####reg.tcut = isSFOS + " && MDR>95 && nBJets==0 && RPT>0.5 && gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
+####regions.append(reg)
+####
+####reg = region.Region()
+####reg.simplename = "dfSRW"
+####reg.displayname = "dfSRW"
+####reg.tcut = isDFOS + " && MDR>95 && nBJets==0 && RPT>0.5 && gamInvRp1>0.7 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && trig_pass2016==1"#"
+####regions.append(reg)
+###
+###
+###
+###reg = region.Region()
+###reg.name = "crv2"
+###reg.displayname = "crv2"
+###reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && RPT>0.2 && gamInvRp1>0.8"
+###regions.append(reg)
+####
+####reg = region.Region()
+####reg.name = "vrv2"
+####reg.displayname = "vrv2"
+####reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && gamInvRp1>0.8 && MDR<80" 
+####regions.append(reg)
 
 #############################################
 # Set up the plots

@@ -317,7 +317,7 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
         hs.Sumw2
 
         # cut and make sample weighted, applying the scale_factor
-        cut = "(" + reg.tcut + ") * eventweight *" + str(s.scale_factor)
+        cut = "(" + reg.tcut + ") * eventweightNOPUPW *" + str(s.scale_factor)
         cut = r.TCut(cut)
         sel = r.TCut("1")
         cmd = "%s>>%s"%(plot.variable, hs.GetName())
@@ -533,34 +533,84 @@ if __name__=="__main__" :
 
     backgrounds = backgrounds_new
 
+#    ### go over methods
+#    if method == "zn_plots" or method == "zn" :
+#        if len(plots) == 0 :
+#            print "optimizer ERROR    Attempting to make the zn_plots plots without having configured any plots!"
+#            print "optimizer ERROR    >>> Exiting."
+#            sys.exit()
+#        region_names = [x.name for x in regions]
+#        if requestRegion not in region_names :
+#            print "optmizer ERROR    The requested region ('%s') is not in the configured regions"%requestRegion
+#            print "optmizer ERROR    To make the zn-ratio plots a requested region is required."
+#            print "optmizer ERROR    >>> Exiting."
+#            sys.exit()
+#        for possible_region in regions :
+#            if possible_region.name != requestRegion : continue
+#            set_event_lists(possible_region, backgrounds, signals)
+#            n_plots = len(plots)
+#            n_run = 1
+#            for configured_plot in plots :
+#
+#                if not configured_plot.doubleRatioCanvas :
+#                    print "optmizer ERROR    Attempting to make the zn_plots plot %s without the required 'double ratio canvas'"%configured_plot.name
+#                    print "optmizer ERROR    >>> Exiting."
+#                    sys.exit()
+#                if configured_plot.region != requestRegion : continue
+#                print 20*"-"
+#                print "plots [%d/%d]"%(n_run, n_plots)
+#                n_run+=1
+#                make_znRatioPlots(backgrounds, signals, requestRegion, configured_plot) 
+
+
+### scan -- Nov 14 2016
     ### go over methods
-    if method == "zn_plots" or method == "zn" :
+    if method == "zn_plots" or method == "zn" or method == "fasimov_plots" or method == "fasimov" :
         if len(plots) == 0 :
             print "optimizer ERROR    Attempting to make the zn_plots plots without having configured any plots!"
             print "optimizer ERROR    >>> Exiting."
             sys.exit()
-        region_names = [x.name for x in regions]
-        if requestRegion not in region_names :
-            print "optmizer ERROR    The requested region ('%s') is not in the configured regions"%requestRegion
-            print "optmizer ERROR    To make the zn-ratio plots a requested region is required."
-            print "optmizer ERROR    >>> Exiting."
-            sys.exit()
-        for possible_region in regions :
-            if possible_region.name != requestRegion : continue
-            set_event_lists(possible_region, backgrounds, signals)
-            n_plots = len(plots)
-            n_run = 1
-            for configured_plot in plots :
+      #  region_names = [x.name for x in regions]
+      #  if requestRegion not in region_names :
+      #      print "optmizer ERROR    The requested region ('%s') is not in the configured regions"%requestRegion
+      #      print "optmizer ERROR    To make the zn-ratio plots a requested region is required."
+      #      print "optmizer ERROR    >>> Exiting."
+      #      sys.exit()
+        original_cut = "" 
+        is_first = True
 
-                if not configured_plot.doubleRatioCanvas :
-                    print "optmizer ERROR    Attempting to make the zn_plots plot %s without the required 'double ratio canvas'"%configured_plot.name
-                    print "optmizer ERROR    >>> Exiting."
-                    sys.exit()
-                if configured_plot.region != requestRegion : continue
-                print 20*"-"
-                print "plots [%d/%d]"%(n_run, n_plots)
-                n_run+=1
-                make_znRatioPlots(backgrounds, signals, requestRegion, configured_plot) 
+        gamVals = ["0.55", "0.6", "0.65", "0.7", "0.75", "0.8"]
+        rptVals = ["0.55", "0.6", "0.65", "0.7", "0.75", "0.8"]
+        xVals   = ["0.8", "0.85", "0.9", "0.95", "1.0", "1.1"]
+        yVals   = ["1.6", "1.8", "2.0", "2.2", "2.4"]
+
+        #gamVals = ["0.6", "0.65", "0.7", "0.75", "0.8"]
+        #rptVals = ["0.6", "0.65", "0.7", "0.75"]
+        #xVals = ["0.8", "0.85", "0.9", "1.0", "1.1"]
+        #yVals = ["1.8", "2", "2.2", "2.4"]
+
+        scan_number = 0
+        for gamVal in gamVals :
+            for rptVal in rptVals :
+                for xVal in xVals :
+                    for yVal in yVals :
+                        for possible_region in regions :
+                            if possible_region.name != requestRegion : continue
+                            if is_first :
+                                original_cut = possible_region.tcut
+                                is_first = False
+                            current_cut = original_cut + " && gamInvRp1>%s && RPT>%s && DPB_vSS>(%s*abs(cosThetaB)+%s)"%(gamVal, rptVal, xVal, yVal)
+                            possible_region.tcut = current_cut
+                            print "scan[%d] gam: %s rpt: %s x: %s y: %s"%(scan_number, gamVal, rptVal, xVal, yVal) 
+                            print "  > REGION: %s"%possible_region.tcut
+                            scan_number += 1
+                            for configured_plot in plots[:1] :
+                                if not configured_plot.doubleRatioCanvas :
+                                    print "optmizer ERROR    Attempting to make the zn_plots plot %s without the required 'double ratio canvas'"%configured_plot.name
+                                    print "optmizer ERROR    >>> Exiting."
+                                    sys.exit()
+      #                          if configured_plot.region != requestRegion : continue
+                                make_znRatioPlots(backgrounds, signals, requestRegion, configured_plot) 
 
 ### scan -- APril 26 2016
 #    ### go over methods

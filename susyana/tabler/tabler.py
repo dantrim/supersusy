@@ -185,19 +185,26 @@ def make_cutflow(reg, data, backgrounds) :
 
 ################################################
 ## get the yield for a background given a tcut
-def get_yield(background, tcut, isData) :
+def get_yield(background, tcut, region_name, isData) :
 
     cut = ""
     if not isData and "fakes" not in background.name:
         #cut = "(" + tcut + ") * " + str(b.scale_factor)
         #cut = "(" + tcut + ") * " + str(background.scale_factor)
-        cut = "(" + tcut + ") " 
-        #cut = "(" + tcut + ") * eventweight * " + str(background.scale_factor)
+        #cut = "(" + tcut + ") " 
+        cut = "(" + tcut + ") * eventweight * " + str(background.scale_factor)
     elif "fakes" in background.name :
         cut = "(" + tcut + ") * FakeWeight * " + str(background.scale_factor)
         print "fakes cut string = %s"%cut
     else :
         cut = "(" + tcut + ")"
+
+    if "vv" in background.name and "DF" in region_name and "SF" not in region_name :
+        cut = "%s * 1.27"%cut
+        print "applying VVDF NF: %s"%cut
+    elif "vv" in background.name and "DF" not in region_name and "SF" in region_name :
+        cut = "%s * 1.22"%cut
+        print "applying VVSF NF: %s"%cut
 
 
     #if background.name == "zjets" :
@@ -243,7 +250,7 @@ def make_yieldsTable(reg_, data, backgrounds) :
     total_MC_stat_err = 0.0
     for bkg in backgrounds :
         # grab the yield and error
-        yld, stat_err = get_yield(bkg, reg_.tcut, False)
+        yld, stat_err = get_yield(bkg, reg_.tcut, reg_.name, False)
         yld_str = "%.2f \\pm %.2f"%(yld, stat_err)
         row.append(yld_str)
 
@@ -258,7 +265,7 @@ def make_yieldsTable(reg_, data, backgrounds) :
     # get the data yield
     if data : 
         print "GETTING DATA YIELD"
-        data_yld, data_stat_err = get_yield(data, reg_.tcut, True)
+        data_yld, data_stat_err = get_yield(data, reg_.tcut, reg_.name, True)
         print data.tree.GetEntries()
         data_yld_str = "%.2f \\pm %.2f"%(data_yld, data_stat_err)
         print " > %s"%data_yld_str

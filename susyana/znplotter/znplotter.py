@@ -137,7 +137,15 @@ def get_signal_grid(file_rawdir, grid_name) :
     return sig_list
 
 def get_yield(bkg_, tcut, region_name) :
-    cut = "(" + tcut + ") * eventweight * " + str(bkg_.scale_factor)
+    weight_str = ""
+    if "vv" in bkg_.name and "crv" in region_name and "SF" not in region_name :
+        weight_str = "eventweight * 1.27"
+    elif "vv" in bkg_.name and "crvSF" in region_name :
+        weight_str = "eventweight * 1.22"
+    else :
+        weight_str = "eventweight"
+    cut = "(" + tcut + ") * %s * %s"%(weight_str, str(bkg_.scale_factor))
+    #cut = "(" + tcut + ") * eventweight * " + str(bkg_.scale_factor)
     cut_raw = "(" + tcut + ")"
     cut = r.TCut(cut)
     cut_raw = r.TCut(cut_raw)
@@ -218,8 +226,8 @@ def get_significance(bkgs_, sigs_, reg_, metric = "", rel_uncer = 0.0) :
 
         significance = 0
 
-        integral = get_signal_yield(sig, reg_.getTcut(), reg_.name, "1")
-        #integral = get_signal_yield(sig, reg_.getTcut(), reg_.name, "susy3BodyRightPol")
+        #integral = get_signal_yield(sig, reg_.getTcut(), reg_.name, "1")
+        integral = get_signal_yield(sig, reg_.getTcut(), reg_.name, "1")#susy3BodyRightPol")
         sig.yields[reg_.name] = integral
 
         if metric == "Zn" :
@@ -345,7 +353,7 @@ def set_palette(name='', ncontours=999) :
 
 def make_frame(grid_name) :
     n_bins = 100
-    frame = r.TH2F("frame", "", n_bins, 100, 450, 93, 0, 425)
+    frame = r.TH2F("frame", "", n_bins, 100, 500, 93, 0, 425)
 
     frame.SetLabelOffset( 0.012, "X" )
     frame.SetLabelOffset( 0.012, "Y" )
@@ -608,8 +616,8 @@ def make_sensitivity_plot(sigs_, regs_, grid_name) :
 
     ##################################
     # atlas
-    pu.draw_text(text="#bf{#it{ATLAS}} Internal",x=0.2, y = 0.87, size = 0.05)
-    pu.draw_text(text="13 TeV, 10/fb",x=0.2,y=0.82,size=0.04)
+    pu.draw_text(text="#bf{#it{ATLAS}} Preliminary",x=0.2, y = 0.87, size = 0.05)
+    pu.draw_text(text="13 TeV, 25/fb",x=0.2,y=0.82,size=0.04)
     print 45*"*"
     print "Hardcoding process formula onto canvas"
     print 45*"*"
@@ -734,8 +742,8 @@ if __name__ == "__main__" :
         if reg.isParent() :
             combine_subregion_significance(reg, signals)
 
-    for s in signals :
-        print s.significance_dict
+    #for s in signals :
+    #    print s.significance_dict
 
     ## now we have the significance for each sub-region and the 
     ## significance for the combination of each sub-region

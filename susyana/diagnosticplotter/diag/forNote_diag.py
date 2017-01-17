@@ -7,17 +7,17 @@ import supersusy.utils.systematic as systematic
 
 
 
-do_eff_nVtx = True
-do_lumi_yields = False
+do_eff_nVtx = False
+do_lumi_yields = True
 
 #######################################
 # samples
 ########################################
 backgrounds = []
 rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0226/jul25/mc/Raw/"
-data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0226/jul25/data/Raw/"
+data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0228/a_sep21/all_data_Nov15/"
 #fake_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0224/fakes_jun13/"
-filelist_dir = "/data/uclhc/uci/user/dantrim/n0226val/filelists/"
+filelist_dir = "/data/uclhc/uci/user/dantrim/n0228val/filelists/"
 
 
 lumi_ = [3.95]
@@ -149,7 +149,7 @@ backgrounds.append(drel)
 data = background.Data()
 data.set_color(r.kBlack)
 data.set_treename("Data")
-data.set_chain_from_list_CONDOR(filelist_dir + "n0226_dataToRun/", data_rawdir)
+data.set_chain_from_list_CONDOR(filelist_dir + "data_toRun/", data_rawdir)
 
 
 ##########################################

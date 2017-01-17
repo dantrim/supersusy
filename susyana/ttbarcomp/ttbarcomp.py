@@ -67,6 +67,9 @@ def get_variables() :
     names += ["mt2"]
     names += ["met"]
     names += ["meff"]
+    names += ["j_pt[0]"]
+    names += ["j_pt[1]"]
+    names += ["j_pt[2]"]
     names += ["bj_pt[0]"]
     names += ["bj_pt[1]"]
     names += ["bj_pt[2]"]
@@ -82,12 +85,27 @@ def get_variables() :
     names += ["dphi_ll"]
     names += ["l_pt[0]"]
     names += ["l_pt[1]"]
+    names += ["MDR"]
+    names += ["RPT"]
+    names += ["DPB_vSS"]
+    names += ["cosThetaB"]
+    names += ["gamInvRp1"]
+    # angles between leptons and jets
+    names += ["dphi_j0_ll"]
+    names += ["dphi_j0_l0"]
+    names += ["dphi_sj0_ll"]
+    names += ["dphi_sj0_l0"]
+    names += ["dphi_bj0_ll"]
+    names += ["dphi_bj0_l0"]
 
 
     nice_names = {}
     nice_names["mt2"]  = "m_{t2}"
     nice_names["met"]  = "Missing E_{T}"
     nice_names["meff"]  = "m_{eff}"
+    nice_names["j_pt[0]"] = "Lead jet p_{T}"
+    nice_names["j_pt[1]"] = "2nd jet p_{T}"
+    nice_names["j_pt[2]"] = "3rd jet p_{T}"
     nice_names["bj_pt[0]"] = "Lead b-jet p_{T}"
     nice_names["bj_pt[1]"] = "2nd b-jet p_{T}"
     nice_names["bj_pt[2]"] = "3rd b-jet p_{T}"
@@ -95,19 +113,34 @@ def get_variables() :
     nice_names["sj_pt[1]"] = "2nd signal, non b-jet p_{T}"
     nice_names["sj_pt[2]"] = "3rd signal, non b-jet p_{T}"
     nice_names["nBJets"] = "b-tagged jet multiplicity"
-    nice_names["nSJets"] = "non-b, signal jet multiplicity"
+    nice_names["nSJets"] = "signal (non-b) jet multiplicity"
     nice_names["nJets"] = "signal jet multiplicity"
     nice_names["bj_eta[0]"] = "Lead b-jet #eta"
     nice_names["bj_eta[1]"] = "2nd b-jet #eta"
-    nice_names["pTll"] = "Dilepton Transverse Momentum"
+    nice_names["pTll"] = "p_{T}^{ll}"
     nice_names["dphi_ll"] = "#Delta#phi_{ll}"
     nice_names["l_pt[0]"] = "Lead lepton p_{T}"
     nice_names["l_pt[1]"] = "Sub-lead lepton p_{T}"
+    nice_names["MDR"] = "M_{#Delta}^{R}"
+    nice_names["RPT"] = "R_{p_{T}}"
+    nice_names["DPB_vSS"] = "#Delta#phi_{#beta}^{R}"
+    nice_names["cosThetaB"] = "cos#theta_{b}"
+    nice_names["gamInvRp1"] = "1/#gamma_{R+1}"
+    # angles between jets and leptons
+    nice_names["dphi_j0_ll"] = "#Delta#phi(j0, ll)"
+    nice_names["dphi_j0_l0"] = "#Delta#phi(j0, l0)"
+    nice_names["dphi_sj0_ll"] = "#Delta#phi(sj0, ll)"
+    nice_names["dphi_sj0_l0"] = "#Delta#phi(sj0, l0)"
+    nice_names["dphi_bj0_ll"] = "#Delta#phi(bj0, ll)"
+    nice_names["dphi_bj0_l0"] = "#Delta#phi(bj0, l0)"
 
     do_gev = {}
     do_gev["mt2"] = True
     do_gev["met"] = True
     do_gev["meff"] = True
+    do_gev["j_pt[0]"] = True
+    do_gev["j_pt[1]"] = True
+    do_gev["j_pt[2]"] = True
     do_gev["bj_pt[0]"] = True
     do_gev["bj_pt[1]"] = True
     do_gev["bj_pt[2]"] = True
@@ -123,29 +156,57 @@ def get_variables() :
     do_gev["dphi_ll"] = False
     do_gev["l_pt[0]"] = True
     do_gev["l_pt[1]"] = True
+    do_gev["MDR"] = True
+    do_gev["RPT"] = False
+    do_gev["DPB_vSS"] = False
+    do_gev["cosThetaB"] = False
+    do_gev["gamInvRp1"] = False
+    # angles between jets and leptons
+    do_gev["dphi_j0_ll"]  = False
+    do_gev["dphi_j0_l0"]  = False
+    do_gev["dphi_sj0_ll"] = False
+    do_gev["dphi_sj0_l0"] = False
+    do_gev["dphi_bj0_ll"] = False
+    do_gev["dphi_bj0_l0"] = False
 
     bounds = {}
-    bounds["mt2"]      = { "test" : [10, 0, 250, 1e9] }
-    bounds["met"]      = { "test" : [10, 0, 300, 1e9] }
-    bounds["meff"]      = { "test" : [80, 0, 2000, 1e9] }
-    bounds["bj_pt[0]"] = { "test" : [10, 0, 300, 1e9] }
-    bounds["bj_pt[1]"] = { "test" : [10, 0, 250, 1e9] }
-    bounds["bj_pt[2]"] = { "test" : [10, 0, 250, 1e9] }
-    bounds["sj_pt[0]"] = { "test" : [10, 0, 300, 1e9] }
-    bounds["sj_pt[1]"] = { "test" : [10, 0, 250, 1e9] }
-    bounds["sj_pt[2]"] = { "test" : [10, 0, 250, 1e9] }
-    bounds["nBJets"] =   { "test" : [1, 0, 7, 1e9] }
-    bounds["nSJets"] =   { "test" : [1, 0, 10, 1e9] }
-    bounds["nJets"] =    { "test" : [1, 0, 15, 1e9] }
-    bounds["bj_eta[0]"]= { "test" : [0.2, -2.5, 2.5, 1e9] }
-    bounds["bj_eta[1]"]= { "test" : [0.2, -2.5, 2.5, 1e9] }
-    bounds["pTll"] =     { "test" : [10, 0, 300, 1e9] }
-    bounds["dphi_ll"] =  { "test" : [0.2, -3, 3, 1e9] }
-    bounds["l_pt[0]"] =  { "test" : [10, 0, 250, 1e9] }
-    bounds["l_pt[1]"] =  { "test" : [10, 0, 200, 1e9] }
+    bounds["mt2"]      = {  "vrt" : [10,0,250,1e9],        "dfpreb" : [10,0,250,1e9],          "test" : [10, 0, 250, 1e9] }
+    bounds["met"]      = {  "vrt" : [10,0,300,1e9 ],       "dfpreb" : [10,0,300,1e9 ],         "test" : [10, 0, 300, 1e9] }
+    bounds["meff"]     = {  "vrt" : [80,0,2000,1e9 ],      "dfpreb" : [80,0,2000,1e9 ],        "test" : [80, 0, 2000, 1e9] }
+    bounds["j_pt[0]"] = {  "vrt" : [10, 0, 300, 1e9 ],     "dfpreb" : [10, 0, 300, 1e9 ],      "test" : [10, 0, 300, 1e9] }
+    bounds["j_pt[1]"] = {  "vrt" : [10, 0, 250, 1e9 ],     "dfpreb" : [10, 0, 250, 1e9 ],      "test" : [10, 0, 250, 1e9] }
+    bounds["j_pt[2]"] = {  "vrt" : [10, 0, 250, 1e9 ],     "dfpreb" : [10, 0, 250, 1e9 ],      "test" : [10, 0, 250, 1e9] }
+    bounds["bj_pt[0]"] = {  "vrt" : [10, 0, 300, 1e9 ],    "dfpreb" : [10, 0, 300, 1e9 ],      "test" : [10, 0, 300, 1e9] }
+    bounds["bj_pt[1]"] = {  "vrt" : [10, 0, 250, 1e9 ],    "dfpreb" : [10, 0, 250, 1e9 ],      "test" : [10, 0, 250, 1e9] }
+    bounds["bj_pt[2]"] = {  "vrt" : [10, 0, 250, 1e9 ],    "dfpreb" : [10, 0, 250, 1e9 ],      "test" : [10, 0, 250, 1e9] }
+    bounds["sj_pt[0]"] = {  "vrt" : [10, 0, 300, 1e9 ],    "dfpreb" : [10, 0, 300, 1e9 ],      "test" : [10, 0, 300, 1e9] }
+    bounds["sj_pt[1]"] = {  "vrt" : [10, 0, 250, 1e9 ],    "dfpreb" : [10, 0, 250, 1e9 ],      "test" : [10, 0, 250, 1e9] }
+    bounds["sj_pt[2]"] = {  "vrt" : [10, 0, 250, 1e9 ],    "dfpreb" : [10, 0, 250, 1e9 ],      "test" : [10, 0, 250, 1e9] }
+    bounds["nBJets"] =   {  "vrt" : [1, 0, 7, 1e9 ],       "dfpreb" : [1, 0, 7, 1e9 ],         "test" : [1, 0, 7, 1e9] }
+    bounds["nSJets"] =   {  "vrt" : [ 1, 0, 10, 1e9],      "dfpreb" : [ 1, 0, 10, 1e9],        "test" : [1, 0, 10, 1e9] }
+    bounds["nJets"] =    {  "vrt" : [1, 0, 15, 1e9 ],      "dfpreb" : [1, 0, 15, 1e9 ],        "test" : [1, 0, 15, 1e9] }
+    bounds["bj_eta[0]"]= {  "vrt" : [0.2, -2.5, 2.5, 1e9 ],"dfpreb" : [0.2, -2.5, 2.5, 1e9 ],  "test" : [0.2, -2.5, 2.5, 1e9] }
+    bounds["bj_eta[1]"]= {  "vrt" : [0.2, -2.5, 2.5, 1e9 ],"dfpreb" : [0.2, -2.5, 2.5, 1e9 ],  "test" : [0.2, -2.5, 2.5, 1e9] }
+    bounds["pTll"] =     {  "vrt" : [10, 0, 300, 1e9 ],    "dfpreb" : [10, 0, 300, 1e9 ],      "test" : [10, 0, 300, 1e9] }
+    bounds["dphi_ll"] =  {  "vrt" : [0.2, -3, 3, 1e9 ],    "dfpreb" : [0.2, -3, 3, 1e9 ],      "test" : [0.2, -3, 3, 1e9] }
+    bounds["l_pt[0]"] =  {  "vrt" : [10, 0, 250, 1e9 ],    "dfpreb" : [10, 0, 250, 1e9 ],      "test" : [10, 0, 250, 1e9] }
+    bounds["l_pt[1]"] =  {  "vrt" : [10, 0, 200, 1e9 ],    "dfpreb" : [10, 0, 200, 1e9 ],      "test" : [10, 0, 200, 1e9] }
+    bounds["MDR"] =      {  "vrt"  : [10, 0, 200, 1e9],    "dfpreb"  : [10, 0, 200, 1e9],      "test" : [10,0,200,1e9] }
+    bounds["RPT"] =      {  "vrt"  : [0.05, 0, 1, 1e9],    "dfpreb"  : [0.05, 0, 1, 1e9],      "test" : [0.05,0,1,1e9] }
+    bounds["DPB_vSS"] =  {  "vrt"  : [0.1, 0, 3.2, 1e9],   "dfpreb"  : [0.1, 0, 3.2, 1e9],     "test" : [0.1, 0, 3.2, 1e9] }
+    bounds["cosThetaB"]= {  "vrt"  : [0.1,-1,1,1e9],       "dfpreb"  : [0.1,-1,1,1e9],         "test" : [0.1,-1,1,1e9] }
+    bounds["gamInvRp1"]= {  "vrt"  : [0.1,0,1,1e9],        "dfpreb"  : [0.1,0,1,1e9] }
+    # angles between jets and leptons
+    bounds["dphi_j0_ll"]  ={ "vrt" : [0.1,-3.2,3.2,1e9],   "dfpreb" : [0.1,-3.2,3.2,1e9] } 
+    bounds["dphi_j0_l0"]  ={ "vrt" : [0.1,-3.2,3.2,1e9],   "dfpreb" : [0.1,-3.2,3.2,1e9] } 
+    bounds["dphi_sj0_ll"] ={ "vrt" : [0.1,-3.2,3.2,1e9],   "dfpreb" : [0.1,-3.2,3.2,1e9] } 
+    bounds["dphi_sj0_l0"] ={ "vrt" : [0.1,-3.2,3.2,1e9],   "dfpreb" : [0.1,-3.2,3.2,1e9] } 
+    bounds["dphi_bj0_ll"] ={ "vrt" : [0.1,-3.2,3.2,1e9],   "dfpreb" : [0.1,-3.2,3.2,1e9] } 
+    bounds["dphi_bj0_l0"] ={ "vrt" : [0.1,-3.2,3.2,1e9],   "dfpreb" : [0.1,-3.2,3.2,1e9] } 
+
 
     for var in names :
-        if "sj_pt" not in var : continue
+        if "j_pt" not in var : continue
         v = Variable(var, nice_names[var], do_gev[var], bounds[var])
         out.append(v)
 
@@ -230,6 +291,9 @@ def make_ttbar_comp_plots(var, region, samples) :
         # add overflow
         pu.add_overflow_to_lastbin(h)
 
+        if h.Integral() == 0. :
+            return
+
         # norm to unity
         h.Scale(1/h.Integral())
 
@@ -251,6 +315,9 @@ def make_ttbar_comp_plots(var, region, samples) :
 
     # draw the legend
     leg.Draw()
+
+    # text
+    pu.draw_text_on_top(text="%s - %s"%(reg.displayname, var.nice_name))
 
 
     ############### lower pad
@@ -300,7 +367,7 @@ def make_ttbar_comp_plots(var, region, samples) :
         maxy_ = 3
     elif "nBJets" in var.name :
         maxy_ = 2
-    elif "nSJets" in var.name :
+    elif "nSJets" in var.name or "nJets" in var.name :
         maxy_ = 3
     elif "eta" in var.name :
         maxy_ = 2
@@ -311,6 +378,10 @@ def make_ttbar_comp_plots(var, region, samples) :
     elif "meff" in var.name or "met" in var.name :
         maxy_ = 2
     elif "sj_pt" in var.name :
+        maxy_ = 2
+    elif "DPB_vSS" in var.name or "MDR" in var.name or "mt2" in var.name or "RPT" in var.name  :
+        maxy_ = 2
+    elif "j_pt" in var.name :
         maxy_ = 2
 
     h_sherpa.GetYaxis().SetRangeUser(0,maxy_)
@@ -330,6 +401,7 @@ def make_ttbar_comp_plots(var, region, samples) :
     pu.draw_line(p.x_range_min, 1.0, p.x_range_max, 1.0, color=r.kRed, style=2, width=1)
 
 
+
     # save
     outname = p.name + ".eps"
     rcan.canvas.SaveAs(outname)
@@ -347,9 +419,9 @@ if __name__=="__main__" :
     # nominal ttbar sample
     file_nominal = "/data/uclhc/uci/user/dantrim/ntuples/n0228/a_sep21/mc/Raw/CENTRAL_410009.root"
     # sherpa 2.2.1 ttbar (dilepton) sample
-    file_sherpa = "/data/uclhc/uci/user/dantrim/ntuples/n0228/e_oct19/mc/Raw/ttbar_dilepton_sherpa221_410252.root"
+    file_sherpa = "/data/uclhc/uci/user/dantrim/ntuples/n0228/e_oct19/mc_retry/Raw/ttbar_dilepton_sherpa221_410252.root"
     # MGPythia + up to 2 jets
-    file_mgp = "/data/uclhc/uci/user/dantrim/ntuples/n0228/e_oct19/mc/Raw/ttbar_mgp_407.root"
+    file_mgp = "/data/uclhc/uci/user/dantrim/ntuples/n0228/e_oct19/mc_retry/Raw/ttbar_mgp_407.root"
     
 
     nom_sample = Sample("nominal", "Nominal (410009)")
@@ -370,12 +442,27 @@ if __name__=="__main__" :
     for s in samples :
         print "  >  %s  [%d entries]"%(s.name, s.tree.GetEntries())
 
-    reg = region.Region()
-    reg.name = "test"
-    reg.displayname = "Stop-2L (Super-Razor) test"
+    #reg = region.Region()
+    #reg.name = "test"
+    #reg.displayname = "Stop-2L (Super-Razor) test"
     isDFOS = "nLeptons==2 && nElectrons==1 && nMuons==1 && l_pt[0]>25 && l_pt[1]>20 && (l_q[0]*l_q[1])<0"
-    reg.tcut = isDFOS + " && nBJets>=1 && nJets>2  && mll>20"
-    #reg.tcut = "nLeptons==2 && " + isDFOS + " && nBJets>0 && MDR>80 && RPT>0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20"
+    #reg.tcut = isDFOS + " && nBJets>=1 && nJets>2  && mll>20"
+    ##reg.tcut = "nLeptons==2 && " + isDFOS + " && nBJets>0 && MDR>80 && RPT>0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20"
+
+    #reg = region.Region()
+    #reg.name = "crt"
+    #reg.displayname = "Stop-2L (Super-Razor) CR-Top"
+    #reg.tcut = isDFOS + " && nBJets>0 && MDR>80 && RPT>0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20" 
+
+    reg = region.Region()
+    reg.name = "dfpreb"
+    reg.displayname = "Stop-2L (Super-Razor) DF-Preselection, >0 b-jets"
+    reg.tcut = isDFOS + " && nBJets>0 && mll>20" 
+
+    #reg = region.Region()
+    #reg.name = "vrt"
+    #reg.displayname = "Stop-2L (Super-Razor) VR-Top"
+    #reg.tcut = isDFOS + " && nBJets==0 && MDR>80 && RPT<0.5 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && mll>20" 
 
     for s in samples :
         set_eventlists(s, reg)

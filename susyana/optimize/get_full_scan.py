@@ -47,18 +47,22 @@ class RegionYield :
 if __name__=="__main__" :
 
     print "Scan over A, B, X, and Y"
-    print "\tnLeptons==2 && nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && nBJets==0 && mt2 > A && R2 > B && DPB>(X*abs(cosThetaB) + Y)"
+    print "\tnLeptons==2 & nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && nBJets==0 && MDR>95 && RPT>A && gamInvRp1>B && DPB_vSS>X && abs(cosThetaB)<Y" 
+    #print "\tnLeptons==2 & nMuons==1 && nElectrons==1 && (l_q[0]*l_q[1])<0 && l_pt[0]>20 && l_pt[1]>20 && nBJets==0 && MDR>95 && RPT>A && gamInvRp1>B && DPB_vSS>(X*abs(cosThetaB) + Y)" 
 
-    filename = "mt2_r2_x_y_zn_scan.log"
+
+    filename = "optimization_scan_nov14_stripped.log"
+    #filename = "optimization_scan_mT_scan_Nov15_stripped.log"
     lines = open(filename).readlines()
     bkg_counts = []
     region_yields = []
+
     for iline, line in enumerate(lines) :
-        if "scan:" in line :
+        if "scan[" in line :
 
             # get the region ID number
-            region_ = int(lines[iline+1].split()[2])
-
+            region_ = int(line.split("[")[1].split("]")[0])
+            
             scan_map[region_] = {}
             line = line.strip()
 
@@ -66,31 +70,44 @@ if __name__=="__main__" :
             # store the relevant information in the scan_map
             scan_ = line.split()
             scan_ = scan_[1:]
-            for var in scan_ :
-                v = var.split("=")
-                scan_map[region_][v[0]] = v[1]
+            for ivar in range(len(scan_)) :
+                if ":" not in scan_[ivar] :
+                    continue
+                varname = scan_[ivar].replace(":","")
+                varcut = scan_[ivar+1]
+                scan_map[region_][varname] = varcut
 
             ######################################            
             # get the yield object
             region_yield = RegionYield(region_)
 
             # total bkg yield for the region
-            bkg_yld_line = lines[iline+14].split()
+            bkg_yld_line = lines[iline+12].split()
             region_yield.tot_yield = bkg_yld_line[3]
             region_yield.tot_error = bkg_yld_line[5]
-            region_yield.rel_error = float(region_yield.tot_error) / float(region_yield.tot_yield)
+
+            zero_yield = False
+            if float(region_yield.tot_yield) != 0 :
+                region_yield.rel_error = float(region_yield.tot_error) / float(region_yield.tot_yield)
+            else :
+                zero_yield = True
+                region_yield.rel_error = -1
+
 
             # s over b
             # total signal
-            total_sig_line = lines[iline+8].split()
+            total_sig_line = lines[iline+6].split()
             total_signal = total_sig_line[1]
             deltaS = total_sig_line[3]
 
-            region_yield.s_over_b = float(total_signal) / sqrt( float(region_yield.tot_yield)**2 + float(region_yield.tot_error)**2) 
+            if not zero_yield :
+                region_yield.s_over_b = float(total_signal) / sqrt( float(region_yield.tot_yield)**2 + float(region_yield.tot_error)**2) 
+            else :
+                region_yield.s_over_b = -1
 
 
             # significance for this region
-            significance_line = lines[iline+16].split()
+            significance_line = lines[iline+14].split()
             region_yield.significance = float(significance_line[2])
 
             ######################################
@@ -98,35 +115,35 @@ if __name__=="__main__" :
 
             # ttbar
             ttbar = BkgCount("ttbar")
-            proc_line = lines[iline+4]
+            proc_line = lines[iline+3]
             ttbar.tot_yield = proc_line.split()[1]
             ttbar.tot_error = proc_line.split()[3]
             region_yield.bkgyields.append(ttbar)
 
             # single-top
             st    = BkgCount("st")
-            proc_line = lines[iline+5]
+            proc_line = lines[iline+4]
             st.tot_yield = proc_line.split()[1]
             st.tot_error = proc_line.split()[3]
             region_yield.bkgyields.append(st)
 
-            # ww
-            ww    = BkgCount("ww")
-            proc_line = lines[iline+6]
-            ww.tot_yield = proc_line.split()[1]
-            ww.tot_error = proc_line.split()[3]
-            region_yield.bkgyields.append(ww)
+            # vv
+            vv    = BkgCount("vv")
+            proc_line = lines[iline+5]
+            vv.tot_yield = proc_line.split()[1]
+            vv.tot_error = proc_line.split()[3]
+            region_yield.bkgyields.append(vv)
 
-            # wz
-            wz    = BkgCount("wz")
-            proc_line = lines[iline+7]
-            wz.tot_yield = proc_line.split()[1]
-            wz.tot_error = proc_line.split()[3]
-            region_yield.bkgyields.append(wz)
+       #     # wz
+       #     wz    = BkgCount("wz")
+       #     proc_line = lines[iline+6]
+       #     wz.tot_yield = proc_line.split()[1]
+       #     wz.tot_error = proc_line.split()[3]
+       #     region_yield.bkgyields.append(wz)
 
             # signal
-            susy  = BkgCount("(250,160)")
-            proc_line = lines[iline+8]
+            susy  = BkgCount("(300,210)")
+            proc_line = lines[iline+6]
             susy.tot_yield = proc_line.split()[1]
             susy.tot_error = proc_line.split()[3]
             region_yield.bkgyields.append(susy)
@@ -136,86 +153,86 @@ if __name__=="__main__" :
             region_yields.append(region_yield)
 
 
-    ## get the fasimov #'s
-    filename = "mt2_r2_x_y_fasimov_scan.log"
-    lines = open(filename).readlines()
-    bkg_counts_fas = []
-    region_yields_fas = []
-    for iline, line in enumerate(lines) :
-        if "scan:" in line :
-
-            # get the region ID number
-            region_ = int(lines[iline+1].split()[2])
-
-            line = line.strip()
-
-
-            ######################################            
-            # get the yield object
-            region_yield = RegionYield(region_)
-
-            # total bkg yield for the region
-            bkg_yld_line = lines[iline+14].split()
-            region_yield.tot_yield = bkg_yld_line[3]
-            region_yield.tot_error = bkg_yld_line[5]
-            region_yield.rel_error = float(region_yield.tot_error) / float(region_yield.tot_yield)
-
-            # s over b
-            # total signal
-            total_sig_line = lines[iline+8].split()
-            total_signal = total_sig_line[1]
-            deltaS = total_sig_line[3]
-
-            region_yield.s_over_b = float(total_signal) / sqrt( float(region_yield.tot_yield)**2 + float(region_yield.tot_error)**2) 
-
-
-            # significance for this region
-            significance_line = lines[iline+16].split()
-            region_yield.significance = float(significance_line[2])
-
-            ######################################
-            # get the process yields
-
-            # ttbar
-            ttbar = BkgCount("ttbar")
-            proc_line = lines[iline+4]
-            ttbar.tot_yield = proc_line.split()[1]
-            ttbar.tot_error = proc_line.split()[3]
-            region_yield.bkgyields.append(ttbar)
-
-            # single-top
-            st    = BkgCount("st")
-            proc_line = lines[iline+5]
-            st.tot_yield = proc_line.split()[1]
-            st.tot_error = proc_line.split()[3]
-            region_yield.bkgyields.append(st)
-
-            # ww
-            ww    = BkgCount("ww")
-            proc_line = lines[iline+6]
-            ww.tot_yield = proc_line.split()[1]
-            ww.tot_error = proc_line.split()[3]
-            region_yield.bkgyields.append(ww)
-
-            # wz
-            wz    = BkgCount("wz")
-            proc_line = lines[iline+7]
-            wz.tot_yield = proc_line.split()[1]
-            wz.tot_error = proc_line.split()[3]
-            region_yield.bkgyields.append(wz)
-
-            # signal
-            susy  = BkgCount("(250,160)")
-            proc_line = lines[iline+8]
-            susy.tot_yield = proc_line.split()[1]
-            susy.tot_error = proc_line.split()[3]
-            region_yield.bkgyields.append(susy)
-
-            ######################################
-            # store this regions information
-            region_yields_fas.append(region_yield)
-
-    region_yields_fas = sorted(region_yields_fas, key = lambda x: int(x.number))
+#    ## get the fasimov #'s
+#    filename = "mt2_r2_x_y_fasimov_scan.log"
+#    lines = open(filename).readlines()
+#    bkg_counts_fas = []
+#    region_yields_fas = []
+#    for iline, line in enumerate(lines) :
+#        if "scan:" in line :
+#
+#            # get the region ID number
+#            region_ = int(lines[iline+1].split()[2])
+#
+#            line = line.strip()
+#
+#
+#            ######################################            
+#            # get the yield object
+#            region_yield = RegionYield(region_)
+#
+#            # total bkg yield for the region
+#            bkg_yld_line = lines[iline+14].split()
+#            region_yield.tot_yield = bkg_yld_line[3]
+#            region_yield.tot_error = bkg_yld_line[5]
+#            region_yield.rel_error = float(region_yield.tot_error) / float(region_yield.tot_yield)
+#
+#            # s over b
+#            # total signal
+#            total_sig_line = lines[iline+8].split()
+#            total_signal = total_sig_line[1]
+#            deltaS = total_sig_line[3]
+#
+#            region_yield.s_over_b = float(total_signal) / sqrt( float(region_yield.tot_yield)**2 + float(region_yield.tot_error)**2) 
+#
+#
+#            # significance for this region
+#            significance_line = lines[iline+16].split()
+#            region_yield.significance = float(significance_line[2])
+#
+#            ######################################
+#            # get the process yields
+#
+#            # ttbar
+#            ttbar = BkgCount("ttbar")
+#            proc_line = lines[iline+4]
+#            ttbar.tot_yield = proc_line.split()[1]
+#            ttbar.tot_error = proc_line.split()[3]
+#            region_yield.bkgyields.append(ttbar)
+#
+#            # single-top
+#            st    = BkgCount("st")
+#            proc_line = lines[iline+5]
+#            st.tot_yield = proc_line.split()[1]
+#            st.tot_error = proc_line.split()[3]
+#            region_yield.bkgyields.append(st)
+#
+#            # ww
+#            ww    = BkgCount("ww")
+#            proc_line = lines[iline+6]
+#            ww.tot_yield = proc_line.split()[1]
+#            ww.tot_error = proc_line.split()[3]
+#            region_yield.bkgyields.append(ww)
+#
+#            # wz
+#            wz    = BkgCount("wz")
+#            proc_line = lines[iline+7]
+#            wz.tot_yield = proc_line.split()[1]
+#            wz.tot_error = proc_line.split()[3]
+#            region_yield.bkgyields.append(wz)
+#
+#            # signal
+#            susy  = BkgCount("(250,160)")
+#            proc_line = lines[iline+8]
+#            susy.tot_yield = proc_line.split()[1]
+#            susy.tot_error = proc_line.split()[3]
+#            region_yield.bkgyields.append(susy)
+#
+#            ######################################
+#            # store this regions information
+#            region_yields_fas.append(region_yield)
+#
+#    region_yields_fas = sorted(region_yields_fas, key = lambda x: int(x.number))
 
     ##############################################
     ## make tables
@@ -233,11 +250,17 @@ if __name__=="__main__" :
 
     # rows
     table = []
-    region_yields = sorted(region_yields, key = lambda x: int(x.number))
-    for iregion, region in enumerate(region_yields) :
-        line = [iregion]
+    region_yields = sorted(region_yields, key = lambda x: float(x.significance), reverse=True)
+    #region_yields = sorted(region_yields, key = lambda x: int(x.number))
+   # for iregion, region in enumerate(region_yields) :
+    for region in region_yields :
+        #line = [iregion]
+        if float(region.rel_error) * 100. > 50 :
+            continue
+        line = [region.number]
 
-        id_tag = "(%s,%s,%s,%s)"%(scan_map[iregion]['r2'], scan_map[iregion]['mt2'], scan_map[iregion]['x'], scan_map[iregion]['y'])
+        id_tag = "(%s,%s,%s,%s)"%(scan_map[region.number]['gam'], scan_map[region.number]['rpt'], scan_map[region.number]['x'], scan_map[region.number]['y'])
+        #id_tag = "(%s,%s,%s,%s)"%(scan_map[iregion]['gam'], scan_map[iregion]['rpt'], scan_map[iregion]['x'], scan_map[iregion]['y'])
         line.append(id_tag)
 
         ## add the bkg-process yields

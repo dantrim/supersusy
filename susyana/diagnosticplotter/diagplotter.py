@@ -589,7 +589,8 @@ def make_lumi_plot(samples, region) :
     h.GetXaxis().LabelsOption("v")
     h.GetXaxis().SetLabelFont(42)
     h.GetXaxis().SetLabelOffset(3.2*h.GetXaxis().GetLabelOffset())
-    h.GetXaxis().SetLabelSize(1.2*h.GetXaxis().GetLabelSize())
+    h.GetXaxis().SetLabelSize(1.*h.GetXaxis().GetLabelSize())
+    #h.GetXaxis().SetLabelSize(1.2*h.GetXaxis().GetLabelSize())
 
 
     ## title
@@ -617,7 +618,8 @@ def make_lumi_plot(samples, region) :
   #  for line in period_lines :
   #      line.Draw()
 
-    pu.draw_text_on_top(region.displayname + "  2015 + 2016 (DS1)")
+    #pu.draw_text_on_top(region.displayname + "  2015 + 2016 (DS1)")
+    pu.draw_text_on_top(region.displayname + "  2016")
 
     lumican.canvas.Update()
     lumican.canvas.SaveAs("normlumi_%s.eps"%region.name)
@@ -742,7 +744,7 @@ if __name__ == "__main__" :
     if do_lumi_yields :
         data_files = glob.glob(data_rawdir + "*CENTRAL*.root")
         data_samples = []
-        skip = ['302872', '303421', '302053']
+        skip = ['311481', '311244', '310969', '310809', '309375', '279867']
         tmp_files = []
         for blah in data_files :
             for x in skip :
@@ -750,6 +752,14 @@ if __name__ == "__main__" :
                     if blah in tmp_files : continue
                     tmp_files.append(blah)
         data_files = tmp_files
+        data_files_tmp = []
+        for df in data_files :
+            run = df.split("_")[-1].replace(".root","") 
+            run = int(run)
+            if run < 297730 :
+                continue
+            data_files_tmp.append(df)
+        data_files = data_files_tmp
         for df in data_files :
             ldata = lumiData(df)
             data_samples.append(ldata)

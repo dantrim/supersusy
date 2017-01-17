@@ -25,11 +25,9 @@ bkg_uncertainty = 0.30
 ###############################################
 
 
-#rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0222/apr17/mc/Raw/" 
-#rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0224/may25/mc/Raw/"
-rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0225/jul6/mc/Raw/"
+rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0228/a_sep21/mc/Raw/"
 #filelist_dir = "/data/uclhc/uci/user/dantrim/n0222val/filelists/" 
-filelist_dir = "/data/uclhc/uci/user/dantrim/n0225val/filelists/"
+filelist_dir = "/data/uclhc/uci/user/dantrim/n0228val/filelists/"
 
 backgrounds = []
 
@@ -38,8 +36,12 @@ lumi[3.21] = 1.0
 lumi[5.0] = 1.56
 lumi[10.0] = 3.12
 lumi[15.0] = 4.67
+lumi[25.0] = 7.8
+lumi[30.0] = 9.34
+lumi[35.0] = 10.9
+lumi[40.0] = 12.46
 
-lumi_val = 15.0
+lumi_val = 35.0
 
 ## ttbar
 ttbar = background.Background("ttbar", "t#bar{t}")
@@ -90,10 +92,7 @@ backgrounds.append(diboson)
 # prepare the signal configuration
 ###############################################
 
-#signal_file_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0222/apr17/mc/Raw/" 
-#signal_file_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0222/apr17/sigB/Raw/"
-#signal_file_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0224/may25/mc/Raw/"
-signal_file_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0225/jul6/mc/Raw/"
+signal_file_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0228/a_sep21/mc/Raw/"
 #signal_grid = "bWN"
 signal_grid = "bWNnew"
 signal_scale_factor = lumi[lumi_val]
@@ -122,13 +121,16 @@ znreg.setParent(True)
 
 # subregions
 znregEE = znregion.ZnRegion("mwsel_ee", "mwsel_ee", 1.1)
-znregEE.setTcut(isEEOS + " && MDR>95 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets==0 && trig_pass2016==1 && mll>20")
+znregEE.setTcut(isEEOS + " && MDR>95 && RPT>0.65 &&  gamInvRp1>0.75 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets==0 && trig_pass2016==1 && mll>20")
+#znregEE.setTcut(isEEOS + " && MDR>95 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets==0 && trig_pass2016==1 && mll>20")
 
 znregMM = znregion.ZnRegion("mwsel_mm", "mwsel_mm", 1.2)
-znregMM.setTcut(isMMOS + " && MDR>95 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets==0 && trig_pass2016==1 && mll>20")
+znregMM.setTcut(isMMOS + " && MDR>95 && RPT>0.65 &&  gamInvRp1>0.75 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets==0 && trig_pass2016==1 && mll>20")
+#znregMM.setTcut(isMMOS + " && MDR>95 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets==0 && trig_pass2016==1 && mll>20")
 
 znregDF = znregion.ZnRegion("mwsel_df", "mwsel_df", 1.3)
-znregDF.setTcut(isDFOS + " && MDR>95 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets==0 && trig_pass2016==1 && mll>20")
+znregDF.setTcut(isDFOS + " && MDR>95 && RPT>0.65 &&  gamInvRp1>0.75 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets==0 && trig_pass2016==1 && mll>20")
+#znregDF.setTcut(isDFOS + " && MDR>95 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets==0 && trig_pass2016==1 && mll>20")
 
 
 
@@ -149,13 +151,16 @@ znregMT.setParent(True)
 
 # subregions
 znregMTEE = znregion.ZnRegion("mtsel_ee", "mtsel_ee", 2.1)
-znregMTEE.setTcut(isEEOS + " && MDR>110 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets>0 && trig_pass2016==1 && mll>20")
+znregMTEE.setTcut(isEEOS + " && MDR>110 && RPT>0.65 &&  gamInvRp1>0.75 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets>0 && trig_pass2016==1 && mll>20")
+#znregMTEE.setTcut(isEEOS + " && MDR>110 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets>0 && trig_pass2016==1 && mll>20")
 
 znregMTMM = znregion.ZnRegion("mtsel_mm", "mtsel_mm", 2.2)
-znregMTMM.setTcut(isMMOS + " && MDR>110 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets>0 && trig_pass2016==1 && mll>20")
+znregMTMM.setTcut(isMMOS + " && MDR>110 && RPT>0.65 &&  gamInvRp1>0.75 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets>0 && trig_pass2016==1 && mll>20")
+#znregMTMM.setTcut(isMMOS + " && MDR>110 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets>0 && trig_pass2016==1 && mll>20")
 
 znregMTDF = znregion.ZnRegion("mtsel_df", "mtsel_df", 2.3)
-znregMTDF.setTcut(isDFOS + " && MDR>110 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets>0 && trig_pass2016==1 && mll>20")
+znregMTDF.setTcut(isDFOS + " && MDR>110 && RPT>0.65 &&  gamInvRp1>0.75 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets>0 && trig_pass2016==1 && mll>20")
+#znregMTDF.setTcut(isDFOS + " && MDR>110 && RPT>0.5 &&  gamInvRp1>0.8 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && nBJets>0 && trig_pass2016==1 && mll>20")
 
 
 
