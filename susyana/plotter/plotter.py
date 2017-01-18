@@ -322,9 +322,6 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     hd = pu.th1f("h_data_"+reg.name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
     hd.Sumw2
 
-    #print " !!! fixing bjet check cut for data !!! "
-    #new_tcut = reg.tcut + " && nBJets70>0"
-    #cut = "(" + new_tcut + ")"
     cut = "(" + reg.tcut + ")"
     cut = r.TCut(cut)
     sel = r.TCut("1")
@@ -504,7 +501,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     # add some text/labels
     pu.draw_text(text="ATLAS",x=0.18,y=0.85,size=0.06,font=72)
     pu.draw_text(text="Preliminary",x=0.325,y=0.85,size=0.06,font=42)
-    pu.draw_text(text="L = 35 fb^{-1}, #sqrt{s} = 13 TeV",x=0.18,y=0.79, size=0.04)
+    pu.draw_text(text="L = 32.8 fb^{-1}, #sqrt{s} = 13 TeV",x=0.18,y=0.79, size=0.04)
     pu.draw_text(text=reg.displayname,      x=0.18,y=0.74, size=0.04)
 
     r.gPad.SetTickx()
@@ -585,7 +582,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
 
     rcan.canvas.Update()
 
-    outname = plot.name + "_nominal.eps"
+    outname = plot.name + ".eps"
     rcan.canvas.SaveAs(outname)
     out = indir + "/plots/" + outdir
     utils.mv_file_to_dir(outname, out, True)

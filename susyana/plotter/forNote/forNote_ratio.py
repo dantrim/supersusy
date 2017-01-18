@@ -10,41 +10,26 @@ import supersusy.utils.systematic as systematic
 # samples
 ########################################
 backgrounds = []
-#rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0228/a_sep21/mc/Raw/"
-rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0229/a_Nov29/mc/Raw/"
-#data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0228/a_sep21/all_data/"
-data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0228/a_sep21/all_data_Nov15/"
+rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0231/a_jan16/mc/Raw/"
+data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0231/a_jan16/dataToRun/Raw/"
 fake_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0226/forFake3/fakes.3body/"
-#ttbar_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0228/c_oct6/mc/Raw/"
-vv_df_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0229/a_Nov29/mc/diboson_DF/Raw/"
-#vv_sf_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0229/a_Nov29/mc/diboson_SF/Raw/" 
-#ttbar_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0228/e_oct19/mc_retry/Raw/"
-ttbar_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0229/a_Nov29/mc/Raw/ttbarsplit/"
-filelist_dir = "/data/uclhc/uci/user/dantrim/n0229val/filelists/"
+filelist_dir = "/data/uclhc/uci/user/dantrim/n0231val/filelists/"
 
-#lumi_ = [4.14] # norm from 3.2/fb to 13.3/fb
-#lumi_ = [5.83] # norm from 3.2/fb to ~18.7/fb
-#lumi_ = [8.42] # norm from 3.209/fb to 27.00/fb
-#lumi_ = [3.95] # norm from 3.2/fb to 12.64/fb (missing run 302872)
-lumi_ = [10.9] # norm from 3.2/fb to 35.02/fb
+lumi_ = [32.82] # norm from 1.0/fb to 32.82/fb
 lumi_val = 0
 
 ######## MC
 ## ttbro
 ttbar = background.Background("ttbar", "t#bar{t}")
 ttbar.set_debug()
-ttbar.scale_factor = lumi_[lumi_val] * 1.18 # ttbar sample in n0229 was made with incorrect sumw
+ttbar.scale_factor = lumi_[lumi_val] #* 1.18 # ttbar sample in n0229 was made with incorrect sumw
 ttbar.set_fillStyle(0)
 ttbar.setLineStyle(1)
 #ttbar.set_color(r.kSpring-5)
 #ttbar.set_color(r.TColor.GetColor("#FC0D1B"))
 ttbar.set_color(r.TColor.GetColor("#e4706a"))
 ttbar.set_treename("ttbar_powheg")
-ttbar.set_chain_from_list_CONDOR(filelist_dir+ "ttbar/", ttbar_rawdir)
-#ttbar.set_file(ttbar_rawdir + "ttbar_dilepton_sherpa221_410252.root") 
-#ttbar.set_file(ttbar_rawdir + "ttbar_mgp_407.root")
-#ttbar.set_merged_tree("superNt")
-#ttbar.set_chain_from_list_CONDOR(filelist_dir+ "ttbar/", ttbar_rawdir)
+ttbar.set_chain_from_list_CONDOR(filelist_dir+ "ttbar/", rawdir)
 backgrounds.append(ttbar)
 
 # singletop
@@ -60,18 +45,18 @@ stop.set_treename("ST")
 stop.set_chain_from_list_CONDOR(filelist_dir+ "singletop/", rawdir)
 backgrounds.append(stop)
 
-# singletop
-ttv = background.Background("ttV", "t#bar{t} V")
-ttv.set_debug()
-ttv.scale_factor = lumi_[lumi_val]
-ttv.set_fillStyle(0)
-ttv.setLineStyle(1)
-#ttv.set_color(r.kCyan-7)
-#ttv.set_color(46)
-ttv.set_color(r.TColor.GetColor("#9bcdfd"))
-ttv.set_treename("TTV")
-ttv.set_chain_from_list_CONDOR(filelist_dir+ "ttV/", rawdir)
-backgrounds.append(ttv)
+## ttV
+#ttv = background.Background("ttV", "t#bar{t} V")
+#ttv.set_debug()
+#ttv.scale_factor = lumi_[lumi_val]
+#ttv.set_fillStyle(0)
+#ttv.setLineStyle(1)
+##ttv.set_color(r.kCyan-7)
+##ttv.set_color(46)
+#ttv.set_color(r.TColor.GetColor("#9bcdfd"))
+#ttv.set_treename("TTV")
+#ttv.set_chain_from_list_CONDOR(filelist_dir+ "ttV/", rawdir)
+#backgrounds.append(ttv)
 
 ###ttX
 #ttx = background.Background("ttX", "t#bar{t} + H, 3/4 top, ttH")
@@ -86,15 +71,14 @@ backgrounds.append(ttv)
 # diboson
 diboson = background.Background("vv", "VV")
 diboson.set_debug()
-diboson.scale_factor = lumi_[lumi_val] * 1.06
+diboson.scale_factor = lumi_[lumi_val] #* 1.06
 diboson.set_fillStyle(0)
 diboson.setLineStyle(1)
 #diboson.set_color(r.kAzure+6)
 #diboson.set_color(r.TColor.GetColor("#41C1FC"))
 diboson.set_color(r.TColor.GetColor("#325f85"))
 diboson.set_treename("diboson_sherpa")
-#diboson.set_chain_from_list_CONDOR(filelist_dir+ "diboson_sherpa_lvlv/", rawdir)
-diboson.set_chain_from_list_CONDOR(filelist_dir+ "diboson_sherpa_lvlv/", vv_df_rawdir)
+diboson.set_chain_from_list_CONDOR(filelist_dir+ "diboson_sherpa_lvlv/", rawdir)
 backgrounds.append(diboson)
 
 ###triboson
@@ -117,20 +101,21 @@ zjets.setLineStyle(1)
 #zjets.set_color(r.TColor.GetColor("#FFEF53"))
 zjets.set_color(r.TColor.GetColor("#85dc6e"))
 zjets.set_treename("zjets_sherpa")
-zjets.set_chain_from_list_CONDOR(filelist_dir+ "zjets_sherpa22/", rawdir)
+zjets.set_chain_from_list_CONDOR(filelist_dir+ "zjets_sherpa/", rawdir)
 backgrounds.append(zjets)
 
-## Wjets
-#wjets = background.Background("wjets", "W+jets")
-#wjets.set_debug()
-#wjets.scale_factor = lumi_[lumi_val]
-#wjets.set_fillStyle(0)
-#wjets.setLineStyle(1)
-##wjets.set_color(r.TColor.GetColor("#5E9AD6"))
-#wjets.set_color(r.TColor.GetColor("#619bd3"))
-#wjets.set_treename("wjets")
-#wjets.set_chain_from_list_CONDOR(filelist_dir+ "wjets_sherpa22/", rawdir)
-#backgrounds.append(wjets)
+
+# Wjets
+wjets = background.Background("wjets", "W+jets")
+wjets.set_debug()
+wjets.scale_factor = lumi_[lumi_val]
+wjets.set_fillStyle(0)
+wjets.setLineStyle(1)
+#wjets.set_color(r.TColor.GetColor("#5E9AD6"))
+wjets.set_color(r.TColor.GetColor("#619bd3"))
+wjets.set_treename("wjets")
+wjets.set_chain_from_list_CONDOR(filelist_dir+ "wjets_sherpa/", rawdir)
+backgrounds.append(wjets)
 
 ## higgs
 higgs = background.Background("higgs", "Higgs")
@@ -143,27 +128,27 @@ higgs.set_chain_from_list_CONDOR(filelist_dir+ "higgs/", rawdir)
 backgrounds.append(higgs)
 
 
-#drel = background.Background("drellyan", "Drell-Yan")
-#drel.set_debug()
-#drel.scale_factor = lumi_[lumi_val]
-#drel.set_fillStyle(0)
-#drel.setLineStyle(1)
-##drel.set_color(r.kYellow)
-#drel.set_color(r.TColor.GetColor("#feec60"))
-#drel.set_treename("drellyan")
-#drel.set_chain_from_list_CONDOR(filelist_dir+ "drellyan_sherpa/", rawdir)
-#backgrounds.append(drel)
+drel = background.Background("drellyan", "Drell-Yan")
+drel.set_debug()
+drel.scale_factor = lumi_[lumi_val]
+drel.set_fillStyle(0)
+drel.setLineStyle(1)
+#drel.set_color(r.kYellow)
+drel.set_color(r.TColor.GetColor("#feec60"))
+drel.set_treename("drellyan")
+drel.set_chain_from_list_CONDOR(filelist_dir+ "drellyan_sherpa/", rawdir)
+backgrounds.append(drel)
 
-fakes = background.Background("fakes", "FNP")
-#fakes.scale_factor = 1.0
-fakes.scale_factor = 2.87 # scale from 12.2/fb to 30.5/fb
-fakes.set_treename("superNt")
-fakes.set_file(fake_rawdir + "physics_Main_276262_303560_FakesInclusive.root")
-fakes.set_merged_tree("superNt")
-fakes.set_color(r.kOrange+7)
-fakes.set_fillStyle(0)
-fakes.setLineStyle(1)
-backgrounds.append(fakes)
+#fakes = background.Background("fakes", "FNP")
+##fakes.scale_factor = 1.0
+#fakes.scale_factor = 2.87 # scale from 12.2/fb to 30.5/fb
+#fakes.set_treename("superNt")
+#fakes.set_file(fake_rawdir + "physics_Main_276262_303560_FakesInclusive.root")
+#fakes.set_merged_tree("superNt")
+#fakes.set_color(r.kOrange+7)
+#fakes.set_fillStyle(0)
+#fakes.setLineStyle(1)
+#backgrounds.append(fakes)
 
 #sig1 = background.Background("bwn250_160", "#tilde{t}_{1}#tilde{t}_{1}, m(#tilde{t}_{1}, #tilde{#chi}_{1}^{ 0}) = (250, 160) GeV")
 ##sig1 = background.Background("bwn250_160", "(250,160)")
@@ -204,7 +189,7 @@ backgrounds.append(fakes)
 data = background.Data()
 data.set_color(r.kBlack)
 data.set_treename("data")
-data.set_chain_from_list_CONDOR(filelist_dir + "data_toRun/", data_rawdir)
+data.set_chain_from_list_CONDOR(filelist_dir + "dataToRun/", data_rawdir)
 
 
 ##########################################
@@ -371,7 +356,7 @@ regions.append(reg)
 
 reg = region.Region()
 reg.name = "sfprebv"
-reg.displayname = "SF Preselection + b-veto"
+reg.displayname = "SF Preselection + b-veto (ee only)"
 reg.tcut = "nLeptons==2 && " + isSFOS + " && nBJets==0 && mll>20 && " + trigger 
 regions.append(reg)
 
@@ -391,8 +376,7 @@ reg = region.Region()
 reg.name = "dfpreb"
 #reg.displayname = "DF Presel. + >=3 b-jets"
 reg.displayname = "DF Preselection + >0 b-jets"
-#reg.tcut = "nLeptons==2 && " + isDFOS + " && mll>20 && " + trigger
-reg.tcut = "nLeptons==2 && " + isDFOS + " && nBJets>0 && mll>20"# && " + trigger
+reg.tcut = "nLeptons==2 && " + isDFOS + " && nBJets>0 && mll>20  && " + trigger
 regions.append(reg)
 
 reg = region.Region()
@@ -418,7 +402,8 @@ regions.append(reg)
 reg = region.Region()
 reg.name = "crv"
 reg.displayname = "CR-VV-DF"
-reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && RPT<0.5  && gamInvRp1>0.8 && mll>20 && " + trigger
+reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && RPT<0.5  && gamInvRp1>0.75 && mll>20 && " + trigger
+#reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && RPT<0.5  && gamInvRp1>0.8 && mll>20 && " + trigger
 regions.append(reg)
 
 reg = region.Region()
@@ -431,26 +416,34 @@ regions.append(reg)
 reg = region.Region()
 reg.name = "crvSF"
 reg.displayname = "CR-VV-SF"
-reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && gamInvRp1>0.8 && met>70 && mll>20 && " + trigger
+reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && gamInvRp1>0.75 && met>80 && mll>20 && " + trigger
 regions.append(reg)
 
 
 reg = region.Region()
 reg.name = "vrv"
 reg.displayname = "VR-VV-DF"
-reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && MDR<80 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && gamInvRp1>0.8 && mll>20 && " + trigger
+reg.tcut = isDFOS + " && nBJets==0 && MDR>30 && MDR<80 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && gamInvRp1>0.75 && mll>20 && " + trigger
 regions.append(reg)
 
 reg = region.Region()
 reg.name = "vrvSF"
 reg.displayname = "VR-VV-SF"
-reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && MDR<80 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && gamInvRp1>0.8 && met>70 && mll>20 && " + trigger
+reg.tcut = isSFOS + " && nBJets==0 && MDR>30 && MDR<80 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && RPT<0.5 && gamInvRp1>0.75 && met>80 && mll>20 && " + trigger
 regions.append(reg)
 
 reg = region.Region()
 reg.name = "crt"
 reg.displayname = "CR-Top"
-reg.tcut = isDFOS + " && nBJets>0 && MDR>80 && RPT>0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20"# && " + trigger
+reg.tcut = isDFOS + " && nBJets>0 && MDR>80 && RPT>0.65 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger
+#reg.tcut = isDFOS + " && nBJets>0 && MDR>80 && RPT>0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger
+regions.append(reg)
+
+reg = region.Region()
+reg.name = "vrt"
+reg.displayname = "VR-Top"
+reg.tcut = isDFOS + " && nBJets==0 && MDR>80 && RPT<0.65 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger
+#reg.tcut = isDFOS + " && nBJets==0 && MDR>80 && RPT<0.5 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger
 regions.append(reg)
 
 reg = region.Region()
@@ -458,12 +451,6 @@ reg.name = "ttrj"
 reg.displayname = "t#bar{t}-RJ"
 #reg.tcut = isDFOS + " && nJets>1 && nBJets>0 && l_pt[0]>35 && l_pt[1]>20 && mll>20"
 reg.tcut = "nJets>2 && nBJets>1 && nLeptons==2 && nMuons==1 && nElectrons==1 && mll>40 && l_pt[0]>30 && l_pt[1]>20 && abs(dphi_ll)>2.5 && j_eta[0]<2.5 && j_eta[1]<2.5"
-regions.append(reg)
-
-reg = region.Region()
-reg.name = "vrt"
-reg.displayname = "VR-Top"
-reg.tcut = isDFOS + " && nBJets==0 && MDR>80 && RPT<0.5 && DPB_vSS>(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger
 regions.append(reg)
 
 
@@ -608,7 +595,7 @@ vars["DPB_vSS - 0.85*abs(cosThetaB)"] = { "dfpreb" : [0.5, -1.5, 4, 1e9], "dfpre
 
 
 
-run_reg = "crv"
+run_reg = "crvSF"
 
 nice_names = {}
 nice_names["MDR"] = "M_{#Delta}^{R} [GeV]"
