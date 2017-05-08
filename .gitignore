@@ -4,6 +4,7 @@
 *.pdf
 *.jpeg
 *.swp
+*.swn
 *.swo
 *.pyc
 *.so
@@ -22,3 +23,4 @@
 *.app
 *.cxx.d
 *~
+*.log
