@@ -13,6 +13,8 @@ sys.path.append(os.environ['SUSYDIR'])
 #sys.path.append('../../../')
 #sys.dont_write_bytecode = True
 
+from math import sqrt
+
 r.TEventList.__init__._creates = False
 r.TH1F.__init__._creates = False
 r.TGraphErrors.__init__._creates = False
@@ -66,7 +68,7 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
             replace_var = plot.variable.replace("abs(","")
             replace_var = replace_var.replace(")","")
             hist_name = replace_var
-        elif plot.variable == "DPB_vSS - 0.85*abs(cosThetaB)" :
+        elif plot.variable == "DPB_vSS - 0.9*abs(cosThetaB)" :
             hist_name = "DPB_minus_COSB"
         else : hist_name = plot.variable
         h_up = pu.th1f("h_"+b.treename+"_"+hist_name+"_"+s.name+"_up", "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
@@ -74,24 +76,51 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
 
         h_up.SetMinimum(plot.y_range_min)
         h_up.SetMaximum(plot.y_range_max)
+        h_up.GetXaxis().SetTitle(plot.x_label)
+        h_up.GetXaxis().SetTitleFont(42)
+        h_up.GetXaxis().SetLabelFont(42)
+        h_up.GetXaxis().SetLabelSize(0.035)
+        h_up.GetXaxis().SetTitleSize(0.048 * 0.85)
         h_up.GetXaxis().SetLabelOffset(-999)
         h_up.GetXaxis().SetTitleOffset(-999)
+
+        h_up.GetYaxis().SetTitle(plot.y_label)
+        h_up.GetYaxis().SetTitleFont(42)
+        h_up.GetYaxis().SetLabelFont(42)
+        h_up.GetYaxis().SetTitleOffset(1.4)
+        h_up.GetYaxis().SetLabelOffset(0.013)
+        h_up.GetYaxis().SetLabelSize(1.2 * 0.035)
+        h_up.GetYaxis().SetTitleSize(0.055 * 0.85)
+
         h_dn.SetMinimum(plot.y_range_min)
         h_dn.SetMaximum(plot.y_range_max)
+        h_dn.GetXaxis().SetTitle(plot.x_label)
+        h_dn.GetXaxis().SetTitleFont(42)
+        h_dn.GetXaxis().SetLabelFont(42)
+        h_dn.GetXaxis().SetLabelSize(0.035)
+        h_dn.GetXaxis().SetTitleSize(0.048 * 0.85)
         h_dn.GetXaxis().SetLabelOffset(-999)
         h_dn.GetXaxis().SetTitleOffset(-999)
 
-        for hsys in [h_up, h_dn] :
-            yax = hsys.GetYaxis()
-            xax = hsys.GetXaxis()
+        h_dn.GetYaxis().SetTitle(plot.y_label)
+        h_dn.GetYaxis().SetTitleFont(42)
+        h_dn.GetYaxis().SetLabelFont(42)
+        h_dn.GetYaxis().SetTitleOffset(1.4)
+        h_dn.GetYaxis().SetLabelOffset(0.013)
+        h_dn.GetYaxis().SetLabelSize(1.2 * 0.035)
+        h_dn.GetYaxis().SetTitleSize(0.055 * 0.85)
 
-            yax.SetTitleSize(0.05)
-            yax.SetLabelSize(0.045)
-            yax.SetLabelOffset(0.008)
-            yax.SetTitleOffset(1.2)
-            yax.SetLabelFont(42)
-            yax.SetTitleFont(42)
-            yax.SetNdivisions(5) 
+        #for hsys in [h_up, h_dn] :
+        #    yax = hsys.GetYaxis()
+        #    xax = hsys.GetXaxis()
+
+        #    yax.SetTitleSize(0.05)
+        #    yax.SetLabelSize(0.045)
+        #    yax.SetLabelOffset(0.008)
+        #    yax.SetTitleOffset(1.2)
+        #    yax.SetLabelFont(42)
+        #    yax.SetTitleFont(42)
+        #    yax.SetNdivisions(5) 
 
         if s.isWeightSys() :
             name_up = s.up_name
@@ -107,13 +136,23 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
                 #weight_up = " eventweightNOPUPW * %s"%(str(name_dn))
                 weight_up = " eventweight * %s"%(str(name_up))
 
-                if "ttbar" in b.name :
-                    weight_up = weight_up + " * 0.99"
-                elif "vv" in b.name :
-                    if "sf" in reg.name.lower() :
-                        weight_up = weight_up + " * 1.23"
-                    else :
-                        weight_up = weight_up + " * 1.27"
+                if "vv" in b.name and "SF" in reg.name :
+                    print "SYS add mu_VVSF to VV"
+                    weight_up = weight_up + " * 1.02"
+                elif "vv" in b.name and "SF" not in reg.name :
+                    print "SYS add mu_VVDF to VV"
+                    weight_up = weight_up + " * 1.02"
+                elif "ttbar" in b.name :
+                    print "SYS add mu_TTBAR to %s"%b.name
+                    weight_up = weight_up + " * 1.06"
+
+                #if "ttbar" in b.name :
+                #    weight_up = weight_up + " * 0.99"
+                #elif "vv" in b.name :
+                #    if "sf" in reg.name.lower() :
+                #        weight_up = weight_up + " * 1.23"
+                #    else :
+                #        weight_up = weight_up + " * 1.27"
 
             if "PILEUPDOWN" in name_dn :
                 weight_dn = " eventweightNOPUPW * pupw_down "
@@ -122,13 +161,23 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
                 #weight_dn = " eventweightNOPUPW * %s"%(str(name_dn))
                 weight_dn = " eventweight * %s"%(str(name_dn))
 
-                if "ttbar" in b.name :
-                    weight_dn = weight_dn + " * 0.99"
-                elif "vv" in b.name :
-                    if "sf" in reg.name.lower() :
-                        weight_dn = weight_dn + " * 1.23"
-                    else :
-                        weight_dn = weight_dn + " * 1.27"
+                if "vv" in b.name and "SF" in reg.name :
+                    print "SYS add mu_VVSF to VV"
+                    weight_dn = weight_dn + " * 1.02"
+                elif "vv" in b.name and "SF" not in reg.name :
+                    print "SYS add mu_VVDF to VV"
+                    weight_dn = weight_dn + " * 1.02"
+                elif "ttbar" in b.name :
+                    print "SYS add mu_TTBAR to %s"%b.name
+                    weight_dn = weight_dn + " * 1.06"
+
+                #if "ttbar" in b.name :
+                #    weight_dn = weight_dn + " * 0.99"
+                #elif "vv" in b.name :
+                #    if "sf" in reg.name.lower() :
+                #        weight_dn = weight_dn + " * 1.23"
+                #    else :
+                #        weight_dn = weight_dn + " * 1.27"
 
             cut_up = "(" + reg.tcut + ") * %s * %s"%(weight_up, str(b.scale_factor))
             cut_dn = "(" + reg.tcut + ") * %s * %s"%(weight_dn, str(b.scale_factor))
@@ -159,13 +208,21 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
             #cut = "(" + reg.tcut + ") * eventweightNOPUPW * " + str(b.scale_factor)
             cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
 
-            if "ttbar" in b.name :
-                cut = cut + " * 0.99"
-            elif "vv" in b.name :
-                if "sf" in reg.name.lower() :
-                    cut = cut + " * 1.23"
-                else :
-                    cut = cut + " * 1.27"
+            if "vv" in b.name and "SF" in reg.name :
+                print "SYS add mu_VVSF to VV"
+                cut = cut + " * 1.02"
+            elif "vv" in b.name and "SF" not in reg.name :
+                print "SYS add mu_VVDF to VV"
+                cut = cut + " * 1.02"
+            elif "ttbar" in b.name :
+                cut = cut + " * 1.06"
+            #if "ttbar" in b.name :
+            #    cut = cut + " * 0.99"
+            #elif "vv" in b.name :
+            #    if "sf" in reg.name.lower() :
+            #        cut = cut + " * 1.23"
+            #    else :
+            #        cut = cut + " * 1.27"
 
             cut = r.TCut(cut)
             sel = r.TCut("1")
@@ -177,7 +234,7 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
             s.up_histo = h_up
 
             is_one_side = False
-            if "JER" in syst.name : is_one_side = True
+            if "JER" in syst.name or ("MET_" in syst.name and "Reso" in syst.name)  : is_one_side = True
             if "ResoPerp" in syst.name or "ResoPara" in syst.name : is_one_side = True
             if not s.isOneSided() :
             #if not is_one_side :
@@ -193,9 +250,39 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
             else :
                 print "    %s  (+%.2f, -%.2f)"%(s.name, h_up.Integral(0,-1)-nom_yield, nom_yield-h_dn.Integral(0,-1))
 
-def make_plotsRatio(plot, reg, data, backgrounds) :
+def histos_for_legend(histos) :
+    # assumes that these are already ordered by integral
+    # also assumes that the background legend will have
+    # at most 4 rows (not including Data and SM)
+    out = []
+    indices = []
+    #out.append(histos[0]) # 0
+    #out.append(histos[4]) # 1
+    #out.append(histos[1]) # 2
+    #out.append(histos[5]) # 3
+    #out.append(histos[2]) # 4
+    #out.append(histos[6]) # 5
+    #out.append(histos[3]) # 6
 
-    print "make_plotsRatio    Plotting %s"%plot.name
+
+    if len(histos) == 7 :
+        indices = [0, 4, 1, 5, 2, 6, 3]
+    elif len(histos) == 6 :
+        indices = [0, 3, 1, 4, 2, 5]
+    elif len(histos) == 5 :
+        indices = [0, 3, 1, 4, 2]
+    elif len(histos) == 4 :
+        indices = [0, 2, 1, 3]
+
+    for idx in indices :
+        out.append(histos[idx])
+
+    return out
+
+def make_plotsRatio(plot, reg, data, backgrounds, current_plot_number, total_number_to_plot) :
+
+    print 50*"- "
+    print "make_plotsRatio    Plotting [%d/%d] %s"%(current_plot_number, total_number_to_plot, plot.name)
 
     # get the canvases
     rcan = plot.ratioCanvas
@@ -235,26 +322,33 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
 
     # loop through the background MC and add to stack
     histos = []
+    all_histos = []
     h_nom_fake = None
     # list of bkg samples to avoid (e.g. if yields is negative, do not hadd to stack)
 
     avoid_bkg = []
 
+    has_signals = False
+
     n_total_sm_yield = 0.
     for b in backgrounds :
-        if b.isSignal() : continue
+        if b.isSignal() :
+            has_signals = True
+            continue
 
         hist_name = ""
         if "abs" in plot.variable and "DPB_vSS" not in plot.variable :
             replace_var = plot.variable.replace("abs(","")
             replace_var = replace_var.replace(")","")
             hist_name = replace_var
-        elif plot.variable == "DPB_vSS - 0.85*abs(cosThetaB)" :
+        elif plot.variable == "DPB_vSS - 0.9*abs(cosThetaB)" :
             hist_name = "DPB_minus_COSB"
         else : hist_name = plot.variable
 
         h = pu.th1f("h_"+b.treename+"_"+hist_name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-        h.SetLineColor(r.kBlack)
+        #h.SetLineColor(r.kBlack)
+        #uglifyy for Moriond
+        h.SetLineColor(b.color)
         h.GetXaxis().SetLabelOffset(-999)
         h.SetFillColor(b.color)
         h.SetFillStyle(1001)
@@ -264,6 +358,15 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         weight_str = ""
         if "fakes" in b.name :
             weight_str = "FakeWeight"
+        elif "vv" in b.name and "SF" in reg.name :
+            print "adding mu_VVSF"
+            weight_str = "eventweight * 1.02"
+        elif "vv" in b.name and "SF" not in reg.name :
+            print "adding mu_VVDF"
+            weight_str = "eventweight * 1.02"
+        elif "ttbar" in b.name :
+            print "adding mu_TTBAR"
+            weight_str = "eventweight * 1.06"
         #elif "vv" in b.name and "crv" in reg.name and "SF" not in reg.name :
         #    weight_str = "eventweight * 1.27"
         #elif "vv" in b.name and "crvSF" in reg.name :
@@ -305,18 +408,61 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         if "fakes" in b.name :
             h_nom_fake = h.Clone("fakes_nominal_histo")
 
-        leg.AddEntry(h, b.displayname, "f")
+        all_histos.append(h)
         if integral > 0 :
             histos.append(h)
         else :
             avoid_bkg.append(b.name)
         rcan.upper_pad.Update()
 
+    # max y value for stack
+    maxy = 0
+
     # order the histos
     histos = sorted(histos, key=lambda h: h.Integral(), reverse=False)
     for h in histos :
+        if "fake" in h.GetName() or "Fake" in h.GetName() : continue
         stack.Add(h)
+        maxy += h.GetMaximum()
+
+        ## add items to legend in order of stack
+        #name_for_legend = ""
+        #for b in backgrounds :
+        #    if b.treename in h.GetName() :
+        #        name_for_legend = b.displayname
+        #leg.AddEntry(h, name_for_legend, "f")
     rcan.upper_pad.Update()
+
+    removes = {}
+    removes["crt17"] = ["higgs", "superNt"] # histo names by treename
+    removes["crv17"] = ["TTV", "zjets"]
+    removes["crvSF17"] = ["TTV"]
+
+    tmp_leg_histos = []
+    removal_list = removes[reg.name]
+    for h in all_histos :
+        keep_histo = True
+        for rem in removal_list :
+            if rem in h.GetName() :
+                keep_histo = False
+                print "not adding %s to legend"%rem
+        if keep_histo :
+            tmp_leg_histos.append(h)
+
+    print "length of tmp_leg_histos = %d"%len(tmp_leg_histos)
+    
+
+    h_leg = sorted(tmp_leg_histos, key=lambda h: h.Integral(), reverse=True)
+    histos_for_leg = histos_for_legend(h_leg)
+    #for h in h_leg :
+    #    # add items to legend in order of stack
+    #    name_for_legend = ""
+    #    for b in backgrounds :
+    #        if b.treename in h.GetName() :
+    #            name_for_legend = b.displayname
+    #    leg.AddEntry(h, name_for_legend, "f")
+    #rcan.upper_pad.Update()
+        
 
     # now get the data points
     hd = pu.th1f("h_data_"+reg.name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
@@ -329,6 +475,9 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     data.tree.Draw(cmd, cut * sel, "goff")
     hd.GetXaxis().SetLabelOffset(-999)
 
+    if hd.GetMaximum() > maxy :
+        maxy = hd.GetMaximum()
+
     print "Total SM: %.2f"%(n_total_sm_yield)
 
     # print the yield +/- stat error
@@ -339,7 +488,9 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     pu.add_overflow_to_lastbin(hd)
 
     gdata = pu.convert_errors_to_poisson(hd)
-    gdata.SetLineWidth(2)
+    #gdata.SetLineWidth(2)
+    #uglify
+    gdata.SetLineWidth(1)
     gdata.SetMarkerStyle(20)
     gdata.SetMarkerSize(1.5)
     gdata.SetLineColor(1)
@@ -352,21 +503,47 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     r.gStyle.SetHatchesSpacing(0.9)
 
     # dummy histo for legend
+    #mcError = r.TH1F("mcError", "mcError", 2,0,2)
+    #mcError.SetLineWidth(3)
+    #mcError.SetFillStyle(3354)
+    #mcError.SetFillColor(r.kBlack)
+    #mcError.SetLineColor(r.TColor.GetColor("#FC0F1D"))
+    #leg.AddEntry(mcError, "Total SM", "fl")
+    # uglify for Moriond
     mcError = r.TH1F("mcError", "mcError", 2,0,2)
+    #mcError.SetLineWidth(2)
+    #uglify
     mcError.SetLineWidth(3)
-    mcError.SetFillStyle(3354)
-    mcError.SetFillColor(r.kBlack)
-    mcError.SetLineColor(r.TColor.GetColor("#FC0F1D"))
-    leg.AddEntry(mcError, "Total SM", "fl")
+    mcError.SetFillStyle(3345)
+    mcError.SetFillColor(r.kBlue)
+    mcError.SetLineColor(r.kBlack)
+    #leg.AddEntry(mcError, "Total SM", "fl")
+    #uglify for Moriond
+    leg.AddEntry(mcError, "Standard Model", "fl")
+
+    # now add backgrounds to legend
+    for h in histos_for_leg :
+        name_for_legend = ""
+        for b in backgrounds :
+            if b.treename in h.GetName() :
+                name_for_legend = b.displayname
+        leg.AddEntry(h, name_for_legend, "f")
 
     # histogram for total stack
+    #totalSM = stack.GetStack().Last().Clone("totalSM")
+    #nominalAsymErrors = pu.th1_to_tgraph(totalSM)
+    #nominalAsymErrors.SetMarkerSize(0)
+    #nominalAsymErrors.SetLineWidth(0)
+    #nominalAsymErrors.SetFillStyle(3354)
+    #nominalAsymErrors.SetFillColor(r.kGray + 3)
+   # leg.AddEntry(nominalAsymErrors, "Bkg. Uncert.", "f")
+    # uglify for stop-2l Moriond
     totalSM = stack.GetStack().Last().Clone("totalSM")
     nominalAsymErrors = pu.th1_to_tgraph(totalSM)
     nominalAsymErrors.SetMarkerSize(0)
     nominalAsymErrors.SetLineWidth(0)
-    nominalAsymErrors.SetFillStyle(3354)
-    nominalAsymErrors.SetFillColor(r.kGray + 3)
-   # leg.AddEntry(nominalAsymErrors, "Bkg. Uncert.", "f")
+    nominalAsymErrors.SetFillStyle(3345)
+    nominalAsymErrors.SetFillColor(r.kBlue)
 
     if doSys :
         # totalSystHisto will hold each samples'
@@ -388,8 +565,9 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
                     if syst.up_name != up_sys : continue
                     #print "[%s] adding %s to up histo : %.2f (%.2f)"%(up_sys, b.name, syst.up_histo.Integral(), totalSM.Integral())
                     totalSysHisto.Add(syst.up_histo)
-            if h_nom_fake :
-                totalSysHisto.Add(h_nom_fake)
+            print "NOT ADDDING FAKE TO SYS HISTOS"
+            #if h_nom_fake :
+            #    totalSysHisto.Add(h_nom_fake)
             transient = pu.th1_to_tgraph(totalSysHisto)
             print " > %s"%up_sys
             pu.add_to_band(transient, nominalAsymErrors)
@@ -412,8 +590,9 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
                    # if "JER" in syst.name : continue
                    # if "ResoPerp" in syst.name or "ResoPara" in syst.name : continue
                     totalSysHisto.Add(syst.down_histo)
-            if h_nom_fake :
-                totalSysHisto.Add(h_nom_fake)
+            print "NOT ADDDING FAKE TO SYS HISTOS"
+            #if h_nom_fake :
+            #    totalSysHisto.Add(h_nom_fake)
             transient = pu.th1_to_tgraph(totalSysHisto)
             print " > %s"%dn_sys
             pu.add_to_band(transient, nominalAsymErrors)
@@ -421,25 +600,59 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
 
 
     # draw the MC stack and do cosmetcis
-    stack.Draw("HIST SAME")
     stack.SetMinimum(plot.y_range_min)
-    stack.SetMaximum(plot.y_range_max)
+  #  max_mult = 1.65
+  #  if has_signals :
+  #      max_mult = 2.0
+  #  if not plot.isLog() :
+  #      hax.SetMaximum(max_mult*maxy)
+  #      hax.Draw()
+  #      rcan.upper_pad.Update()
+  #      stack.SetMaximum(max_mult*maxy)
+  #  else :
+  #      hax.SetMaximum(1e3*plot.y_range_max)
+  #      hax.Draw()
+  #      rcan.upper_pad.Update()
+  #      stack.SetMaximum(1e3*plot.y_range_max)
+  #      #stack.SetMaximum(plot.y_range_max)
+    stack.Draw("HIST SAME")
     rcan.upper_pad.Update()
+
+    # symmetrize the errors
+    for i in xrange(nominalAsymErrors.GetN()) :
+        ehigh = nominalAsymErrors.GetErrorYhigh(i)
+        elow  = nominalAsymErrors.GetErrorYlow(i)
+
+
+        error_sym = r.Double(0.0)
+        error_sym = (ehigh + elow) / 2.0
+
+        print "initial error (+%.2f,-%.2f), symmetrized = (+%.2f,-%.2f)"%(ehigh,elow, error_sym, error_sym)
+
+
+        nominalAsymErrors.SetPointEYhigh(i,0.0)
+        nominalAsymErrors.SetPointEYhigh(i, error_sym)
+        nominalAsymErrors.SetPointEYlow(i,0.0)
+        nominalAsymErrors.SetPointEYlow(i,error_sym)
 
     # draw the error band
     nominalAsymErrors.Draw("same && E2")
 
     # draw the total bkg line
     hist_sm = stack.GetStack().Last().Clone("hist_sm")
-    hist_sm.SetLineColor(r.TColor.GetColor("#FC0F1D"))
+    #hist_sm.SetLineColor(r.TColor.GetColor("#FC0F1D"))
+    #uglify for Stp2-l Moriond
+    hist_sm.SetLineColor(r.kBlack)
     hist_sm.SetLineWidth(mcError.GetLineWidth())
     hist_sm.SetLineStyle(1)
     hist_sm.SetFillStyle(0)
+    #uglify
+    hist_sm.SetLineWidth(3)
     hist_sm.Draw("hist same")
 
     ############################
     # plot signal 
-    leg_sig = pu.default_legend(xl=0.55, yl=0.56, xh=0.91, yh=0.71)
+    leg_sig = pu.default_legend(xl=0.55, yl=0.6, xh=0.91, yh=0.71)
     leg_sig.SetNColumns(1)
 
     sig_histos = []
@@ -451,7 +664,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
             replace_var = plot.variable.replace("abs(","")
             replace_var = replace_var.replace(")","")
             hist_name = replace_var
-        elif plot.variable == "DPB_vSS - 0.85*abs(cosThetaB)" :
+        elif plot.variable == "DPB_vSS - 0.9*abs(cosThetaB)" :
             hist_name = "DPB_minus_COSB"
         else : hist_name = plot.variable
 
@@ -463,11 +676,8 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
         h.SetFillStyle(0)
         h.Sumw2
 
-        # cut and make the sample weighted, applying the scale_factor
-        #print " !!! fixing bjet check for signal !!! "
-        #new_tcut = reg.tcut + " && nBJets>0"
         #cut = "(" + new_tcut + ") * eventweightNOPUPW * susy3BodyRightPol *" + str(s.scale_factor)
-        cut = "(" + reg.tcut + ") * eventweightNOPUPW * susy3BodyRightPol *" + str(s.scale_factor)
+        cut = "(" + reg.tcut + ") * eventweight *" + str(s.scale_factor)
         cut = r.TCut(cut)
         sel = r.TCut("1")
         cmd = "%s>>+%s"%(plot.variable, h.GetName())
@@ -499,10 +709,16 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     r.gPad.RedrawAxis()
 
     # add some text/labels
-    pu.draw_text(text="ATLAS",x=0.18,y=0.85,size=0.06,font=72)
-    pu.draw_text(text="Preliminary",x=0.325,y=0.85,size=0.06,font=42)
-    pu.draw_text(text="L = 32.8 fb^{-1}, #sqrt{s} = 13 TeV",x=0.18,y=0.79, size=0.04)
-    pu.draw_text(text=reg.displayname,      x=0.18,y=0.74, size=0.04)
+    #pu.draw_text(text="ATLAS",x=0.18,y=0.85,size=0.06,font=72)
+    #pu.draw_text(text="Internal",x=0.325,y=0.85,size=0.06,font=42)
+    #uglify 
+    pu.draw_text(text="ATLAS",x=0.18,y=0.85,size=0.05,font=72)
+    pu.draw_text(text="Preliminary",x=0.325,y=0.85,size=0.05,font=42)
+    #pu.draw_text(text="L = 36 fb^{-1}, #sqrt{s} = 13 TeV",x=0.18,y=0.79, size=0.04)
+    pu.draw_text(text="#sqrt{s} = 13 TeV, 36.1 fb^{-1}", x=0.18, y=0.79, size=0.04)
+    pu.draw_text(text="3-body selection", x=0.18, y=0.74, size=0.04)
+    pu.draw_text(text=reg.displayname,      x=0.18,y=0.68, size=0.04)
+    #pu.draw_text(text=reg.displayname,      x=0.18,y=0.74, size=0.04)
 
     r.gPad.SetTickx()
     r.gPad.SetTicky()
@@ -518,7 +734,7 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     # yaxis
     yax = h_sm.GetYaxis()
     yax.SetRangeUser(0,2)
-    yax.SetTitle("Data/SM")
+    yax.SetTitle("Data / SM")
     yax.SetTitleSize(0.14 * 0.83)
     yax.SetLabelSize(0.13 * 0.81)
     yax.SetLabelOffset(0.98 * 0.013 * 1.08)
@@ -544,7 +760,9 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
     pu.buildRatioErrorBand(nominalAsymErrors, ratioBand)
 
     # draw lines
-    pu.draw_line(plot.x_range_min, 1.0, plot.x_range_max, 1.0,color=r.kRed,style=2,width=1)
+    #pu.draw_line(plot.x_range_min, 1.0, plot.x_range_max, 1.0,color=r.kRed,style=2,width=1)
+    #uglify
+    pu.draw_line(plot.x_range_min, 1.0, plot.x_range_max, 1.0,color=r.kBlack,style=2,width=1)
     pu.draw_line(plot.x_range_min, 0.5, plot.x_range_max, 0.5,style=3,width=1)
     pu.draw_line(plot.x_range_min, 1.5, plot.x_range_max, 1.5,style=3,width=1)
 
@@ -569,20 +787,24 @@ def make_plotsRatio(plot, reg, data, backgrounds) :
             ratio.SetPoint(index, x1, y1)
             ratio.SetPointError(index, ratio_raw.GetErrorXlow(i), ratio_raw.GetErrorXhigh(i), ratio_raw.GetErrorYlow(i), ratio_raw.GetErrorYhigh(i))
             index+=1
-    ratio.SetLineWidth(2)
+    #ratio.SetLineWidth(2)
+    #uglify
+    ratio.SetLineWidth(1)
     ratio.SetMarkerStyle(20)
     ratio.SetMarkerSize(1.5)
     ratio.SetLineColor(1)
     ratio.SetMarkerSize(1.5)
-    ratio.Draw("option pz 0")
     rcan.lower_pad.Update()
     
-    ratioBand.Draw("same && E2")
+    ratioBand.Draw("E2")
+    #ratioBand.Draw("same && E2")
+    ratio.Draw("option same pz 0")
     rcan.lower_pad.Update()
 
     rcan.canvas.Update()
 
     outname = plot.name + ".eps"
+    outname = outname.replace("17","")
     rcan.canvas.SaveAs(outname)
     out = indir + "/plots/" + outdir
     utils.mv_file_to_dir(outname, out, True)
@@ -619,7 +841,7 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
             replace_var = plot.variable.replace("abs(","")
             replace_var = replace_var.replace(")","")
             hist_name = replace_var
-        elif plot.variable == "DPB_vSS - 0.85*abs(cosThetaB)" :
+        elif plot.variable == "DPB_vSS - 0.9*abs(cosThetaB)" :
             hist_name = "DPB_minus_COSB"
         else : hist_name = plot.variable
 
@@ -633,7 +855,8 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
         # cut and make the sample weighted, applying any scale_factor
         weight_str = ""
         if b.isSignal() :
-            weight_str = "eventweightNOPUPW * susy3BodyRightPol"
+            #weight_str = "eventweightNOPUPW * susy3BodyRightPol"
+            weight_str = "eventweight"
         else :
             #weight_str = "1"
             weight_str = "eventweight"
@@ -704,9 +927,9 @@ def make_plotsComparison(plot, reg, data, backgrounds) :
     print "%s saved to : %s"%(outname, os.path.abspath(fullname))
 
 
-def make_plots1D(plot, reg, data, backgrounds) :
+def make_plots1D(plot, reg, data, backgrounds, current_plot_number, total_number_of_plots) :
 
-    if plot.ratioCanvas : make_plotsRatio(plot, reg, data, backgrounds)
+    if plot.ratioCanvas : make_plotsRatio(plot, reg, data, backgrounds, current_plot_number, total_number_of_plots)
     elif plot.is_comparison : make_plotsComparison(plot, reg, data, backgrounds)
     else :
         print "make_plots1D    Plotting %s"%plot.name 
@@ -721,20 +944,60 @@ def make_plots1D(plot, reg, data, backgrounds) :
 
         if plot.isLog() : c.SetLogy(True)
         c.Update()
+
+
+        hax = r.TH1F("axes", "", int(plot.nbins), plot.x_range_min, plot.x_range_max)
+        hax.SetMinimum(plot.y_range_min)
+        hax.SetMaximum(plot.y_range_max)
+        hax.GetXaxis().SetTitle(plot.x_label)
+        hax.GetXaxis().SetTitleFont(42)
+        hax.GetXaxis().SetLabelFont(42)
+        hax.GetXaxis().SetLabelSize(0.035)
+        hax.GetXaxis().SetTitleSize(0.048 * 0.85)
+        hax.GetXaxis().SetTitleOffset(-999)
+        hax.GetXaxis().SetLabelOffset(-999)
+
+        hax.GetYaxis().SetTitle(plot.y_label)
+        hax.GetYaxis().SetTitleFont(42)
+        hax.GetYaxis().SetLabelFont(42)
+        hax.GetYaxis().SetTitleOffset(1.4)
+        hax.GetYaxis().SetLabelOffset(0.013)
+        hax.GetYaxis().SetLabelSize(1.2 * 0.035)
+        hax.GetYaxis().SetTitleSize(0.055 * 0.85)
+        hax.Draw("AXIS")
+        c.Update()
         
         stack = r.THStack("stack_"+plot.name, "")
 
         leg = pu.default_legend()
         leg.SetNColumns(2)
 
+        hist_name = ""
+        if "abs(" in plot.variable :
+            hist_name = plot.variable.replace("abs(","").replace(")","")
+        else :
+            hist_name = plot.variable
+
         # order the backgrounds by integral
         histos = []
+
+        has_signals = False
+
+        total_bkg = 0.0
+        total_bkg_err = 0.0
+
         for b in backgrounds :
-            h = pu.th1f("h_"+b.treename+"_"+plot.variable, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+            if b.isSignal() :
+                has_signals = True
+                continue
+
+            h = pu.th1f("h_"+b.treename+"_"+hist_name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
             h.SetLineColor(r.kBlack)
             h.SetLineWidth(1)
             h.SetFillColor(b.color)
-            h.SetFillStyle(b.fillStyle)
+            h.SetFillStyle(1001)
+            h.SetMinimum(plot.y_range_min)
+            h.SetMaximum(plot.y_range_max)
             h.Sumw2
 
             cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
@@ -748,10 +1011,16 @@ def make_plots1D(plot, reg, data, backgrounds) :
             integral = h.IntegralAndError(0,-1,stat_err)
             print "%s: %.2f +/- %.2f"%(b.name, integral, stat_err)
 
+            total_bkg = total_bkg + integral
+            total_bkg_err = total_bkg_err + stat_err * stat_err
+
             #stack.Add(h)
             leg.AddEntry(h, b.displayname, "f")
             histos.append(h)
             c.Update()
+
+        total_bkg_err = sqrt(total_bkg_err)
+        print "Total BKG : %.2f +/- %.2f"%(total_bkg, total_bkg_err)
 
         #order the histos
         histos = sorted(histos, key=lambda h: h.Integral(), reverse=False)
@@ -760,50 +1029,100 @@ def make_plots1D(plot, reg, data, backgrounds) :
         c.Update()
 
         #### DATA
-        hd = pu.th1f("h_data_"+reg.name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-        hd.Sumw2
-        cut = "(" + reg.tcut + ")"
-        cut = r.TCut(cut)
-        sel = r.TCut("1")
-        cmd = "%s>>+%s"%(plot.variable, hd.GetName())
-        data.tree.Draw(cmd, cut * sel)
+        if data :
+            hd = pu.th1f("h_data_"+reg.name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+            hd.Sumw2
+            cut = "(" + reg.tcut + ")"
+            cut = r.TCut(cut)
+            sel = r.TCut("1")
+            cmd = "%s>>+%s"%(plot.variable, hd.GetName())
+            data.tree.Draw(cmd, cut * sel)
 
-        # print the integral and +/- stat error
-        stat_err = r.Double(0.0)
-        integral = hd.IntegralAndError(0,-1,stat_err)
-        print "Data: %.2f +/- %.2f"%(integral, stat_err)
+            # print the integral and +/- stat error
+            stat_err = r.Double(0.0)
+            integral = hd.IntegralAndError(0,-1,stat_err)
+            print "Data: %.2f +/- %.2f"%(integral, stat_err)
 
         #g = pu.th1_to_tgraph(hd)
-        g = pu.convert_errors_to_poisson(hd)
-        g.SetLineWidth(2)
-        g.SetMarkerStyle(20)
-        g.SetMarkerSize(1.1)
-        g.SetLineColor(1)
-        leg.AddEntry(g, "Data", "p")
+        g = None
+        if data :
+            g = pu.convert_errors_to_poisson(hd)
+            g.SetLineWidth(2)
+            g.SetMarkerStyle(20)
+            g.SetMarkerSize(1.1)
+            g.SetLineColor(1)
+            leg.AddEntry(g, "Data", "p")
+
+        # signals
+        sig_histos = []
+        for s in backgrounds :
+            if not s.isSignal() : continue
+            hist_name = ""
+            if "abs(" in plot.variable :
+                hist_name = plot.variable.replace("abs(","").replace(")","")
+            else :
+                hist_name = plot.variable
+
+            h = pu.th1f("h_" + s.treename + "_" + hist_name, "", int(plot.nbins),
+                            plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
+            h.SetLineWidth(2)
+            h.SetLineStyle(2)
+            h.SetLineColor(s.color)
+            h.GetXaxis().SetLabelOffset(-999)
+            h.SetFillStyle(0)
+            h.Sumw2
+
+            cut = "(" + reg.tcut + ") * eventweight *" + str(s.scale_factor)
+            cut = r.TCut(cut)
+            sel = r.TCut("1")
+            cmd = "%s>>+%s"%(plot.variable, h.GetName())
+            s.tree.Draw(cmd, cut * sel, "goff")
+
+            stat_rr = r.Double(0.0)
+            integral = h.IntegralAndError(0,-1, stat_err)
+            print "%s: %.2f +/- %.2f"%(s.name, integral, stat_err)
+
+            # add overflow
+            pu.add_overflow_to_lastbin(h)
+
+            leg.AddEntry(h, s.displayname, "l")
+            sig_histos.append(h)
+
+
+        totalSM = stack.GetStack().Last().Clone("totalSM")
         
-        stack.Draw("HIST")
-        stack.GetXaxis().SetTitle(plot.x_label)
-        stack.GetYaxis().SetTitle(plot.y_label)
-        stack.GetXaxis().SetTitleFont(42)
-        stack.GetYaxis().SetTitleFont(42)
-        stack.GetXaxis().SetLabelFont(42)
-        stack.GetYaxis().SetLabelFont(42)
-        stack.GetYaxis().SetTitleOffset(1.4)
-        stack.GetYaxis().SetLabelOffset(0.013)
         stack.SetMinimum(plot.y_range_min)
-        stack.SetMaximum(plot.y_range_max)
-        stack.GetXaxis().SetLabelSize(0.035)
-        stack.GetYaxis().SetLabelSize(0.035)
-        stack.GetXaxis().SetTitleSize(0.048 * 0.85)
-        stack.GetYaxis().SetTitleSize(0.055 * 0.85)
+        stack.Draw("HIST SAME")
+        c.Update()
+
+        #stack.Draw("HIST")
+        #stack.GetXaxis().SetTitle(plot.x_label)
+        #stack.GetYaxis().SetTitle(plot.y_label)
+        #stack.GetXaxis().SetTitleFont(42)
+        #stack.GetYaxis().SetTitleFont(42)
+        #stack.GetXaxis().SetLabelFont(42)
+        #stack.GetYaxis().SetLabelFont(42)
+        #stack.GetYaxis().SetTitleOffset(1.4)
+        #stack.GetYaxis().SetLabelOffset(0.013)
+        #stack.SetMinimum(plot.y_range_min)
+        #stack.SetMaximum(plot.y_range_max)
+        #stack.GetXaxis().SetLabelSize(0.035)
+        #stack.GetYaxis().SetLabelSize(0.035)
+        #stack.GetXaxis().SetTitleSize(0.048 * 0.85)
+        #stack.GetYaxis().SetTitleSize(0.055 * 0.85)
+
+        is_first = True
+        for sh in sig_histos :
+            sh.Draw("hist same")
 
 
-        g.Draw("option same pz")
+        if g :
+            g.Draw("option same pz")
         leg.Draw()
 
         pu.draw_text_on_top(text=plot.name)
-        pu.draw_text(text="#it{ATLAS} Work in Progress",x=0.18,y=0.85)
-        pu.draw_text(text="13 TeV, 78.3 pb^{-1}",x=0.18, y=0.8)
+        pu.draw_text(text="#it{ATLAS} Simulation",x=0.18,y=0.85)
+        pu.draw_text(text="13 TeV, 36/fb",x=0.18, y=0.8)
         pu.draw_text(text=reg.displayname, x=0.18,y=0.75)
         c.Update()
         r.gPad.RedrawAxis()
@@ -1191,6 +1510,7 @@ def make_plots(plots, regions, data, backgrounds) :
             sel = r.TCut("1")
             for b in backgrounds :
                 if 'fakes' in b.name : continue
+                if b.isSignal() : continue
                 for s in b.systList :
                     if not s.isKinSys() : continue
 
@@ -1208,6 +1528,7 @@ def make_plots(plots, regions, data, backgrounds) :
                         draw_list = ">> " + list_name_up
                         s.tree_up.Draw(draw_list, sel*cut)
                         list = r.gROOT.FindObject(list_name_up)
+                        print list_name_up
                         s.tree_up.SetEventList(list)
                         list.SaveAs(save_name_up)
 
@@ -1250,9 +1571,12 @@ def make_plots(plots, regions, data, backgrounds) :
                 data_list.SaveAs(data_save_name)
 
         # now check if we want to do a 1D or 2D plot
+        n_total = len(plots_with_region)
+        n_current = 1
         for p in plots_with_region :
-            if not p.is2D : make_plots1D(p, reg, data, backgrounds) 
+            if not p.is2D : make_plots1D(p, reg, data, backgrounds, n_current, n_total)
             elif p.is2D : make_plots2D(p, reg, data, backgrounds)
+            n_current += 1
 
 def print_usage() :
 

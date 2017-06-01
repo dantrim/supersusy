@@ -12,10 +12,13 @@ import supersusy.utils.systematic as systematic
 backgrounds = []
 rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0231/a_jan16/mc/Raw/"
 data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0231/a_jan16/dataToRun/Raw/"
+data15_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0231/a_jan16/data15/Raw/" 
+data16_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0231/a_jan16/data16/Raw/"
 fake_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0226/forFake3/fakes.3body/"
 filelist_dir = "/data/uclhc/uci/user/dantrim/n0231val/filelists/"
 
-lumi_ = [32.82] # norm from 1.0/fb to 32.82/fb
+lumi_ = [35.99] # norm from 1.0/fb to 32.82/fb
+#lumi_ = [32.82] # norm from 1.0/fb to 32.82/fb
 lumi_val = 0
 
 ######## MC
@@ -189,7 +192,8 @@ backgrounds.append(drel)
 data = background.Data()
 data.set_color(r.kBlack)
 data.set_treename("data")
-data.set_chain_from_list_CONDOR(filelist_dir + "dataToRun/", data_rawdir)
+data.set_chain_from_list_CONDOR2([filelist_dir + "data15ToRun/", filelist_dir + "data16ToRun/"] , [data15_rawdir, data16_rawdir])
+#data.set_chain_from_list_CONDOR([filelist_dir + "dataToRun/", filelist_dir + "dataToRun/"] , [data15_rawdir, data16_rawdir])
 
 
 ##########################################
@@ -436,7 +440,6 @@ reg = region.Region()
 reg.name = "crt"
 reg.displayname = "CR-Top"
 reg.tcut = isDFOS + " && nBJets>0 && MDR>80 && RPT>0.65 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger
-#reg.tcut = isDFOS + " && nBJets>0 && MDR>80 && RPT>0.5 && DPB_vSS<(0.85*abs(cosThetaB)+1.8) && mll>20 && " + trigger
 regions.append(reg)
 
 reg = region.Region()
@@ -463,39 +466,31 @@ plots = []
 
 
 vars = {}
-vars["l_pt[0]"]         = { "dfprebv" : [40, 25,500,1e9],     "dfpreb" : [40, 25,500,1e9],    "crt" : [30, 25, 600, 1e5], "vrt"  : [20,25,300, 150],
+vars["l_pt[0]"]         = { "dfprebv" : [40, 25,500,1e9],     "dfpreb" : [40, 25,500,1e9],    "crt" : [30, 25, 600, 1e5], "vrt"  : [20,25,300, 375],
                             "sfprebv" : [40, 25,400,1e10],    "sfpreb" : [40, 25,500,1e10],
                             "sfprebvEE" : [40, 25,400,1e10],    "sfprebEE" : [40, 25,500,1e10],
                             "sfprebvMM" : [40, 25,400,1e10],    "sfprebMM" : [40, 25,500,1e10],
-                            #"crv"     : [10, 25, 100, 10000],   "crvSF"  : [15, 25, 105, 450 ], "vrv" : [5,25,70, 90],     "vrvSF" : [10,25,70,140]}
-                            "crv"     : [10, 25, 100, 720],   "crvSF"  : [15, 25, 105, 800 ], "vrv" : [5,25,70, 200],     "vrvSF" : [10,25,70,140]}
-                            #"crv"     : [10, 25, 100, 300],   "crvSF"  : [15, 25, 105, 250 ], "vrv" : [5,25,70, 90],     "vrvSF" : [10,25,70,140]}
+                            "crv"     : [10, 25, 100, 900],   "crvSF"  : [15, 25, 105, 800 ], "vrv" : [5,25,70, 200],     "vrvSF" : [10,25,70,140]}
 
-vars["l_pt[1]"]         = { "dfprebv" : [40,20,500, 1e9],     "dfpreb" : [40,20,500, 1e9],    "crt" : [10, 20, 200, 7e5], "vrt"   : [10,20,130, 150],
+vars["l_pt[1]"]         = { "dfprebv" : [40,20,500, 1e9],     "dfpreb" : [40,20,500, 1e9],    "crt" : [10, 20, 200, 7e5], "vrt"   : [10,20,130, 375],
                             "sfprebv" : [40,20,500,1e10],     "sfpreb" : [40,20,400,1e10],
                             "sfprebvEE" : [40,20,500,1e10],     "sfprebEE" : [40,20,400,1e10],
                             "sfprebvMM" : [40,20,500,1e10],     "sfprebMM" : [40,20,400,1e10],
-                            #"crv"     : [4, 20, 60, 10000],     "crvSF" :  [8, 20, 70, 420 ],   "vrv" : [2,20,40, 80],      "vrvSF" : [4,20,40, 120]}
-                            "crv"     : [4, 20, 60, 550],     "crvSF" :  [8, 20, 70, 600 ],   "vrv" : [2,20,40, 220],      "vrvSF" : [4,20,40, 120]}
-                            #"crv"     : [4, 20, 60, 220],     "crvSF" :  [8, 20, 70, 200 ],   "vrv" : [2,20,40, 80],      "vrvSF" : [4,20,40, 120]}
+                            "crv"     : [4, 20, 60, 700],     "crvSF" :  [8, 20, 70, 600 ],   "vrv" : [2,20,40, 220],      "vrvSF" : [4,20,40, 120]}
 
-vars["MDR" ]            = { "dfprebv" : [10,0,200, 1e9],      "dfpreb" : [10,0,200, 1e9],     "crt" : [ 5, 80,200, 7e5],  "vrt"   : [5,80,135, 210],
+vars["MDR" ]            = { "dfprebv" : [10,0,200, 1e9],      "dfpreb" : [10,0,200, 1e9],     "crt" : [ 5, 80,200, 7e5],  "vrt"   : [5,80,135, 500],
                             "sfprebv" : [10,0,200,1e10],      "sfpreb" : [10,0,200,1e10],
                             "sfprebvEE" : [10,0,200,1e10],      "sfprebEE" : [10,0,200,1e10],
                             "sfprebvMM" : [10,0,200,1e10],      "sfprebMM" : [10,0,200,1e10],
-                            #"crv"     : [10,  30, 120, 1e4],  "crvSF"  : [10, 50, 130, 400 ], "vrv" : [10,30,80,    150],  "vrvSF" : [10,30,80, 180]}
-                            "crv"     : [10,  30, 120, 600],  "crvSF"  : [10, 50, 130, 650 ], "vrv" : [10,30,80,    300],  "vrvSF" : [10,30,80, 180]}
-                            #"crv"     : [10,  30, 120, 230],  "crvSF"  : [10, 50, 130, 220 ], "vrv" : [10,30,80,    150],  "vrvSF" : [10,30,80, 180]}
+                            "crv"     : [10,  30, 120, 800],  "crvSF"  : [10, 50, 130, 650 ], "vrv" : [10,30,80,    300],  "vrvSF" : [10,30,80, 180]}
 
-vars["DPB_vSS"]         = { "dfprebv" : [0.2,0,3.2, 1e9],     "dfpreb" : [0.2,0,3.2, 1e9],    "crt" : [0.1, 0, 2.8, 7e5], "vrt"   : [0.2,1.8,3.2, 200],
+vars["DPB_vSS"]         = { "dfprebv" : [0.2,0,3.2, 1e9],     "dfpreb" : [0.2,0,3.2, 1e9],    "crt" : [0.1, 0, 2.8, 7e5], "vrt"   : [0.2,1.8,3.2, 380],
                             "sfprebv" : [0.2,0,3.2,1e10],      "sfpreb" : [0.2,0,3.2,1e10],
                             "sfprebvEE" : [0.2,0,3.2,1e10],      "sfprebEE" : [0.2,0,3.2,1e10],
                             "sfprebvMM" : [0.2,0,3.2,1e10],      "sfprebMM" : [0.2,0,3.2,1e10],
-                            #"crv"     : [0.5, 0, 2.8, 1e4],   "crvSF"  : [0.5, 0, 2.8, 335],  "vrv" : [0.2,1.8,3.2, 120],  "vrvSF" : [0.2,1.8,3.2, 120]}
-                            "crv"     : [0.5, 0, 2.8, 580],   "crvSF"  : [0.5, 0, 2.8, 500],  "vrv" : [0.2,1.8,3.2, 200],  "vrvSF" : [0.2,1.8,3.2, 120]}
-                            #"crv"     : [0.5, 0, 2.8, 250],   "crvSF"  : [0.5, 0, 2.8, 250],  "vrv" : [0.2,1.8,3.2, 120],  "vrvSF" : [0.2,1.8,3.2, 120]}
+                            "crv"     : [0.5, 0, 2.8, 720],   "crvSF"  : [0.5, 0, 2.8, 500],  "vrv" : [0.2,1.8,3.2, 200],  "vrvSF" : [0.2,1.8,3.2, 120]}
 
-vars["gamInvRp1"]       = { "dfprebv" : [0.05,0,1, 1e9],     "dfpreb"  : [0.05,0,1, 1e9],     "crt" : [0.1, 0, 1, 7e5],  "vrt"   : [0.1,0,1, 180],
+vars["gamInvRp1"]       = { "dfprebv" : [0.05,0,1, 1e9],     "dfpreb"  : [0.05,0,1, 1e9],     "crt" : [0.1, 0, 1, 7e5],  "vrt"   : [0.1,0,1, 280],
                             "sfprebv" : [0.05,0,1,1e10],     "sfpreb"  : [0.05,0,1,1e10],
                             "sfprebvEE" : [0.05,0,1,1e10],     "sfprebEE"  : [0.05,0,1,1e10],
                             "sfprebvMM" : [0.05,0,1,1e10],     "sfprebMM"  : [0.05,0,1,1e10],
@@ -503,54 +498,42 @@ vars["gamInvRp1"]       = { "dfprebv" : [0.05,0,1, 1e9],     "dfpreb"  : [0.05,0
                             "crv"     : [0.02, 0.8, 1, 400], "crvSF"   : [0.04, 0.8, 1, 550 ], "vrv" : [0.05,0.8,1, 320],  "vrvSF" : [0.05,0.8,1, 150]}
                             #"crv"     : [0.02, 0.8, 1, 200], "crvSF"   : [0.04, 0.8, 1, 200 ], "vrv" : [0.05,0.8,1, 140],  "vrvSF" : [0.05,0.8,1, 150]}
 
-vars["abs(cosThetaB)"]  = { "dfprebv" : [0.05,0,1, 1e9],     "dfpreb"  : [0.05,0,1, 1e9], "crt" : [0.05, 0, 1, 7e5],     "vrt" : [0.1,0,1, 200],
+vars["abs(cosThetaB)"]  = { "dfprebv" : [0.05,0,1, 1e9],     "dfpreb"  : [0.05,0,1, 1e9], "crt" : [0.05, 0, 1, 7e5],     "vrt" : [0.1,0,1, 240],
                             "sfprebv" : [0.05,0,1,1e10],     "sfpreb"  : [0.05,0,1,1e10],
                             "sfprebvEE" : [0.05,0,1,1e10],     "sfprebEE"  : [0.05,0,1,1e10],
                             "sfprebvMM" : [0.05,0,1,1e10],     "sfprebMM"  : [0.05,0,1,1e10],
-                            #"crv" : [0.15, 0, 1, 1e4],       "crvSF"   : [0.2, 0, 1, 320 ], "vrv" : [0.2,0,1, 100], "vrvSF" : [0.2,0,1, 120]}
-                            "crv" : [0.15, 0, 1, 400],       "crvSF"   : [0.2, 0, 1, 375 ], "vrv" : [0.2,0,1, 300], "vrvSF" : [0.2,0,1, 120]}
-                            #"crv" : [0.15, 0, 1, 200],       "crvSF"   : [0.2, 0, 1, 200 ], "vrv" : [0.2,0,1, 100], "vrvSF" : [0.2,0,1, 120]}
+                            "crv" : [0.15, 0, 1, 575],       "crvSF"   : [0.2, 0, 1, 375 ], "vrv" : [0.2,0,1, 300], "vrvSF" : [0.2,0,1, 120]}
 
-vars["RPT"]             = { "dfprebv" : [0.05,0,1, 1e9], "dfpreb" : [0.05,0,1, 1e9], "crt"    : [0.05, 0.5, 1, 7e5], "vrt" : [0.05,0,0.5, 150],
+vars["RPT"]             = { "dfprebv" : [0.05,0,1, 1e9], "dfpreb" : [0.05,0,1, 1e9], "crt"    : [0.05, 0.5, 1, 7e5], "vrt" : [0.05,0,0.5,400],
                             "sfprebv" : [0.05,0,1,1e10], "sfpreb" : [0.05,0,1,1e10],
                             "sfprebvEE" : [0.05,0,1,1e10], "sfprebEE" : [0.05,0,1,1e10],
                             "sfprebvMM" : [0.05,0,1,1e10], "sfprebMM" : [0.05,0,1,1e10],
-                            #"crv" : [0.1, 0, 0.5, 1e4],  "crvSF"  : [0.1, 0, 0.5, 375], "vrv" : [0.1,0,0.5,120],    "vrvSF" : [0.1,0,0.5, 150]}
-                            "crv" : [0.1, 0, 0.5, 700],  "crvSF"  : [0.1, 0, 0.5, 600], "vrv" : [0.1,0,0.5,240],    "vrvSF" : [0.1,0,0.5, 150]}
-                            #"crv" : [0.1, 0, 0.5, 290],  "crvSF"  : [0.1, 0, 0.5, 230], "vrv" : [0.1,0,0.5,120],    "vrvSF" : [0.1,0,0.5, 150]}
+                            "crv" : [0.1, 0, 0.5, 1000],  "crvSF"  : [0.1, 0, 0.5, 600], "vrv" : [0.1,0,0.5,240],    "vrvSF" : [0.1,0,0.5, 150]}
 
-vars["nSJets"]          = { "dfprebv" : [1, 0,15, 1e9], "dfpreb" : [1, 0,15, 1e9], "crt" : [1, 0, 12, 7e5], "vrt" : [1,0,10, 220],
+vars["nSJets"]          = { "dfprebv" : [1, 0,15, 1e9], "dfpreb" : [1, 0,15, 1e9], "crt" : [1, 0, 12, 7e5], "vrt" : [1,0,10, 380],
                             "sfprebv" : [1,0,15,1e10],  "sfpreb" : [1,0,15,1e10],
                             "sfprebvEE" : [1,0,15,1e10],  "sfprebEE" : [1,0,15,1e10],
                             "sfprebvMM" : [1,0,15,1e10],  "sfprebMM" : [1,0,15,1e10],
-                            #"crv" : [1, 0, 7, 1e4],     "crvSF" : [1, 0, 7, 375],  "vrv" : [1,0,7, 180],     "vrvSF" : [1,0,7, 180]}
-                            "crv" : [1, 0, 7, 1100],     "crvSF" : [1, 0, 7, 600],  "vrv" : [1,0,7, 400],     "vrvSF" : [1,0,7, 180]}
-                            #"crv" : [1, 0, 7, 500],     "crvSF" : [1, 0, 7, 250],  "vrv" : [1,0,7, 180],     "vrvSF" : [1,0,7, 180]}
+                            "crv" : [1, 0, 7, 1500],     "crvSF" : [1, 0, 7, 600],  "vrv" : [1,0,7, 400],     "vrvSF" : [1,0,7, 180]}
 
-vars["nBJets"]          = { "dfprebv" : [1, 0,3, 1e9], "dfpreb" : [1, 0,6, 1e9], "crt"  : [1, 0, 10, 7e5], "vrt" : [1,0,3, 1000],
+vars["nBJets"]          = { "dfprebv" : [1, 0,3, 1e9], "dfpreb" : [1, 0,6, 1e9], "crt"  : [1, 0, 10, 7e5], "vrt" : [1,0,3, 1500],
                             "sfprebv" : [1,0,3,1e10],  "sfpreb" : [1,0,6,1e10],
                             "sfprebvEE" : [1,0,3,1e10],  "sfprebEE" : [1,0,6,1e10],
                             "sfprebvMM" : [1,0,3,1e10],  "sfprebMM" : [1,0,6,1e10],
-                            #"crv" : [1, 0, 3, 1e4], "crvSF"     : [1, 0, 3, 1000], "vrv" : [1,0,3, 300], "vrvSF"  : [1,0,3, 320]}
-                            "crv" : [1, 0, 3, 2000], "crvSF"     : [1, 0, 3, 1600], "vrv" : [1,0,3, 750], "vrvSF"  : [1,0,3, 320]}
-                            #"crv" : [1, 0, 3, 1000], "crvSF"     : [1, 0, 3, 600], "vrv" : [1,0,3, 300], "vrvSF"  : [1,0,3, 320]}
+                            "crv" : [1, 0, 3, 3000], "crvSF"     : [1, 0, 3, 1600], "vrv" : [1,0,3, 750], "vrvSF"  : [1,0,3, 320]}
 
-vars["met"]             = { "dfprebv" : [30,0,500, 1e9], "dfpreb" : [30,0,500, 1e9], "crt" : [30,0,460, 7e5], "vrt" : [20,80,280, 250],
+vars["met"]             = { "dfprebv" : [30,0,500, 1e9], "dfpreb" : [30,0,500, 1e9], "crt" : [30,0,460, 7e5], "vrt" : [20,80,280, 370],
                             "sfprebv" : [30,0,500,1e10], "sfpreb" : [30,0,500,1e10],
                             "sfprebvEE" : [30,0,500,1e10], "sfprebEE" : [30,0,500,1e10],
                             "sfprebvMM" : [30,0,500,1e10], "sfprebMM" : [30,0,500,1e10],
-                            #"crv" : [10, 30, 120, 1e4], "crvSF"   : [10, 70, 135,  550 ], "vrv" : [10,40,100, 100], "vrvSF" : [5,70,110, 130]}
-                            "crv" : [10, 30, 120, 520], "crvSF"   : [10, 70, 135,  950 ], "vrv" : [10,40,100, 225], "vrvSF" : [5,70,110, 130]}
-                            #"crv" : [10, 30, 120, 230], "crvSF"   : [10, 70, 135,  250 ], "vrv" : [10,40,100, 100], "vrvSF" : [5,70,110, 130]}
+                            "crv" : [10, 30, 120, 720], "crvSF"   : [10, 70, 135,  950 ], "vrv" : [10,40,100, 22], "vrvSF" : [5,70,110, 130]}
+                            #"crv" : [10, 30, 120, 720], "crvSF"   : [10, 70, 135,  950 ], "vrv" : [10,40,100, 225], "vrvSF" : [5,70,110, 130]}
 
 vars["DPB_vSS - 0.85*abs(cosThetaB)"] = { "dfpreb" : [0.5, -1.5, 4, 1e9], "dfprebv" : [0.5, -1.5, 4.0, 1e9],
                                           "sfpreb" : [0.5, -1.5, 4, 1e10],  "sfprebv" : [0.5, -1.5, 4, 1e10],
-                                          "crt" : [0.2, -1.2, 1.8, 7e5], "vrt" : [0.2, 1.8, 3.4, 250],
-                                          #"crv" : [0.2, -1, 1.8, 1e4], "vrv" : [0.2, 1.8, 3.4, 90],
-                                          "crv" : [0.2, -1, 1.8, 300], "vrv" : [0.2, 1.8, 3.4, 200],
+                                          "crt" : [0.2, -1.2, 1.8, 7e5], "vrt" : [0.2, 1.8, 3.4, 380],
+                                          "crv" : [0.2, -1, 1.8, 350], "vrv" : [0.2, 1.8, 3.4, 200],
                                           "crvSF" : [0.2, -1.2, 1.8, 400], "vrvSF" : [0.2, 1.8, 3.2, 140]  }
-                                          #"crv" : [0.2, -1, 1.8, 130], "vrv" : [0.2, 1.8, 3.4, 90],
-                                          #"crvSF" : [0.2, -1.2, 1.8, 120], "vrvSF" : [0.2, 1.8, 3.2, 140]  }
 
 #vars["abs(dphi_j0_ll)"]  = { "dfpreb" : [0.16, 0, 3.2, 1e9], "crt" : [0.16, 0, 3.2, 1e9], "vrt" : [0.16,0,3.2,1e9] }
 #vars["abs(dphi_j0_l0)"]  = { "dfpreb" : [0.16, 0, 3.2, 1e9], "crt" : [0.16, 0, 3.2, 1e9], "vrt" : [0.16,0,3.2,1e9] }
@@ -595,7 +578,7 @@ vars["DPB_vSS - 0.85*abs(cosThetaB)"] = { "dfpreb" : [0.5, -1.5, 4, 1e9], "dfpre
 
 
 
-run_reg = "crvSF"
+run_reg = "vrvSF"
 
 nice_names = {}
 nice_names["MDR"] = "M_{#Delta}^{R} [GeV]"

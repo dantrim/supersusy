@@ -46,6 +46,8 @@ class lumiData :
         self.yields = {} # { region : yield }
         self.errors = {} # { region : error } 
 
+        self.period = -1
+
     def get_tree(self, fname_="" ) :
         if not os.path.isfile(fname_) :
             print "lumiData::get_tree()    ERROR Input file (%s) is not found!"%fname_
@@ -336,7 +338,7 @@ class lumiCanvas :
     '''
     def __init__(self, name) :
         self.name = name
-        self.canvas = r.TCanvas(name,name,1200,600)
+        self.canvas = r.TCanvas(name,name,2000,600)
         self.pad = r.TPad("pad","pad",0.0,0.0,1.0,1.0)
         self.set_pad_dimensions()
 
@@ -354,7 +356,7 @@ class lumiCanvas :
 
         pad.SetFrameFillColor(0)
         pad.SetFillColor(0)
-        pad.SetLeftMargin(0.07)
+        pad.SetLeftMargin(0.5*0.07)
         pad.SetRightMargin(0.025)
         pad.SetBottomMargin(0.2)
         pad.SetTopMargin(0.2)
@@ -419,10 +421,10 @@ def get_yield(sample, region) :
     h.Delete()
     return integral, err
 
-def get_periodlines(samples, height, region_name) :
+def  get_periodlines(samples, height, region_name) :
 
     periods = {}
-    periods["A15"] = [266904, 367639]
+    periods["A15"] = [266904, 267639]
     periods["B15"] = [267538, 267599]
     periods["C15"] = [270441, 272531]
     periods["D15"] = [276073, 276954]
@@ -436,7 +438,15 @@ def get_periodlines(samples, height, region_name) :
     periods["A16"] = [296939, 300287]
     periods["B16"] = [300345, 300908]
     periods["C16"] = [301912, 302393]
-    periods["D16"] = [302737, 303059]
+    periods["D16"] = [302737, 303560]
+    periods["E16"] = [303638, 303892]
+    periods["F16"] = [303943, 304494]
+    periods["G16"] = [305291, 306714]
+    #periods["H16"] = [305359, 310216]
+    periods["I16"] = [307124, 308084]
+    periods["J16"] = [308979, 309166]
+    periods["K16"] = [309311, 309759]
+    periods["L16"] = [310015, 311481] 
 
     lines = []
     text = []
@@ -458,6 +468,11 @@ def get_periodlines(samples, height, region_name) :
                 #    continue
 
     colors = [2,3,4,r.kOrange-3,6,7,8,9]
+    colors_tmp = []
+    for i in xrange(20) :
+        for color in colors :
+            colors_tmp.append(color)
+    colors = colors_tmp
 
     label_height = {}
     label_height["srtPreselDF"] = 1
@@ -466,6 +481,10 @@ def get_periodlines(samples, height, region_name) :
     label_height["srwPreselDF"] = 0.15
     label_height["srwPreselEE"] = 1
     label_height["srwPreselMM"] = 1
+
+    for s in samples :
+        if s.period < 0 :
+            print "period is negative for %d"%int(s.run_number)
 
     #current_period = samples[0].period
     current_period = "A15"
@@ -599,7 +618,7 @@ def make_lumi_plot(samples, region) :
     h.GetXaxis().SetTitleOffset(1.5*h.GetXaxis().GetTitleOffset())
 
     # y
-    h.GetYaxis().SetTitleOffset(0.5*h.GetYaxis().GetTitleOffset())
+    h.GetYaxis().SetTitleOffset(0.25*h.GetYaxis().GetTitleOffset())
     h.GetYaxis().SetTitleSize(1.25*h.GetYaxis().GetTitleSize())
 
     # draw average norm lumi line
@@ -614,12 +633,12 @@ def make_lumi_plot(samples, region) :
     pu.draw_line(0, avg_norm, len(samples), avg_norm, color=r.kRed,style=2,width=1)
 
     ## get periods and lines
-  #  period_lines = get_periodlines(samples, h.GetMaximum(), region.name)
-  #  for line in period_lines :
-  #      line.Draw()
+    period_lines = get_periodlines(samples, h.GetMaximum(), region.name)
+    for line in period_lines :
+        line.Draw()
 
     #pu.draw_text_on_top(region.displayname + "  2015 + 2016 (DS1)")
-    pu.draw_text_on_top(region.displayname + "  2016")
+    pu.draw_text_on_top(region.displayname + "  2015 + 2016")
 
     lumican.canvas.Update()
     lumican.canvas.SaveAs("normlumi_%s.eps"%region.name)
@@ -744,22 +763,22 @@ if __name__ == "__main__" :
     if do_lumi_yields :
         data_files = glob.glob(data_rawdir + "*CENTRAL*.root")
         data_samples = []
-        skip = ['311481', '311244', '310969', '310809', '309375', '279867']
-        tmp_files = []
-        for blah in data_files :
-            for x in skip :
-                if x not in blah :
-                    if blah in tmp_files : continue
-                    tmp_files.append(blah)
-        data_files = tmp_files
-        data_files_tmp = []
-        for df in data_files :
-            run = df.split("_")[-1].replace(".root","") 
-            run = int(run)
-            if run < 297730 :
-                continue
-            data_files_tmp.append(df)
-        data_files = data_files_tmp
+        #skip = ['311481', '311244', '310969', '310809', '309375', '279867']
+        #tmp_files = []
+        #for blah in data_files :
+        #    for x in skip :
+        #        if x not in blah :
+        #            if blah in tmp_files : continue
+        #            tmp_files.append(blah)
+        #data_files = tmp_files
+        #data_files_tmp = []
+        #for df in data_files :
+        #    run = df.split("_")[-1].replace(".root","") 
+        #    run = int(run)
+        #    if run < 297730 :
+        #        continue
+        #    data_files_tmp.append(df)
+        #data_files = data_files_tmp
         for df in data_files :
             ldata = lumiData(df)
             data_samples.append(ldata)

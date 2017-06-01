@@ -114,13 +114,15 @@ def getSystHistos(plot_, reg, bkg, syst, histname) :
         var_yields.append(h_up.Integral(0,-1))
         var_yields.append(h_dn.Integral(0,-1))
 
-        print "up: ",var_yields[0]
-        print "dn: ",var_yields[1]
+        print "%s up: %.2f"%(bkg.name ,var_yields[0])
+        print "%s dn: %.2f"%(bkg.name ,var_yields[1])
 
         syst.up_histo = h_up
         syst.down_histo = h_dn
 
     elif syst.isKinSys() :
+        #print "WARNING REMOVING EVENTWEIGHT FROM SYS TREES"
+        #print "WARNING REMOVING PUPW FROM SYS TREES"
         cut = "(" + reg.tcut + ") * eventweight * " + str(bkg.scale_factor)
         cut = r.TCut(cut)
         sel = r.TCut("1")
@@ -131,14 +133,16 @@ def getSystHistos(plot_, reg, bkg, syst, histname) :
         pu.add_overflow_to_lastbin(h_up)
         syst.up_histo = h_up
         var_yields.append(h_up.Integral(0,-1))
+        print " > %s up: %.2f"%(bkg.name , var_yields[0])
         if "JER" not in syst.name :
        # if not syst.isOneSided() or "JER" in syst.name :
+            h_dn.Reset("ICE")
             syst.tree_down.Draw(cmd_dn, cut*sel)
             pu.add_overflow_to_lastbin(h_dn)
             syst.down_histo = h_dn
             var_yields.append(h_dn.Integral(0,-1))
+            print " > %s dn: %.2f"%(bkg.name, var_yields[1])
 
-        print "up: ", var_yields[0]
 
     return var_yields
 
@@ -147,7 +151,7 @@ def getSystHistos(plot_, reg, bkg, syst, histname) :
 
 ################################################################
 ##
-def make_sys_plot(plot_, region, bkg_list, sys_list) :
+def make_sys_plot(plot_, in_region, bkg_list, sys_list) :
 
     # canvases
     rcan = plot_.ratioCanvas
@@ -218,7 +222,9 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
         h.GetXaxis().SetLabelOffset(-999)
 
         # cut and make the sample wait
-        cut = "(" + region.tcut + ") * eventweight * " + str(b.scale_factor)
+        #print "WARNING REMOVING EVENTWEIGHT FROM NOMINAL BKG SAMPLE"
+        #print "WARNING REMOVING PUPW FROM NOM TREES"
+        cut = "(" + in_region.tcut + ") * eventweight * " + str(b.scale_factor)
         cut = r.TCut(cut)
         sel = r.TCut("1")
         cmd = "%s>>+%s"%(plot_.variable, h.GetName())
@@ -226,7 +232,7 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
 
         stat_err = r.Double(0.0)
         nom_integral = h.IntegralAndError(0,-1,stat_err)
-        print "nom: ",nom_integral
+        print "%s nom: %.2f"%(b.name,nom_integral)
 
         # add overflow
         pu.add_overflow_to_lastbin(h)
@@ -238,7 +244,7 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
         for x in b.systList :
             if x.name == syst.name :
                 syst = x
-        sys_yields = getSystHistos(plot_, region, b, syst, hist_name)
+        sys_yields = getSystHistos(plot_, in_region, b, syst, hist_name)
 
         syst.up_histo.SetLineColor(46)
         syst.up_histo.SetFillStyle(0)
@@ -278,7 +284,7 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
     up_total.SetMaximum(plot_.y_range_max)
     up_total.SetMinimum(plot_.y_range_min)
     up_total.SetLineColor(46)
-    up_total.SetLineWidth(1*up_total.GetLineWidth())
+    up_total.SetLineWidth(2*up_total.GetLineWidth())
     up_total.SetFillStyle(0)
     var_up = ""
     if "JER" in syst.name :
@@ -292,13 +298,15 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
         down_total.SetMaximum(plot_.y_range_max)
         down_total.SetMinimum(plot_.y_range_min)
         down_total.SetLineColor(38)
-        down_total.SetLineWidth(1*down_total.GetLineWidth())
+        down_total.SetLineWidth(2*down_total.GetLineWidth())
         down_total.SetFillStyle(0)
         leg.AddEntry(down_total, "Down-Variation", "l")
 
+    leg.Draw()
+
     ############################# draw!
     nom_total.Draw("hist")
-    up_total.Draw("hist same")
+    up_total.Draw("hist  same")
     if "JER" not in syst.name :
         down_total.Draw("hist same")
     rcan.upper_pad.Update()
@@ -309,8 +317,8 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
 
     ############################ words
     pu.draw_text(text="#it{ATLAS} Preliminary", x= 0.18, y = 0.85)
-    pu.draw_text(text="13 TeV, 3.2/fb", x=0.18,y=0.8)
-    pu.draw_text(text=region.displayname, x=0.18,y=0.75)
+    pu.draw_text(text="13 TeV, 36/fb", x=0.18,y=0.8)
+    pu.draw_text(text=in_region.displayname, x=0.18,y=0.75)
     pu.draw_text(text=syst.name,x=0.18,y=0.7)
     rcan.upper_pad.Update()
 
@@ -454,6 +462,8 @@ def make_sys_plot(plot_, region, bkg_list, sys_list) :
 ## main plotting function
 def make_sys_plots(plot_list, region_list, bkg_list, sys_list) :
 
+    global requestSys
+
     for reg_ in region_list :
         print "Setting eventlists for %s"%(reg_.name)
 
@@ -479,6 +489,50 @@ def make_sys_plots(plot_list, region_list, bkg_list, sys_list) :
                 list_ = r.gROOT.FindObject(list_name)
                 b.tree.SetEventList(list_)
                 list_.SaveAs(save_name)
+
+            if len(sys_list)>0 :
+                cut = reg_.tcut
+                cut = r.TCut(cut)
+                sel = r.TCut("1")
+                for b in bkg_list :
+                    if "fakes" in b.name : continue
+                    for s in b.systList :
+                        if requestSys != "" and s.name != requestSys : continue
+                        if not s.isKinSys() : continue
+                        # up-variation
+                        list_name_up = "list_" + reg_.name + "_" + b.treename + "_" + s.name + "_UP"
+                        save_name_up = "./" + indir + "/lists/" + list_name_up + ".root"
+
+                        if os.path.isfile(save_name_up) :
+                            rfile = r.TFile.Open(save_name_up)
+                            list = rfile.Get(list_name_up)
+                            print "%s (%s - UP) : EventList found at %s"%(b.name, s.name, os.path.abspath(save_name_up))
+                            if dbg : list.Print()
+                            s.tree_up.SetEventList(list)
+                        else :
+                            draw_list = ">> " + list_name_up
+                            s.tree_up.Draw(draw_list, sel*cut)
+                            list = r.gROOT.FindObject(list_name_up)
+                            s.tree_up.SetEventList(list)
+                            list.SaveAs(save_name_up)
+
+                        # down-variation
+                        list_name_dn = "list_" + reg_.name + "_" + b.treename + "_" + s.name + "_DN"
+                        save_name_dn = "./" + indir + "/lists/" + list_name_dn + ".root"
+
+                        if not s.isOneSided() :
+                            if os.path.isfile(save_name_dn) :
+                                rfile = r.TFile.Open(save_name_dn)
+                                list = rfile.Get(list_name_dn)
+                                print "%s (%s - DN) : EventList found at %s"%(b.name, s.name, os.path.abspath(save_name_dn))
+                                if dbg : list.Print()
+                                s.tree_down.SetEventList(list)
+                            else :
+                                draw_list = ">> " + list_name_dn
+                                s.tree_down.Draw(draw_list, sel*cut)
+                                list = r.gROOT.FindObject(list_name_dn)
+                                s.tree_down.SetEventList(list)
+                                list.SaveAs(save_name_dn)
 
         for p in plot_list :
             make_sys_plot(p, reg_, bkg_list, sys_list)
@@ -532,6 +586,11 @@ if __name__=="__main__" :
     print " Backgrounds: "
     for b in backgrounds :
         b.Print()
+    backgrounds_new = []
+    for b in backgrounds :
+        if "fakes" in b.name : continue
+        backgrounds_new.append(b)
+    backgrounds = backgrounds_new
     print 45*"-"
     for s in systematics :
         s.check()
@@ -558,15 +617,15 @@ if __name__=="__main__" :
         sys.exit()
 
  #   ############################## build backgrounds to send
-    requested_bkg = backgrounds
- #   if requestBkg != "" :
- #       for b in backgrounds :
- #           if b.name == requestBkg : requested_bkg.append(b) 
- #   else :
- #       requested_bkg = backgrounds
- #   if len(requested_bkg)==0 :
- #       print "ERROR finding requested background (%d)"%len(requested_bkg)
- #       sys.exit()
+ #   requested_bkg = backgrounds
+    if requestBkg != "" :
+        for b in backgrounds :
+            if b.name == requestBkg : requested_bkg.append(b) 
+    else :
+        requested_bkg = backgrounds
+    if len(requested_bkg)==0 :
+        print "ERROR finding requested background (%d)"%len(requested_bkg)
+        sys.exit()
 
     ############################# build the plots to send
     for r_ in requested_regions :

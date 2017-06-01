@@ -96,7 +96,7 @@ def th1_to_tgraph(hist) :
     
     return g
 
-def convert_errors_to_poisson(hist) :
+def convert_errors_to_poisson(hist, scale=False) :
     '''
     Provided a histogram, convert the errors
     to Poisson errors
@@ -107,16 +107,31 @@ def convert_errors_to_poisson(hist) :
 
     g = ROOT.TGraphAsymmErrors()
 
+    print "ASSUMING VARIABLE BIN WIDHT NORMALIZATION IN DATA ERRORS"
     for ibin in xrange(1,hist.GetNbinsX()+1) :
         value = hist.GetBinContent(ibin)
+        width = hist.GetBinWidth(ibin)
+        value_for_error = value
+        if scale :
+            print "value = %.2f  width = %.2f  value*width = %.3f"%(value, width, value*width)
+        
+            value_for_error = value*width 
+            #value_for_error = float(width) / value
         if value != 0 :
-            error_poisson_up = 0.5 * ROOT.TMath.ChisquareQuantile(1-beta,2*(value+1))-value
-            error_poisson_down = value - 0.5*ROOT.TMath.ChisquareQuantile(alpha,2*value)
+            error_poisson_up = 0.5 * ROOT.TMath.ChisquareQuantile(1-beta,2*(value_for_error+1))-value_for_error
+            error_poisson_down = value_for_error - 0.5*ROOT.TMath.ChisquareQuantile(alpha,2*value_for_error)
             ex = hist.GetBinWidth(ibin) / 2.0 
+            ex = 0.0 # removing x error bins
+
+            if scale :
+                error_poisson_up = error_poisson_up / width
+                error_poisson_down = error_poisson_down / width
+            print "%.2f %.2f %.2f %.2f %.2f"%(value, width, value_for_error, error_poisson_up, error_poisson_down)
+
             g.SetPoint(ibin-1, hist.GetBinCenter(ibin), value)
             g.SetPointError(ibin-1, ex, ex, error_poisson_down, error_poisson_up)
         else :
-            g.SetPoint(ibin-1, hist.GetBinCenter(ibin), 0.0)
+            g.SetPoint(ibin-1, hist.GetBinCenter(ibin), -2)
             g.SetPointError(ibin-1, 0., 0., 0., 0.)
 
     return g

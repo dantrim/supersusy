@@ -14,13 +14,12 @@ do_lumi_yields = True
 # samples
 ########################################
 backgrounds = []
-rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0226/jul25/mc/Raw/"
-data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0228/a_sep21/all_data_Nov15/"
-#fake_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0224/fakes_jun13/"
-filelist_dir = "/data/uclhc/uci/user/dantrim/n0228val/filelists/"
+rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0231/d_jan30/mc/Raw/"
+data_rawdir = "/data/uclhc/uci/user/dantrim/ntuples/n0231/d_jan30/data/Raw/"
+filelist_dir = "/data/uclhc/uci/user/dantrim/n0231val/filelists/"
 
 
-lumi_ = [3.95]
+lumi_ = [36]
 lumi_val = 0
 
 ######## MC
@@ -149,7 +148,7 @@ backgrounds.append(drel)
 data = background.Data()
 data.set_color(r.kBlack)
 data.set_treename("Data")
-data.set_chain_from_list_CONDOR(filelist_dir + "data_toRun/", data_rawdir)
+data.set_chain_from_list_CONDOR(filelist_dir + "dataToRun/", data_rawdir)
 
 
 ##########################################
@@ -164,9 +163,9 @@ systematics = []
 ##########################################
 regions = []
 
-isEE = "(nElectrons==2 && abs(mll-91.2)>10) && (l_q[0]*l_q[1])<0 && l_pt[0]>25 && l_pt[1]>20"
-isMM = "(nMuons==2 && abs(mll-91.2)>10) && (l_q[0]*l_q[1])<0 && l_pt[0]>25 && l_pt[1]>20"
-isSFOS = "( ( (nMuons==2 && l_pt[0]>25 && l_pt[1]>20) || (nElectrons==2 && l_pt[0]>25 && l_pt[1]>20) ) && abs(mll-91.2)>10 && (l_q[0]*l_q[1])<0)"
+isEE = "(nElectrons==2 && abs(mll-91.2)>20) && (l_q[0]*l_q[1])<0 && l_pt[0]>25 && l_pt[1]>20"
+isMM = "(nMuons==2 && abs(mll-91.2)>20) && (l_q[0]*l_q[1])<0 && l_pt[0]>25 && l_pt[1]>20"
+isSFOS = "( ( (nMuons==2 && l_pt[0]>25 && l_pt[1]>20) || (nElectrons==2 && l_pt[0]>25 && l_pt[1]>20) ) && abs(mll-91.2)>20 && (l_q[0]*l_q[1])<0)"
 isDFOS = "(nElectrons==1 && nMuons==1) && (l_q[0]*l_q[1])<0 && l_pt[0]>25 && l_pt[1]>20"
 
 trigger = "((year==2015 && trig_pass2015==1) || (year==2016 && trig_pass2016update==1))"

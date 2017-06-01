@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin python
 
 from tabulate import tabulate
 
@@ -96,6 +96,8 @@ def set_eventlists(regions, backgrounds, data) :
 ################################################
 ## get the yield for a bkg provided a specific cut
 def getCutYield(tcut, bkg, cutNumber) :
+    print "getCutYield   %s"%tcut
+
     # create a canvas to prevent ROOT from telling us its doing things
     c = r.TCanvas("c_"+bkg.treename+"_cutflow_"+str(cutNumber), "", 800, 600)
     c.cd()
@@ -129,6 +131,10 @@ def make_cutflow(reg, data, backgrounds) :
     print "make_cutflow    region: %s (%s)"%(reg.name,reg.displayname)
     print "                cut   : %s"%(reg.cutFlow[0])
 
+
+    print "FORCING BACKGROUNDS TO BE DATA"
+    data.scale_factor = 1.0
+    backgrounds = [data]
     headers = ['Cut']
     for bkg in backgrounds :
         headers.append(bkg.displayname) 
@@ -192,19 +198,20 @@ def get_yield(background, tcut, region_name, isData) :
         #cut = "(" + tcut + ") * " + str(b.scale_factor)
         #cut = "(" + tcut + ") * " + str(background.scale_factor)
         #cut = "(" + tcut + ") " 
+        #print "GETTING RAW YIELD"
         cut = "(" + tcut + ") * eventweight * " + str(background.scale_factor)
     elif "fakes" in background.name :
-        cut = "(" + tcut + ") * FakeWeight * " + str(background.scale_factor)
+        cut = "(" + tcut + ") * FakeWeight_down * " + str(background.scale_factor)
         print "fakes cut string = %s"%cut
     else :
         cut = "(" + tcut + ")"
 
-    if "vv" in background.name and "DF" in region_name and "SF" not in region_name :
-        cut = "%s * 1.27"%cut
-        print "applying VVDF NF: %s"%cut
-    elif "vv" in background.name and "DF" not in region_name and "SF" in region_name :
-        cut = "%s * 1.22"%cut
-        print "applying VVSF NF: %s"%cut
+    #if "vv" in background.name and "DF" in region_name and "SF" not in region_name :
+    #    cut = "%s * 1.27"%cut
+    #    print "applying VVDF NF: %s"%cut
+    #elif "vv" in background.name and "DF" not in region_name and "SF" in region_name :
+    #    cut = "%s * 1.22"%cut
+    #    print "applying VVSF NF: %s"%cut
 
 
     #if background.name == "zjets" :
@@ -222,6 +229,8 @@ def get_yield(background, tcut, region_name, isData) :
 
     err = r.Double(0.0)
     integral = h.IntegralAndError(0, -1, err)
+
+    print "region %s > %s : %.2f +/- %.2f"%(region_name, background.name, float(integral), float(err))
     h.Delete()
     return integral, err
     

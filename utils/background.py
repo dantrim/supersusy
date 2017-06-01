@@ -407,10 +407,67 @@ class Data :
                     bkg_files.append(f)
                     break
         chain = r.TChain('superNt')
+        n_files = 1
+        for file in bkg_files :
+            print "ADDING DATA FILE [%d]: %s"%(n_files, str(file))
+            chain.Add(file)
+            n_files += 1
+        self.tree = chain
+
+    def set_chain_from_list_CONDOR2(self, clist_dir = [], raw_directory = []) :
+        '''
+        Provide the directory that contains the .txt files
+        of the condor filelists for the given sample
+        '''
+        rawdir_files = []
+        bkg_files = []
+        for i, fdir in enumerate(clist_dir) :
+            dsids = []
+            con_files = glob.glob(fdir + "*.txt")
+            raw_files = []
+            for con in con_files :
+                data_str = ""
+                if "data15_13TeV" in con :
+                    data_str = "data15_13TeV"
+                elif "data16_13TeV" in con :
+                    data_str = "data16_13TeV"
+                dsids.append(con[con.find('%s.00'%data_str)+15 : con.find("%s."%data_str)+21])
+            raw_files = glob.glob(raw_directory[i] + "CENTRAL*.root") 
+            for dsid in dsids :
+                for f in raw_files :
+                    if "entrylist" in f : continue
+                    if dsid in f :
+                        bkg_files.append(f)
+                        break
+        chain = r.TChain('superNt')
         for file in bkg_files :
             print "ADDING DATA FILE: %s"%str(file)
             chain.Add(file)
         self.tree = chain
+
+
+        #dsids = []
+        #con_files = glob.glob(clist_dir + "*.txt")
+        #for con in con_files :
+        #    data_str = ''
+        #    if 'data15_13TeV' in con :
+        #        data_str = 'data15_13TeV'
+        #    elif 'data16_13TeV' in con :
+        #        data_str = 'data16_13TeV'
+        #    dsids.append(con[con.find('%s.00'%data_str)+15 : con.find('%s.'%data_str)+21])
+        #rawdir_files = glob.glob(raw_directory + "CENTRAL*.root")
+        #bkg_files = []
+        #for dataset_id in dsids :
+        #    for f in rawdir_files :
+        #        if 'entrylist' in f : continue
+        #        if dataset_id in f :
+        #            bkg_files.append(f)
+        #            break
+        #chain = r.TChain('superNt')
+        #for file in bkg_files :
+        #    print "ADDING DATA FILE: %s"%str(file)
+        #    chain.Add(file)
+        #self.tree = chain
 
     def Print(self) :
         print 'Data sample "%s" (tree %s from: %s)'%(self.displayname, self.treename, self.file)

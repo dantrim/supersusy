@@ -238,26 +238,6 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
         replace_var = plot.variable.replace("abs(","")
         replace_var = replace_var.replace(")","")
         hist_name = replace_var
-    elif "MDR_v1_t1_0 - MDR_i1_t1_0" in plot.variable :
-        hist_name = "RATIO"
-    elif "RPT_0/RPZ_0" in plot.variable :
-        hist_name = "RPTZratio"
-    elif "H_11_SS/H_21_SS" in plot.variable :
-        hist_name = "RH11SSH21SS"
-    elif "H_11_SS/H_11_S1" in plot.variable :
-        hist_name = "RH11SSH11S1"
-    elif "xH_11_S1/xH_42_SS" in plot.variable :
-        hist_name = "xH_11_S1_over_xH_42_SS"
-    elif "xH_42_SS_T/xH_42_SS" in plot.variable :
-        hist_name = "xH_42_SS_T_over_xH_42_SS"
-    elif "xH_11_SS/xH_42_SS_T" in plot.variable :
-        hist_name = "xH_11_SS_over_xH_42_SS_T"
-    elif "(xNV[0]-xNV[1])/(xNV[0]+xNV[1])" in plot.variable :
-        hist_name = "n_obs_asy"
-    elif "xH_11_SS/xH_42_SS_T" in plot.variable :
-        hist_name = "xH_11_SSoverxH_42_SS_T"
-    elif "xH_42_SS_T/xH_11_SS" in plot.variable :
-        hist_name = "xH_42_SS_ToverxH_11_SS"
     else : hist_name = plot.variable
 
     for b in backgrounds :
@@ -303,7 +283,6 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
     sig_values = {}
 
     ### now plot the signal points
-
     sig_histos = []
     for s in signals :
 
@@ -388,7 +367,7 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
 
     #pu.draw_text_on_top(text=reg.tcut, size = 0.02)
     pu.draw_text(text="#it{ATLAS} Internal",x=0.18,y=0.83, size = 0.06)
-    pu.draw_text(text="13 TeV, 10/fb", x=0.18,y=0.73, size = 0.06)
+    pu.draw_text(text="13 TeV, 36/fb", x=0.18,y=0.73, size = 0.06)
     #pu.draw_text(text="13 TeV, 10 fb^{-1}", x=0.18,y=0.8)
 
     #########################
@@ -533,35 +512,36 @@ if __name__=="__main__" :
 
     backgrounds = backgrounds_new
 
-#    ### go over methods
-#    if method == "zn_plots" or method == "zn" :
-#        if len(plots) == 0 :
-#            print "optimizer ERROR    Attempting to make the zn_plots plots without having configured any plots!"
-#            print "optimizer ERROR    >>> Exiting."
-#            sys.exit()
-#        region_names = [x.name for x in regions]
-#        if requestRegion not in region_names :
-#            print "optmizer ERROR    The requested region ('%s') is not in the configured regions"%requestRegion
-#            print "optmizer ERROR    To make the zn-ratio plots a requested region is required."
-#            print "optmizer ERROR    >>> Exiting."
-#            sys.exit()
-#        for possible_region in regions :
-#            if possible_region.name != requestRegion : continue
-#            set_event_lists(possible_region, backgrounds, signals)
-#            n_plots = len(plots)
-#            n_run = 1
-#            for configured_plot in plots :
-#
-#                if not configured_plot.doubleRatioCanvas :
-#                    print "optmizer ERROR    Attempting to make the zn_plots plot %s without the required 'double ratio canvas'"%configured_plot.name
-#                    print "optmizer ERROR    >>> Exiting."
-#                    sys.exit()
-#                if configured_plot.region != requestRegion : continue
-#                print 20*"-"
-#                print "plots [%d/%d]"%(n_run, n_plots)
-#                n_run+=1
-#                make_znRatioPlots(backgrounds, signals, requestRegion, configured_plot) 
+    ### go over methods
+    if method == "zn_plots" or method == "zn" :
+        if len(plots) == 0 :
+            print "optimizer ERROR    Attempting to make the zn_plots plots without having configured any plots!"
+            print "optimizer ERROR    >>> Exiting."
+            sys.exit()
+        region_names = [x.name for x in regions]
+        if requestRegion not in region_names :
+            print "optmizer ERROR    The requested region ('%s') is not in the configured regions"%requestRegion
+            print "optmizer ERROR    To make the zn-ratio plots a requested region is required."
+            print "optmizer ERROR    >>> Exiting."
+            sys.exit()
+        for possible_region in regions :
+            if possible_region.name != requestRegion : continue
+            set_event_lists(possible_region, backgrounds, signals)
+            n_plots = len(plots)
+            n_run = 1
+            for configured_plot in plots :
 
+                if not configured_plot.doubleRatioCanvas :
+                    print "optmizer ERROR    Attempting to make the zn_plots plot %s without the required 'double ratio canvas'"%configured_plot.name
+                    print "optmizer ERROR    >>> Exiting."
+                    sys.exit()
+                print "%s : %s"%(configured_plot.region, requestRegion)
+                if configured_plot.region != requestRegion : continue
+                print 20*"-"
+                print "plots [%d/%d]"%(n_run, n_plots)
+                n_run+=1
+                make_znRatioPlots(backgrounds, signals, possible_region, configured_plot) 
+"""
 ### scan -- January 18 2017
     ### go over methods
     if method == "zn_plots" or method == "zn" or method == "fasimov_plots" or method == "fasimov" :
@@ -611,7 +591,7 @@ if __name__=="__main__" :
       #                          if configured_plot.region != requestRegion : continue
                                 make_znRatioPlots(backgrounds, signals, possible_region, configured_plot) 
                                 #make_znRatioPlots(backgrounds, signals, requestRegion, configured_plot) 
-
+"""
 #### scan -- Nov 14 2016
 #    ### go over methods
 #    if method == "zn_plots" or method == "zn" or method == "fasimov_plots" or method == "fasimov" :

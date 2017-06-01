@@ -127,24 +127,55 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
 
         h_up.SetMinimum(plot.y_range_min)
         h_up.SetMaximum(plot.y_range_max)
-        h_up.GetXaxis().SetLabelOffset(-999)
-        h_up.GetXaxis().SetTitleOffset(-999)
+        xax = h_up.GetXaxis()
+        xax.SetTitle(plot.x_label)
+        xax.SetTitleFont(42)
+        xax.SetLabelFont(42)
+        xax.SetLabelSize(0.035)
+        xax.SetTitleSize(0.048 * 0.85)
+        xax.SetTitleOffset(-999)
+        xax.SetLabelOffset(-999)
+
+        yax = h_up.GetYaxis()
+        yax.SetTitle(plot.y_label)
+        yax.SetTitleFont(42)
+        yax.SetLabelFont(42)
+        yax.SetTitleOffset(1.4)
+        yax.SetLabelOffset(0.013)
+        yax.SetLabelSize(1.2 * 0.035)
+        yax.SetTitleSize(0.055 * 0.85)
+
         h_dn.SetMinimum(plot.y_range_min)
         h_dn.SetMaximum(plot.y_range_max)
-        h_dn.GetXaxis().SetLabelOffset(-999)
-        h_dn.GetXaxis().SetTitleOffset(-999)
+        xax = h_dn.GetXaxis()
+        xax.SetTitle(plot.x_label)
+        xax.SetTitleFont(42)
+        xax.SetLabelFont(42)
+        xax.SetLabelSize(0.035)
+        xax.SetTitleSize(0.048 * 0.85)
+        xax.SetTitleOffset(-999)
+        xax.SetLabelOffset(-999)
 
-        for hsys in [h_up, h_dn] :
-            yax = hsys.GetYaxis()
-            xax = hsys.GetXaxis()
+        yax = h_dn.GetYaxis()
+        yax.SetTitle(plot.y_label)
+        yax.SetTitleFont(42)
+        yax.SetLabelFont(42)
+        yax.SetTitleOffset(1.4)
+        yax.SetLabelOffset(0.013)
+        yax.SetLabelSize(1.2 * 0.035)
+        yax.SetTitleSize(0.055 * 0.85)
 
-            yax.SetTitleSize(0.05)
-            yax.SetLabelSize(0.045)
-            yax.SetLabelOffset(0.008)
-            yax.SetTitleOffset(1.2)
-            yax.SetLabelFont(42)
-            yax.SetTitleFont(42)
-            yax.SetNdivisions(5) 
+        #for hsys in [h_up, h_dn] :
+        #    yax = hsys.GetYaxis()
+        #    xax = hsys.GetXaxis()
+
+        #    yax.SetTitleSize(0.05)
+        #    yax.SetLabelSize(0.045)
+        #    yax.SetLabelOffset(0.008)
+        #    yax.SetTitleOffset(1.2)
+        #    yax.SetLabelFont(42)
+        #    yax.SetTitleFont(42)
+        #    yax.SetNdivisions(5) 
         
         if s.isWeightSys() :
             name_up = s.up_name
@@ -164,11 +195,11 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
 
             norm_factor = "1"
             if "ttbar" in b.name :
-                norm_factor = "0.99"
+                norm_factor = "1.06"
             elif "vv" in b.name  and "SF" in reg.name :
-                norm_factor = "1.27"
+                norm_factor = "1.02"
             elif "vv" in b.name and "SF" not in reg.name :
-                norm_factor = "1.23"
+                norm_factor = "1.02"
 
             cut_up = "(" + reg.tcut + ") * %s * %s *%s"%(weight_up, str(b.scale_factor), norm_factor)
             cut_dn = "(" + reg.tcut + ") * %s * %s *%s"%(weight_dn, str(b.scale_factor), norm_factor)
@@ -192,6 +223,11 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
 
             print "    %s   (+%.2f, -%.2f)"%(s.name, h_up.Integral(0,-1)-nom_yield, nom_yield-h_dn.Integral(0,-1))
 
+            # scale variable bin
+            #if "srt" in reg.name :
+            #    h_up.Scale(1,"width")
+            #    h_dn.Scale(1,"width")
+
             s.up_histo = h_up
             s.down_histo = h_dn
 
@@ -199,11 +235,11 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
 
             norm_factor = "1"
             if "ttbar" in b.name :
-                norm_factor = "0.99"
+                norm_factor = "1.06"
             elif "vv" in b.name  and "SF" in reg.name :
-                norm_factor = "1.27"
+                norm_factor = "1.02"
             elif "vv" in b.name and "SF" not in reg.name :
-                norm_factor = "1.23"
+                norm_factor = "1.02"
 
             cut = "(" + reg.tcut + ") * eventweight * %s * %s"%(str(b.scale_factor), norm_factor)
             cut = r.TCut(cut)
@@ -213,7 +249,13 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
 
             s.tree_up.Draw(cmd_up, cut * sel)
             pu.add_overflow_to_lastbin(h_up)
+
+            # scale variable bin
+            #if "srt" in reg.name :
+            #    h_up.Scale(1,"width")
+
             s.up_histo = h_up
+
 
             is_one_side = False
             if "JER" in syst.name : is_one_side = True
@@ -222,36 +264,103 @@ def getSystHists(plot, reg, b, nom_yield, nom_hist) :
             #if not is_one_side :
                 s.tree_down.Draw(cmd_dn, cut * sel)
                 pu.add_overflow_to_lastbin(h_dn)
+
+                # scale variable bin
+                #if "srt" in reg.name :
+                #    h_dn.Scale(1,"width")
+
                 s.down_histo = h_dn
             else :
-                s.down_histo = nom_hist.Clone("%s_down_hist"%s.name)
-                h_dn = s.down_histo
+                h_dn = nom_hist.Clone("%s_down_hist"%s.name)
+                #if "srt" in reg.name :
+                #    h_dn.Scale(1,"width")
+                s.down_histo = h_dn
+                
+                #s.down_histo = nom_hist.Clone("%s_down_hist"%s.name)
+                #h_dn = s.down_histo
+
 
             if s.isOneSided() :
                 print "    %s (+%.2f, -%.2f)"%(s.name, h_up.Integral(0,-1)-nom_yield, nom_yield-h_dn.Integral(0,-1))
             else :
                 print "    %s  (+%.2f, -%.2f)"%(s.name, h_up.Integral(0,-1)-nom_yield, nom_yield-h_dn.Integral(0,-1))
 
+def histos_for_legend(histos) :
+
+    # assumes that these are already ordered by integral
+    # also assumes that the background legend will have 
+    # at most 4 rows (not including Data and SM)
+    out = []
+    indices = []
+    if len(histos) == 7 :
+        indices = [0, 4, 1, 5, 2, 6, 3]
+        #out.append(histos[0]) # 0
+        #out.append(histos[4]) # 1
+        #out.append(histos[1]) # 2
+        #out.append(histos[5]) # 3
+        #out.append(histos[2]) # 4
+        #out.append(histos[6]) # 5
+        #out.append(histos[3]) # 6
+
+    elif len(histos) == 6 :
+        indices = [0, 3, 1, 4, 2, 5]
+        #indices = [0, 2, 4, 1, 3, 5]
+        #out.append(histos[0]) # 0
+        #out.append(histos[2]) # 1
+        #out.append(histos[4]) # 2
+        #out.append(histos[1]) # 3
+        #out.append(histos[3]) # 4
+        #out.append(histos[5]) # 5
+
+    elif len(histos) == 5 :
+        indices = [0, 3, 1, 4, 2]
+        #indices = [0, 2, 4, 1, 3]
+    elif len(histos) == 4 :
+        indices = [0, 2, 1, 3]
+
+    for idx in indices :
+        out.append(histos[idx])
+
+    return out
 
 def make_MDR_nm1_plot(reg, backgrounds, data) :
 
     print "make_MDR_nm1_plot    %s"%reg.name
 
     #mdr_nice = "E_{V}^{P} [GeV]"
-    mdr_nice = "M_{#Delta}^{R} [GeV]"
+    #mdr_nice = "M_{#Delta}^{R} [GeV]"
+    var_nice = ""
 
     p = plot.Plot1D()
-    p.initialize(reg.name, "MDR", "%s_MDR"%(reg.name))
-    p.labels(x=mdr_nice, y = "Entries")
+    if "srw" in reg.name :
+        p.initialize(reg.name, "RPT", "%s_RPT"%(reg.name))
+        var_nice = "R_{pT}"
+    else :
+        p.initialize(reg.name, "MDR", "%s_MDR"%(reg.name))
+        var_nice = "M_{#Delta}^{R} [GeV]"
+    #p.initialize(reg.name, "MDR", "%s_MDR"%(reg.name))
+    y_label = ""
+    #p.labels(x=var_nice, y = "Entries")
     if reg.name == "srwNM1" :
-        p.yax(0.1, 10000)
+        p.yax(0, 52)
+        p.labels(x=var_nice, y = "Events / 0.1")
+        #p.yax(0.1, 10000)
     elif reg.name == "srwNM1SF" :
-        p.yax(0.1, 20000)
+        p.yax(0, 55)
+        p.labels(x=var_nice, y = "Events / 0.1")
+        #p.yax(0.1, 20000)
     elif reg.name == "srtNM1" :
-        p.yax(0.1, 50000)
+        p.yax(0.001, 50000)
+        p.labels(x=var_nice, y = "Events / GeV")
+        #p.yax(0.1, 50000)
     elif reg.name == "srtNM1SF" :
-        p.yax(0.1, 50000)
-    p.doLogY = True
+        p.yax(0.001, 50000)
+        p.labels(x=var_nice, y = "Events / GeV")
+        #p.yax(0.1, 50000)
+    if "srt" in reg.name :
+        p.doLogY = True
+    else :
+        p.doLogY = False
     p.setRatioCanvas(p.name)
 
     ### canvas get
@@ -264,14 +373,16 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
 
     binlow = []
     if reg.name == "srwNM1":
-        binlow = [80,95,110,130,150,180]#100,140]#,130]#,130]#75,90,110,130,160]
+        #binlow = [70,80,95,110,130,150,180]#100,140]#,130]#,130]#75,90,110,130,160]
+        binlow = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
     elif reg.name == "srwNM1SF" :
-        binlow = [80,95,110,130,150,180]
+        #binlow = [70,80,95,110,130,150,180]
+        binlow = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
         #binlow = [80,95,110,130,150,180,200]
     elif reg.name == "srtNM1" :
-        binlow = [70,80,95,110,130,150,180]#100,140]#,130]#,130]#75,90,110,130,160]
+        binlow = [70,80,95,110,130,180]#100,140]#,130]#,130]#75,90,110,130,160]
     elif reg.name == "srtNM1SF" :
-        binlow = [70,80,95,110,130,150,180]
+        binlow = [70,80,95,110,130,180]
         #binlow = [70,80,95,110,130,150,180,200]
         #binlow = [70,80,90,100,110,120,130,140,150,160,170,180,200]
 
@@ -304,6 +415,7 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     leg.SetNColumns(2)
 
     # histos
+    all_histos = []
     histos = []
     h_nom_fake = None
 
@@ -347,11 +459,11 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
 
         norm_factor = "1"
         if "ttbar" in b.name :
-            norm_factor = "0.99"
+            norm_factor = "1.06"
         elif "vv" in b.name  and "SF" in reg.name :
-            norm_factor = "1.23"
+            norm_factor = "1.02"
         elif "vv" in b.name and "SF" not in reg.name :
-            norm_factor = "1.27"
+            norm_factor = "1.02"
         cut = "(" + reg.tcut + ") * %s * %s * %s"%(weight_str, str(b.scale_factor), norm_factor)
         cut = r.TCut(cut)
         sel = r.TCut("1")
@@ -378,10 +490,16 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
                 h.SetBinContent(ibin+1, 0)
                 h.SetBinError(ibin+1,0)
 
+        # scale variable bin
+        if "srt" in reg.name :
+            h.Scale(1,"width")
+
         if "fakes" in b.name :
             h_nom_fake = h.Clone("fakes_nominal_histo")
 
-        leg.AddEntry(h, b.displayname, "f")
+
+        #leg.AddEntry(h, b.displayname, "f")
+        all_histos.append(h)
         if integral > 0 :
             histos.append(h)
         rcan.upper_pad.Update()
@@ -392,12 +510,38 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     for h in histos :
         stack.Add(h)
     rcan.upper_pad.Update()
-    #hist_sm = stack.GetStack().Last().Clone("hist_sm")
-        
+
+    removes = {}
+    removes["srtNM1"] = ["zjets", "higgs"]
+    removes["srtNM1SF"] = ["higgs"]
+    removes["srwNM1"] = ["TTV", "zjets", "higgs"]
+    removes["srwNM1SF"] = ["TTV", "higgs"]
+
+    tmp_leg_histos = []
+    removal_list = removes[reg.name]
+    for h in all_histos :
+        keep_histo = True
+        for rem in removal_list :
+            if rem in h.GetName() :
+                keep_histo = False
+        if keep_histo :
+            tmp_leg_histos.append(h)
+
+    h_leg = sorted(tmp_leg_histos, key=lambda h: h.Integral(), reverse=True)
+    histos_for_leg = histos_for_legend(h_leg)
+    #for h in h_leg :
+    #    # add items to legend in order of stack
+    #    name_for_legend = ""
+    #    for b in backgrounds :
+    #        if b.treename in h.GetName() :
+    #            name_for_legend = b.displayname
+    #    leg.AddEntry(h, name_for_legend, "f")
+    #rcan.upper_pad.Update()
 
     # now get the data points
     hd = r.TH1F("h_data_"+reg.name,"", len(binlow)-1, array('d',binlow))
     hd.Sumw2()
+    hd.SetBinErrorOption(1)
     cut = "(" + reg.tcut + ")"
     cut = r.TCut(cut)
     sel = r.TCut("1")
@@ -413,8 +557,17 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     print "Data: %.2f +/- %.2f"%(integral, stat_err)
     pu.add_overflow_to_lastbin(hd)
 
-    gdata = pu.convert_errors_to_poisson(hd)
-    gdata.SetLineWidth(2)
+    # scale variable bin
+    if "srt" in reg.name :
+        hd.Scale(1,"width")
+
+    do_variable_bins = False
+    if "srt" in reg.name :
+        do_variable_bins = True 
+    gdata = pu.convert_errors_to_poisson(hd, scale=do_variable_bins)
+    #gdata.SetLineWidth(2)
+    #uglify
+    gdata.SetLineWidth(1)
     gdata.SetMarkerStyle(20)
     gdata.SetMarkerSize(1.5)
     #gdata.SetMarkerSize(1.1)
@@ -427,21 +580,42 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     r.gStyle.SetHatchesSpacing(0.9)
 
     # dummy histo for legend
+    #mcError = r.TH1F("mcError", "mcError", 2,0,2)
+    #mcError.SetFillStyle(3354)
+    #mcError.SetFillColor(r.kBlack)
+    #mcError.SetLineColor(r.TColor.GetColor("#FC0F1D"))
+    #mcError.SetLineWidth(3)
+    #leg.AddEntry(mcError, "Total SM", "fl")
+    #uglify
     mcError = r.TH1F("mcError", "mcError", 2,0,2)
-    mcError.SetFillStyle(3354)
-    mcError.SetFillColor(r.kBlack)
-    mcError.SetLineColor(r.TColor.GetColor("#FC0F1D"))
+    mcError.SetFillStyle(3345)
+    mcError.SetFillColor(r.kBlue)
+    mcError.SetLineColor(r.kBlack)
     mcError.SetLineWidth(3)
-    leg.AddEntry(mcError, "Total SM", "fl")
+    leg.AddEntry(mcError, "Standard Model", "fl")
+
+    # now add backgrounds to legend
+    for h in histos_for_leg :
+        name_for_legend = ""
+        for b in backgrounds :
+            if b.treename in h.GetName() :
+                name_for_legend = b.displayname
+        leg.AddEntry(h, name_for_legend, "f")
 
     # histogram for total stack
+    #totalSM = stack.GetStack().Last().Clone("totalSM")
+    #nominalAsymErrors = pu.th1_to_tgraph(totalSM)
+    #nominalAsymErrors.SetMarkerSize(0)
+    #nominalAsymErrors.SetLineWidth(0)
+    #nominalAsymErrors.SetFillStyle(3354)
+    #nominalAsymErrors.SetFillColor(r.kGray + 3)
+    #uglify
     totalSM = stack.GetStack().Last().Clone("totalSM")
     nominalAsymErrors = pu.th1_to_tgraph(totalSM)
     nominalAsymErrors.SetMarkerSize(0)
     nominalAsymErrors.SetLineWidth(0)
-    nominalAsymErrors.SetFillStyle(3354)
-    nominalAsymErrors.SetFillColor(r.kGray + 3)
-   # leg.AddEntry(nominalAsymErrors, "Bkg. Uncert.", "f")
+    nominalAsymErrors.SetFillStyle(3345)
+    nominalAsymErrors.SetFillColor(r.kBlue)
 
 
     tmp = []
@@ -493,6 +667,9 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
                     totalSysHisto.Add(syst.up_histo)
             if h_nom_fake :
                 totalSysHisto.Add(h_nom_fake)
+            # scale
+            if "srt" in reg.name :
+                totalSysHisto.Scale(1,"width")
             transient = pu.th1_to_tgraph(totalSysHisto)
             #print " > %s: %s"%(b.name, up_sys)
             pu.add_to_band(transient, nominalAsymErrors)#, up_sys)
@@ -536,6 +713,9 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
                     totalSysHisto.Add(syst.down_histo)
             if h_nom_fake :
                 totalSysHisto.Add(h_nom_fake)
+            # scale
+            if "srt" in reg.name :
+                totalSysHisto.Scale(1,"width")
             transient = pu.th1_to_tgraph(totalSysHisto)
             #print " > %s: %s"%(b.name, dn_sys)
             pu.add_to_band(transient, nominalAsymErrors)#, dn_sys)
@@ -547,13 +727,48 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     stack.SetMaximum(p.y_range_max)
     rcan.upper_pad.Update()
 
+    print "UPPER PAD ERROR BANDS"
+
+
+    rel_error = {}
+    rel_error["srtNM1"] = [0.13, 0.17, 0.34, 0.43, 0.70]
+    rel_error["srtNM1SF"] = [0.11, 0.19, 0.21, 0.45, 0.57]
+    # symmetrize the errors for the lolz
+    for i in xrange(nominalAsymErrors.GetN()) :
+        yx = r.Double(0.0)
+        xx = r.Double(0.0)
+        nominalAsymErrors.GetPoint(i, xx, yx)
+
+
+        ehigh = nominalAsymErrors.GetErrorYhigh(i)
+        elow = nominalAsymErrors.GetErrorYlow(i)
+        error_sym = r.Double(0.0)
+        error_sym = (ehigh + elow) / 2.0;
+
+        if "srt" in reg.name :
+            print "SETTING ERROR BAND BY HAND"
+            error_sym = yx*rel_error[reg.name][i]
+            print " > bin %d err = %.2f"%(i, error_sym)
+
+        nominalAsymErrors.SetPointEYhigh(i,0.0)
+        nominalAsymErrors.SetPointEYhigh(i, error_sym)
+        nominalAsymErrors.SetPointEYlow(i,0.0)
+        nominalAsymErrors.SetPointEYlow(i, error_sym)
+
+
+        print "  > %d  relateive error: %.2f"%(i,error_sym)# / yx)
+
+    
+
     # draw the error band
     nominalAsymErrors.Draw("same && E2")
     
     # draw the total bkg line
     hist_sm = stack.GetStack().Last().Clone("hist_sm")
-    hist_sm.SetLineColor(r.TColor.GetColor("#FC0F1D"))
+    #hist_sm.SetLineColor(r.TColor.GetColor("#FC0F1D"))
     hist_sm.SetLineWidth(mcError.GetLineWidth())
+    hist_sm.SetLineColor(r.kBlack)
+    hist_sm.SetLineWidth(3) 
     hist_sm.SetLineStyle(1)
     hist_sm.SetFillStyle(0)
     hist_sm.Draw("hist same")
@@ -577,7 +792,8 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
         h.Sumw2()
 
         # cut and make the sample weighted, applying the scale_factor
-        cut = "(" + reg.tcut + ") * eventweightNOPUPW * susy3BodyRightPol *" + str(s.scale_factor)
+        cut = "(" + reg.tcut + ") * eventweight *" + str(s.scale_factor)
+        #cut = "(" + reg.tcut + ") * eventweightNOPUPW * susy3BodyRightPol *" + str(s.scale_factor)
         cut = r.TCut(cut)
         sel = r.TCut("1")
         cmd = "%s>>+%s"%(p.variable, h.GetName())
@@ -590,6 +806,10 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
         
         # add overflow
         pu.add_overflow_to_lastbin(h)
+
+        # scale variable bin
+        if "srt" in reg.name :
+            h.Scale(1,"width")
 
         #h_dummy = r.TH1F("dummy","",2,0,2)
         #h_dummy.SetFillStyle(1001)
@@ -613,10 +833,17 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
 
     # add some text/labels
     #pu.draw_text(text="#it{ATLAS} Preliminary",x=0.18,y=0.85, size=0.06)
-    pu.draw_text(text="ATLAS",x=0.18,y=0.85,size=0.06,font=72)
-    pu.draw_text(text="Preliminary",x=0.325,y=0.85,size=0.06,font=42)
-    pu.draw_text(text="L = 13.3 fb^{-1}, #sqrt{s} = 13 TeV",x=0.18,y=0.79, size=0.04)
-    pu.draw_text(text=reg.displayname,      x=0.18,y=0.74, size=0.04)
+    #pu.draw_text(text="ATLAS",x=0.18,y=0.85,size=0.06,font=72)
+    #pu.draw_text(text="Preliminary",x=0.325,y=0.85,size=0.06,font=42)
+    #pu.draw_text(text="L = 36 fb^{-1}, #sqrt{s} = 13 TeV",x=0.18,y=0.79, size=0.04)
+    #pu.draw_text(text=reg.displayname,      x=0.18,y=0.74, size=0.04)
+
+    #uglify
+    pu.draw_text(text="ATLAS",x=0.18,y=0.85,size=0.05,font=72)
+    pu.draw_text(text="Preliminary",x=0.325,y=0.85,size=0.05,font=42)
+    pu.draw_text(text="#sqrt{s} = 13 TeV, 36.1 fb^{-1}", x=0.18, y=0.79, size=0.04)
+    pu.draw_text(text="3-body selection", x=0.18, y=0.74, size=0.04)
+    pu.draw_text(text=reg.displayname,      x=0.18,y=0.68, size=0.04)
 
     r.gPad.SetTickx()
     r.gPad.SetTicky()
@@ -634,7 +861,7 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     # yaxis
     yax = h_sm.GetYaxis()
     yax.SetRangeUser(0,2)
-    yax.SetTitle("Data/SM")
+    yax.SetTitle("Data / SM")
     
     yax.SetTitleSize(0.14 * 0.83)
     yax.SetLabelSize(0.13 * 0.81)
@@ -668,14 +895,27 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     ratioBand = r.TGraphAsymmErrors(nominalAsymErrors)
     pu.buildRatioErrorBand(nominalAsymErrors, ratioBand)
 
+    print "LOWER BAD ERRO BANDS"
+    for i in xrange(ratioBand.GetN()) :
+        ehigh = ratioBand.GetErrorYhigh(i)
+        elow = ratioBand.GetErrorYlow(i)
+
+        print " %d : +%.2f,-%.2f"%(i,float(ehigh),float(elow))
+
     # draw lines
-    pu.draw_line(binlow[0], 1.0, binlow[-1], 1.0,color=r.kRed,style=2,width=1)
+    #pu.draw_line(binlow[0], 1.0, binlow[-1], 1.0,color=r.kRed,style=2,width=1)
+    #uglify
+    pu.draw_line(binlow[0], 1.0, binlow[-1], 1.0,color=r.kBlack,style=2,width=1)
     pu.draw_line(binlow[0], 0.5, binlow[-1], 0.5,style=3,width=1)
     pu.draw_line(binlow[0], 1.5, binlow[-1], 1.5,style=3,width=1)
 
     # convert to tgraphs to get the ratio
     #g_data = pu.th1_to_tgraph(hd)
-    g_data = pu.convert_errors_to_poisson(hd)
+
+    do_variable_bins = False
+    if "srt" in reg.name :
+        do_variable_bins = True 
+    g_data = pu.convert_errors_to_poisson(hd, scale=do_variable_bins)
     #g_data = gdata
     g_sm = pu.th1_to_tgraph(h_sm)
     g_ratio = pu.tgraphAsymmErrors_divide(g_data, g_sm)
@@ -719,16 +959,18 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
             index+=1
     #print "SETTING RATIO_RAW TO RATIO"
     #ratio = ratio_raw
-    ratio.SetLineWidth(2)
+    #ratio.SetLineWidth(2)
+    #uglify
+    ratio.SetLineWidth(1)
     ratio.SetMarkerStyle(20)
     ratio.SetMarkerSize(1.5)
     #ratio.SetMarkerSize(1.1)
     ratio.SetLineColor(1)
     ratio.SetMarkerSize(1.5)
-    ratio.Draw("option pz 0")
     rcan.lower_pad.Update()
 
-    ratioBand.Draw("same && E2")
+    ratioBand.Draw("E2")
+    ratio.Draw("option same pz 0")
     rcan.lower_pad.Update()
     
 
@@ -737,12 +979,20 @@ def make_MDR_nm1_plot(reg, backgrounds, data) :
     #########################################
     # save
     #########################################
-    outname = p.name + "_prelim.eps"
+    outname = p.name + "_nm1.eps"
     rcan.canvas.SaveAs(outname)
     out = indir + "/plots/" + outdir
     utils.mv_file_to_dir(outname, out, True)
     fullname = out + "/" + outname
     print "%s saved to : %s"%(outname, os.path.abspath(fullname))
+
+    outname = p.name + "_nm1.root"
+    rcan.canvas.SaveAs(outname)
+    out = indir + "/plots/" + outdir
+    utils.mv_file_to_dir(outname, out, True)
+    fullname = out + "/" + outname
+    print "%s saved to : %s"%(outname, os.path.abspath(fullname))
+    
 
 
 

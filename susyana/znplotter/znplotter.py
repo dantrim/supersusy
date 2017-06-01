@@ -138,14 +138,15 @@ def get_signal_grid(file_rawdir, grid_name) :
 
 def get_yield(bkg_, tcut, region_name) :
     weight_str = ""
-    if "vv" in bkg_.name and "crv" in region_name and "SF" not in region_name :
-        weight_str = "eventweight * 1.27"
-    elif "vv" in bkg_.name and "crvSF" in region_name :
-        weight_str = "eventweight * 1.22"
-    else :
-        weight_str = "eventweight"
-    cut = "(" + tcut + ") * %s * %s"%(weight_str, str(bkg_.scale_factor))
-    #cut = "(" + tcut + ") * eventweight * " + str(bkg_.scale_factor)
+    #print "APPLYING VV SCALE FACTORS"
+    #if "vv" in bkg_.name and "crv" in region_name and "SF" not in region_name :
+    #    weight_str = "eventweight * 1.27"
+    #elif "vv" in bkg_.name and "crvSF" in region_name :
+    #    weight_str = "eventweight * 1.22"
+    #else :
+    #    weight_str = "eventweight"
+    #cut = "(" + tcut + ") * %s * %s"%(weight_str, str(bkg_.scale_factor))
+    cut = "(" + tcut + ") * eventweight * " + str(bkg_.scale_factor)
     cut_raw = "(" + tcut + ")"
     cut = r.TCut(cut)
     cut_raw = r.TCut(cut_raw)
@@ -164,7 +165,7 @@ def get_yield(bkg_, tcut, region_name) :
     int_raw = h_raw.IntegralAndError(0,-1, err_raw)
 
     #print "BKG RAW YIELD %s (%s)> %.2f +/- %.2f (%.2f)"%(region_name, bkg_.name, int_raw, err_raw, sqrt(int_raw))
-    print "BKG YIELD %s (%s)> %.2f +/- %.2f (%.2f)"%(region_name, bkg_.name, integral, err, sqrt(integral))
+    #print "BKG YIELD %s (%s)> %.2f +/- %.2f (%.2f)"%(region_name, bkg_.name, integral, err, sqrt(integral))
 
     h.Delete()
     return integral, err
@@ -197,7 +198,7 @@ def get_signal_yield(sig_, tcut, region_name, extra_weight = "") :
     int_raw = h_raw.IntegralAndError(0,-1,err_raw)
     
     #print " SIGNAL Yield (%s)> %s : %.2f +/- %.2f (%.2f)"%(region_name, sig_.getName(), integral, err, sqrt(integral))
-    print " SIGNAL RAW Yield (%s)> %s : %.2f +/- %.2f (%.2f)"%(region_name, sig_.getName(), int_raw, err_raw, sqrt(int_raw))
+    #print " SIGNAL RAW Yield (%s)> %s : %.2f +/- %.2f (%.2f)"%(region_name, sig_.getName(), int_raw, err_raw, sqrt(int_raw))
     #integral = integral - err
     h.Delete()
     return integral
@@ -382,7 +383,7 @@ def make_frame(grid_name) :
 def get_forbidden_lines(grid_name) :
 
     out_lines = []
-    if grid_name == "bWN" or grid_name == "bWNnew" :
+    if grid_name == "bWN" or grid_name == "bWNnew" or grid_name == "bffN" :
 
         x_low = 100.0
         y_low = 0.0
@@ -542,6 +543,7 @@ def make_sensitivity_plot(sigs_, regs_, grid_name) :
     for s in sigs_ :
         significance = s.best_significance
         if significance < 0.0 : significance = 0.0
+        if float(s.mx) > 480 : continue
         tex.DrawLatex(float(s.mx), float(s.my), "%.2f"%significance)
 
     forbidden_lines = get_forbidden_lines(grid_name)
@@ -617,7 +619,7 @@ def make_sensitivity_plot(sigs_, regs_, grid_name) :
     ##################################
     # atlas
     pu.draw_text(text="#bf{#it{ATLAS}} Preliminary",x=0.2, y = 0.87, size = 0.05)
-    pu.draw_text(text="13 TeV, 25/fb",x=0.2,y=0.82,size=0.04)
+    pu.draw_text(text="13 TeV, 36/fb",x=0.2,y=0.82,size=0.04)
     print 45*"*"
     print "Hardcoding process formula onto canvas"
     print 45*"*"
@@ -633,7 +635,7 @@ def make_sensitivity_plot(sigs_, regs_, grid_name) :
     #################################
     # save
 
-    canvas.SaveAs("test.eps")
+    canvas.SaveAs("test_pwc.eps")
 
 
 

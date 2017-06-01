@@ -13,12 +13,13 @@ from optparse import OptionParser
 from math import sqrt
 
 filedir = "/data/uclhc/uci/user/dantrim/ntuples/n0232/c_apr27/mc/Raw/"
+signal_filedir = "/data/uclhc/uci/user/dantrim/ntuples/n0232/d_may15/mc/Raw/"
 ttbar_file = "%sCENTRAL_410009.root"%filedir
-x1000_file = "%sCENTRAL_343777.root"%filedir
-x800_file = "%sCENTRAL_343775.root"%filedir
-x600_file = "%sCENTRAL_343772.root"%filedir
-x400_file = "%sCENTRAL_343769.root"%filedir
-hh_file = "%sCENTRAL_342053.root"%filedir
+x1000_file = "%sCENTRAL_343777.root"%signal_filedir
+x800_file = "%sCENTRAL_343775.root"%signal_filedir
+x600_file = "%sCENTRAL_343772.root"%signal_filedir
+x400_file = "%sCENTRAL_343769.root"%signal_filedir
+hh_file = "%sCENTRAL_342053.root"%signal_filedir
 
 list_made = False
 
@@ -47,6 +48,7 @@ def get_variables() :
 
     variables = {}
 
+    """
     variables["mt2_bvis"] = [80, 0, 600]
     variables["l_pt[0]"] = [10, 0, 300]
     variables["l_pt[1]"] = [10, 0, 300]
@@ -74,7 +76,7 @@ def get_variables() :
         variables[name] = [0.5, -5,5]
     
         name = "bj_pt[%d]"%i
-        variables[name] = [20,0,800]
+        variables[name] = [20,0,600]
         name = "bj_eta[%d]"%i
         variables[name] = [0.5, -5,5]
     
@@ -83,15 +85,15 @@ def get_variables() :
     variables["abs(dphi_ll_bb)"] = [0.1, 0, 3.2]
     variables["dR_ll_bb"] = [0.2, 0, 6]
     variables["abs(dphi_WW_bb)"] = [0.1, 0, 3.2]
-    variables["mass_X"] = [20, 100, 1300]
-    variables["mass_X_scaled"] = [20, 100, 1300]
+    variables["mass_X"] = [40, 100, 1300]
+    variables["mass_X_scaled"] = [40, 100, 1300]
     variables["met"] = [10, 0, 500]
     variables["abs(metPhi)"] = [0.1, 0, 3.2]
     variables["abs(dphi_met_ll)"] = [0.1, 0, 3.2]
     variables["mass_met_ll"] = [10, 0, 400]
     variables["met_pTll"] = [30, 0, 620]
     
-    variables["HT2"] = [20, 0, 1200]
+    variables["HT2"] = [40, 0, 1200]
     variables["HT2Ratio"] = [0.05, 0, 1]
     variables["MT_HWW"] = [10, 0, 300]
     variables["MT_1"] = [20,180,1200]
@@ -100,19 +102,21 @@ def get_variables() :
     variables["mt2"] = [5, 0, 140]
     variables["mt2_00"] = [20, 0, 1000]
     variables["mt2_01"] = [10, 0, 650]
-    variables["mt2_10"] = [10, 0, 800]
+    variables["mt2_10"] = [20, 0, 600]
     variables["mt2_llbb"] = [2, 0, 300]
-    variables["mbb"] = [5,0,350]
-    variables["mt2_bb"] = [10,0,450]
-    variables["mt2_bvis"] = [10,0,600]
-    variables["mt2_lvis"] = [10, 0, 600]
+    variables["mbb"] = [10,0,350]
+    variables["mt2_bb"] = [20,0,450]
+    variables["mt2_bvis"] = [20,0,600]
+    variables["mt2_lvis"] = [20, 0, 600]
     variables["mT_llmet"] = [20,0,800]
     variables["mT_bb"] = [10, 0, 500]
     variables["min_mT_llmet_bb"] = [15,0,500]
     variables["max_mT_llmet_bb"] = [20,0,1200]
     
-    variables["mt2_llbb"] = [10, 0, 500]
+    variables["mt2_llbb"] = [10, 0, 350]
     variables["abs(cosTheta2)"] = [0.05, 0, 1]
+    """
+    variables["abs(cosThetaB)"] = [0.05, 0, 1]
     
     return variables
 
@@ -550,9 +554,36 @@ def main() :
     two_leptons = "( (%s) || (%s) )"%(isDFOS, isSFOS)
     #two_leptons = "nLeptons==2 && l_pt[0]>25 && l_pt[1]>20 && (l_q[0]*l_q[1])<0"
     trigger = "((year==2015 && trig_pass2015==1) || (year==2016 && trig_pass2016update==1))"
+    selection = "%s && %s && nBJets==2 && nSJets>0 && mll>20"%(two_leptons, trigger)
     #selection = "%s && nBJets==2 && %s && mll>20 && l_pt[0]>25 && l_pt[1]>20 && mll<80 && HT2Ratio>0.8 && mT_bb>100 && dRbb<1.8 && MT_1_scaled>400"%(two_leptons, trigger) 
     #selection = "%s && nBJets==2 && nSJets>0 && %s && mll>20 && HT2Ratio>0.85 && abs(dphi_ll)<1 && mbb>80 && mbb<140 && dR_ll_bb>2.2 && dRbb<1.25 && mt2_llbb>100 && mt2_llbb<150 && abs(dphi_met_ll)<1"%(two_leptons, trigger) 
-    selection = "%s && nBJets==2 && nSJets>0 && %s && mll>20 && HT2Ratio>0.85 && abs(dphi_ll)<1 && mbb>80 && mbb<140 && dR_ll_bb>2.2 && dRbb<1.25 && mt2_llbb>100 && mt2_llbb<150 && abs(dphi_met_ll)<1 && abs(cosThetaB)<0.7"%(two_leptons, trigger) 
+    # this is a good selection May 9 2017
+    #selection = "%s && nBJets==2 && nSJets>0 && %s && mll>20 && HT2Ratio>0.85 && abs(dphi_ll)<1 && mbb>80 && mbb<140 && dR_ll_bb>2.2 && dRbb<1.25 && mt2_llbb>100 && mt2_llbb<150 && abs(dphi_met_ll)<1 && abs(cosThetaB)<0.7"%(two_leptons, trigger) 
+
+    dphi_met_ll = "abs(dphi_met_ll)<1"
+    dphi_met_ll = "1"
+
+    base_selection = "%s && %s && nBJets==2 && nSJets>0 && mll>20"%(two_leptons, trigger)
+    mbb_window = "mbb > 80 && mbb < 140"
+    mt2_ll_bb_window = "mt2_llbb>100 && mt2_llbb<150"
+    dRllbb = "dR_ll_bb>2.2"
+    dphi_ll = "abs(dphi_ll)<1"
+    dRbb = "dRbb<1.25"
+    HT2Ratio = "HT2Ratio>0.85"
+    cosThetaB = "abs(cosThetaB)<0.7"
+    #cosThetaB = "1"
+
+    sel0 = base_selection
+    sel1 = sel0 + " && " + mbb_window
+    sel2 = sel1 + " && " + mt2_ll_bb_window
+    sel3 = sel2 + " && " + dRllbb
+    sel4 = sel3 + " && " + dphi_met_ll
+    sel5 = sel4 + " && " + dphi_ll
+    sel6 = sel5 + " && " + dRbb
+    sel7 = sel6 + " && " + HT2Ratio
+    sel8 = sel7 + " && " + cosThetaB
+
+    selection = sel8
 
 
     if do_plots :
