@@ -278,7 +278,103 @@ def make_eff_2d(eff_none, eff_trig, pt_cuts, trig_type, trig_name, sample) :
     #c.SaveAs("./test_plots/test_eff_2d.eps")
     c.SaveAs("./trig_eff_plots/trig_eff_2d_%s_%s.eps"%(sample.name, trig_type))
 
+
     
+def make_kinematic_plots(trig_type, trig_nicename, sample, dilepton_triggers, di_or_si_triggers) :
+
+    print "make_kinematic_plots"
+
+    vars = ["l_pt[0]", "l_pt[1]", "l_eta[0]", "l_eta[1]", "l_phi[0]", "l_phi[1]"]
+    bounds = {}
+    bounds["l_pt[0]"] = [5, 0, 200]
+    bounds["l_pt[1]"] = [5, 0, 200]
+    bounds["l_eta[0]"] = [0.2, -3, 3]
+    bounds["l_eta[1]"] = [0.2, -3, 3]
+    bounds["l_phi[0]"] = [0.2, -3.2, 3.2]
+    bounds["l_phi[1]"] = [0.2, -3.2, 3.2]
+
+    nice_names = {}
+    nice_names["l_pt[0]"] = "Lead lepton p_{T} [GeV]"
+    nice_names["l_pt[1]"] = "Sub-lead lepton p_{T} [GeV]"
+    nice_names["l_eta[0]"] = "Lead lepton #eta"
+    nice_names["l_eta[1]"] = "Sub-lead lepton #eta"
+    nice_names["l_phi[0]"] = "Lead lepton #phi [rad]"
+    nice_names["l_phi[1]"] = "Sub-lead lepton #phi [rad]"
+
+    flavor = ["ee", "mm", "em"]
+    flavor_selection = {}
+    flavor_selection["ee"] = "( nLeptons==2 && nElectrons==2 && abs(mll-91.2)>10.0 )"
+    flavor_selection["mm"] = "( nLeptons==2 && nMuons==2 && abs(mll-91.2)>10.0 )"  
+    flavor_selection["em"] = "( nLeptons==2 && nElectrons==1 && nMuons==1 )"
+
+    for var in vars :
+        print " > %s"%var
+        for flav in flavor :
+
+            ok_name = var.replace("[","").replace("]","")
+
+            c = r.TCanvas("c_%s_%s_%s"%(ok_name, sample.name, flav), "", 800, 600)
+            c.cd()
+
+            n_bins = bounds[var][2] - bounds[var][1]
+            n_bins = n_bins / bounds[var][0]
+
+
+            # histo without trig requirement
+            h0 = r.TH1F("h_%s_%s_%s"%(ok_name, sample.name, flav), "", int(n_bins), bounds[var][1], bounds[var][2]) 
+            h0.SetLineColor(r.kBlack)
+            h0.SetLineWidth(2)
+            h0.GetXaxis().SetTitle(nice_names[var])
+            h0.GetYaxis().SetTitle("Entries")
+            h0.Sumw2()
+
+            selection = "mll>20 && %s && %s"%(flavor_selection[flav], dilepton_triggers)
+            cut = "( %s )"%selection#* eventweight"%selection
+
+            cmd = "%s>>%s"%(var, h0.GetName())
+            sample.tree.Draw(cmd, cut, "goff")
+
+            err = r.Double(0.0)
+            integral = h0.IntegralAndError(0,-1,err)
+
+            # histo with trigger requirement
+            ht = r.TH1F("ht_%s_%s_%s"%(ok_name, sample.name, flav), "", int(n_bins), bounds[var][1], bounds[var][2])
+            ht.SetLineColor(r.kRed)
+            ht.SetLineWidth(2)
+            ht.GetXaxis().SetTitle(nice_names[var])
+            ht.GetYaxis().SetTitle("Entries")
+            ht.Sumw2()
+
+            selection = "mll>20 && %s && %s"%(flavor_selection[flav], di_or_si_triggers)
+            cut = "( %s )"%selection# * eventweight"%selection
+
+            cmd = "%s>>%s"%(var, ht.GetName())
+            sample.tree.Draw(cmd, cut, "goff")
+
+            err = r.Double(0.0)
+            integral = ht.IntegralAndError(0,-1,err)
+
+            leg = r.TLegend(0.7, 0.72, 0.93, 0.93)
+            leg.AddEntry(h0, "Dilepton", "l") 
+            leg.AddEntry(ht, "Dilepton OR Single", "l")
+
+            maxy = h0.GetMaximum()
+            if ht.GetMaximum() > maxy : maxy = ht.GetMaximum()
+            maxy = 1.1*maxy
+
+            h0.SetMaximum(maxy)
+            ht.SetMaximum(maxy)
+
+            c.cd()
+            h0.Draw("hist")
+            ht.Draw("hist same")
+            c.Update()
+            leg.Draw()
+
+            oname = "trig_kin_%s_%s_%s.eps"%(sample.name, ok_name, flav)
+            c.SaveAs("./trig_kin_plots/%s"%oname)
+
+        
 
 
 def make_trig_eff_plots(samples, trig_type) :
@@ -298,7 +394,8 @@ def make_trig_eff_plots(samples, trig_type) :
     single_muon_2015 = "trig_mu26_imedium==1"
 
     # 2016 single lepton
-    single_electron_2016 = "trig_e26_lhtight_ivarloose==1"
+    #single_electron_2016 = "trig_e26_lhtight_ivarloose==1"
+    single_electron_2016 = "trig_e60_lhmedium_nod0==1"
     single_muon_2016 = "trig_mu20_iloose_L1MU15==1"
 
     # dilepton only
@@ -366,6 +463,8 @@ def make_trig_eff_plots(samples, trig_type) :
 
         #make_eff(eff_dict_none, eff_dict_trig, nice_names[trig_type], s)
         make_eff_2d(eff_dict_none, eff_dict_trig, pt_cuts, trig_type, nice_names[trig_type], s)
+        make_kinematic_plots(trig_type, nice_names[trig_type], s, dilepton_triggers, di_or_si_triggers)
+
 
 
 def main() :
@@ -387,6 +486,7 @@ def main() :
     x1000 = Sample(x1000_file, "x1000", "X (1 TeV)", 3, True, lumi_weight)
     
     samples = [hh, x1000]
+    samples = [hh]
     
     make_trig_eff_plots(samples, trig_type)
 

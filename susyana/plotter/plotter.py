@@ -281,6 +281,10 @@ def histos_for_legend(histos) :
 
 def make_plotsRatio(plot, reg, data, backgrounds, current_plot_number, total_number_to_plot) :
 
+    add_scale_factors = False
+    if not add_scale_factors :
+        print " *** NOT ADDING S2L SCALE FACTORS *** "
+
     print 50*"- "
     print "make_plotsRatio    Plotting [%d/%d] %s"%(current_plot_number, total_number_to_plot, plot.name)
 
@@ -346,9 +350,9 @@ def make_plotsRatio(plot, reg, data, backgrounds, current_plot_number, total_num
         else : hist_name = plot.variable
 
         h = pu.th1f("h_"+b.treename+"_"+hist_name, "", int(plot.nbins), plot.x_range_min, plot.x_range_max, plot.x_label, plot.y_label)
-        #h.SetLineColor(r.kBlack)
+        h.SetLineColor(r.kBlack)
         #uglifyy for Moriond
-        h.SetLineColor(b.color)
+        #h.SetLineColor(b.color)
         h.GetXaxis().SetLabelOffset(-999)
         h.SetFillColor(b.color)
         h.SetFillStyle(1001)
@@ -356,21 +360,23 @@ def make_plotsRatio(plot, reg, data, backgrounds, current_plot_number, total_num
 
         # cut and make the sample weighted, applying the scale_factor
         weight_str = ""
-        if "fakes" in b.name :
-            weight_str = "FakeWeight"
-        elif "vv" in b.name and "SF" in reg.name :
-            print "adding mu_VVSF"
-            weight_str = "eventweight * 1.02"
-        elif "vv" in b.name and "SF" not in reg.name :
-            print "adding mu_VVDF"
-            weight_str = "eventweight * 1.02"
-        elif "ttbar" in b.name :
-            print "adding mu_TTBAR"
-            weight_str = "eventweight * 1.06"
-        #elif "vv" in b.name and "crv" in reg.name and "SF" not in reg.name :
-        #    weight_str = "eventweight * 1.27"
-        #elif "vv" in b.name and "crvSF" in reg.name :
-        #    weight_str = "eventweight * 1.22"
+        
+        if add_scale_factors :
+            if "fakes" in b.name :
+                weight_str = "FakeWeight"
+            elif "vv" in b.name and "SF" in reg.name :
+                print "adding mu_VVSF"
+                weight_str = "eventweight * 1.02"
+            elif "vv" in b.name and "SF" not in reg.name :
+                print "adding mu_VVDF"
+                weight_str = "eventweight * 1.02"
+            elif "ttbar" in b.name :
+                print "adding mu_TTBAR"
+                weight_str = "eventweight * 1.06"
+            #elif "vv" in b.name and "crv" in reg.name and "SF" not in reg.name :
+            #    weight_str = "eventweight * 1.27"
+            #elif "vv" in b.name and "crvSF" in reg.name :
+            #    weight_str = "eventweight * 1.22"
         else :
             #print "+++ not applying pileup reweighting to sample %s +++"%b.name
             #weight_str = "eventweightNOPUPW"
@@ -437,9 +443,18 @@ def make_plotsRatio(plot, reg, data, backgrounds, current_plot_number, total_num
     removes["crt17"] = ["higgs", "superNt"] # histo names by treename
     removes["crv17"] = ["TTV", "zjets"]
     removes["crvSF17"] = ["TTV"]
+    removes["vrt17"] = ["zjets", "higgs", "TTV"]
+    removes["vrv17"] = ["TTV","zjets"]
+    removes["vrvSF17"] = ["TTV"]
 
     tmp_leg_histos = []
-    removal_list = removes[reg.name]
+    removal_list = []
+    try :
+        removal_list = removes[reg.name]
+    except :
+        print "S2L NOT REMOVING SAMPLES FROM LEGEND"
+        pass
+
     for h in all_histos :
         keep_histo = True
         for rem in removal_list :
@@ -453,7 +468,10 @@ def make_plotsRatio(plot, reg, data, backgrounds, current_plot_number, total_num
     
 
     h_leg = sorted(tmp_leg_histos, key=lambda h: h.Integral(), reverse=True)
-    histos_for_leg = histos_for_legend(h_leg)
+    print "not adjusting legend"
+    histos_for_leg = h_leg
+    #histos_for_leg = histos_for_legend(h_leg)
+
     #for h in h_leg :
     #    # add items to legend in order of stack
     #    name_for_legend = ""
@@ -601,20 +619,22 @@ def make_plotsRatio(plot, reg, data, backgrounds, current_plot_number, total_num
 
     # draw the MC stack and do cosmetcis
     stack.SetMinimum(plot.y_range_min)
-  #  max_mult = 1.65
-  #  if has_signals :
-  #      max_mult = 2.0
-  #  if not plot.isLog() :
-  #      hax.SetMaximum(max_mult*maxy)
-  #      hax.Draw()
-  #      rcan.upper_pad.Update()
-  #      stack.SetMaximum(max_mult*maxy)
-  #  else :
-  #      hax.SetMaximum(1e3*plot.y_range_max)
-  #      hax.Draw()
-  #      rcan.upper_pad.Update()
-  #      stack.SetMaximum(1e3*plot.y_range_max)
-  #      #stack.SetMaximum(plot.y_range_max)
+
+    print "automatically setting plot maximum"
+    max_mult = 1.65
+    if has_signals :
+        max_mult = 2.0
+    if not plot.isLog() :
+        hax.SetMaximum(max_mult*maxy)
+        hax.Draw()
+        rcan.upper_pad.Update()
+        stack.SetMaximum(max_mult*maxy)
+    else :
+        hax.SetMaximum(1e3*plot.y_range_max)
+        hax.Draw()
+        rcan.upper_pad.Update()
+        stack.SetMaximum(1e3*plot.y_range_max)
+        #stack.SetMaximum(plot.y_range_max)
     stack.Draw("HIST SAME")
     rcan.upper_pad.Update()
 
@@ -716,7 +736,8 @@ def make_plotsRatio(plot, reg, data, backgrounds, current_plot_number, total_num
     pu.draw_text(text="Preliminary",x=0.325,y=0.85,size=0.05,font=42)
     #pu.draw_text(text="L = 36 fb^{-1}, #sqrt{s} = 13 TeV",x=0.18,y=0.79, size=0.04)
     pu.draw_text(text="#sqrt{s} = 13 TeV, 36.1 fb^{-1}", x=0.18, y=0.79, size=0.04)
-    pu.draw_text(text="3-body selection", x=0.18, y=0.74, size=0.04)
+    #pu.draw_text(text="3-body selection", x=0.18, y=0.74, size=0.04)
+    pu.draw_text(text="WWbb", x=0.18, y=0.74, size=0.04)
     pu.draw_text(text=reg.displayname,      x=0.18,y=0.68, size=0.04)
     #pu.draw_text(text=reg.displayname,      x=0.18,y=0.74, size=0.04)
 

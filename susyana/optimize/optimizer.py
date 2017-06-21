@@ -10,6 +10,7 @@ r.gROOT.SetBatch(True)
 r.gStyle.SetOptStat(False)
 import sys
 sys.path.append(os.environ['SUSYDIR'])
+r.gROOT.ProcessLine( "gErrorIgnoreLevel = 3001;")
 
 r.TH1F.__init__._creates = False
 r.TGraph2D.__init__._creates = False
@@ -182,6 +183,9 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
 
     # get canvases
     ratiocan = plot.getCanvas()
+    ratiocan.canvas.SetGrid(1,1)
+    ratiocan.canvas.SetTickx(1)
+    ratiocan.canvas.SetTicky(1)
     ratiocan.canvas.cd()
 
     # go to the upper-pad
@@ -296,7 +300,7 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
         hs.Sumw2
 
         # cut and make sample weighted, applying the scale_factor
-        cut = "(" + region.tcut + ") * eventweightNOPUPW *" + str(s.scale_factor)
+        cut = "(" + region.tcut + ") * eventweight *" + str(s.scale_factor)
         cut = r.TCut(cut)
         sel = r.TCut("1")
         cmd = "%s>>%s"%(plot.variable, hs.GetName())
@@ -367,7 +371,7 @@ def make_znRatioPlots(backgrounds, signals, region, plot) :
 
     #pu.draw_text_on_top(text=reg.tcut, size = 0.02)
     pu.draw_text(text="#it{ATLAS} Internal",x=0.18,y=0.83, size = 0.06)
-    pu.draw_text(text="13 TeV, 36/fb", x=0.18,y=0.73, size = 0.06)
+    pu.draw_text(text="13 TeV, 100/fb", x=0.18,y=0.73, size = 0.06)
     #pu.draw_text(text="13 TeV, 10 fb^{-1}", x=0.18,y=0.8)
 
     #########################

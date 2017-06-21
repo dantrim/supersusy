@@ -12,8 +12,8 @@ from optparse import OptionParser
 
 from math import sqrt
 
-filedir = "/data/uclhc/uci/user/dantrim/ntuples/n0232/c_apr27/mc/Raw/"
-signal_filedir = "/data/uclhc/uci/user/dantrim/ntuples/n0232/d_may15/mc/Raw/"
+filedir = "/data/uclhc/uci/user/dantrim/ntuples/n0232/f_jun5/mc/Raw/"
+signal_filedir = "/data/uclhc/uci/user/dantrim/ntuples/n0232/f_jun5/mc/Raw/"
 ttbar_file = "%sCENTRAL_410009.root"%filedir
 x1000_file = "%sCENTRAL_343777.root"%signal_filedir
 x800_file = "%sCENTRAL_343775.root"%signal_filedir
@@ -48,7 +48,6 @@ def get_variables() :
 
     variables = {}
 
-    """
     variables["mt2_bvis"] = [80, 0, 600]
     variables["l_pt[0]"] = [10, 0, 300]
     variables["l_pt[1]"] = [10, 0, 300]
@@ -115,7 +114,6 @@ def get_variables() :
     
     variables["mt2_llbb"] = [10, 0, 350]
     variables["abs(cosTheta2)"] = [0.05, 0, 1]
-    """
     variables["abs(cosThetaB)"] = [0.05, 0, 1]
     
     return variables
@@ -483,10 +481,12 @@ def make_2d_plots(samples, signame, selection) :
                     "mt2_llbb",
                     "dR_ll_bb",
                     "abs(dphi_met_ll)",
-                    "abs(dphi_ll)",
+                    #"abs(dphi_ll)",
                     "dRbb",
                     "HT2Ratio",
-                    "abs(cosThetaB)"]
+                    "dRll",
+                    "mll",
+                    "met_pTll"]
 
     background = None
     signal = None
@@ -593,7 +593,7 @@ def main() :
         x = r.RooStats
         get_sob(samples, selection)
 
-    selection_for_2d = "nBJets==2 && nSJets>0 && mll>20"
+    selection_for_2d = "nBJets>=2 && nSJets>0 && mll>20"
     #selection_for_2d = "%s && %s && nBJets==2 && nSJets>0 && mll>20"%(two_leptons, trigger)
 
     if do_plots2D :

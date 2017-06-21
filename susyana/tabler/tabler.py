@@ -109,8 +109,10 @@ def getCutYield(tcut, bkg, cutNumber) :
         weight_str = "FakeWeight * " + str(bkg.scale_factor)
         print "fakes weight string = %s"%weight_str
     else :
-        weight_str = "eventweight"
-    cut = "(" + tcut + ") * %s * "%weight_str + str(bkg.scale_factor)
+        weight_str = "1"
+        #weight_str = "eventweight"
+    cut = "(" + tcut + ")" 
+    #cut = "(" + tcut + ") * %s * "%weight_str + str(bkg.scale_factor)
     #cut = "(" + tcut + ") * eventweight * " + str(bkg.scale_factor)
     cut = r.TCut(cut)
     sel = r.TCut("1")
@@ -123,7 +125,7 @@ def getCutYield(tcut, bkg, cutNumber) :
     h.Delete() 
     c.Close() # prevent annoying canvas warnings
 
-    return integral
+    return integral, stat_err
 
 ################################################
 ## make cutflow table
@@ -133,8 +135,8 @@ def make_cutflow(reg, data, backgrounds) :
 
 
     print "FORCING BACKGROUNDS TO BE DATA"
-    data.scale_factor = 1.0
-    backgrounds = [data]
+    #data.scale_factor = 1.0
+    #backgrounds = [data]
     headers = ['Cut']
     for bkg in backgrounds :
         headers.append(bkg.displayname) 
@@ -158,17 +160,21 @@ def make_cutflow(reg, data, backgrounds) :
 
         for ib, bkg in enumerate(backgrounds) :
             # get the yield for the bkg for the cutflow up to this point
-            bkgYield = getCutYield(reg.getCutFlowList()[icut], bkg, icut)
+            bkgYield, bkgErr = getCutYield(reg.getCutFlowList()[icut], bkg, icut)
+            #bkgYield = getCutYield(reg.getCutFlowList()[icut], bkg, icut)
 
             # get the background yield from the previous cut to calculate the efficiency
             # of the current cut
+           # print "bkgYield : ", bkgYield
             efficiency = ""
-            if icut == 0 : efficiency = "1.00"
-            elif icut != 0 and float(table[icut-1][ib+1]) > 0: efficiency = "%.2f"%(bkgYield / float(table[icut-1][ib+1]) * 1.0)
+            efficiency = "%.2f"%bkgErr
+            #if icut == 0 : efficiency = "1.00"
+            #elif icut != 0 and float(table[icut-1][ib+1]) > 0: efficiency = "%.2f"%(bkgYield / float(table[icut-1][ib+1]) * 1.0)
             eff_list.append(efficiency)
 
             # add an entry to this row
             line.append("%.2f"%bkgYield)
+            #line.append("%.2f +/- %.2f"%(bkgYield, bkgErr))
 
         # add the efficiencies for this cut
         efficiencies.append(eff_list)
@@ -182,7 +188,8 @@ def make_cutflow(reg, data, backgrounds) :
         new_line.append(line[0])
         for iB, bkg in enumerate(backgrounds) :
             bline = line[iB+1] 
-            bline += " (%s)"%(efficiencies[icut][iB])
+            bline += " +/- %s"%(efficiencies[icut][iB])
+            #bline += " (%s)"%(efficiencies[icut][iB])
             new_line.append(bline)
         new_table.append(new_line)
     table = new_table
