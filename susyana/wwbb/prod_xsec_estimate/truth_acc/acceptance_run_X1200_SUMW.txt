@@ -1,0 +1,123 @@
+DiHiggsAcceptance
+DiHiggsAcceptance         INFO    Environment initialised for data access
+OBJ: TChain	CollectionTree	 : 0 at: 0x25ce970
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000001.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=5000
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000002.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=5000
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000003.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=5000
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000004.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=5000
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000005.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=5000
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000006.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=5000
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000007.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=5000
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000008.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=5000
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000009.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=5000
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000010.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=5000
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000011.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=100000
+ ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0//user.amete.11675794.EXT0._000012.DAOD_TRUTH3.output.pool.roottree:CollectionTree entries=50000
+DiHiggsAcceptance
+DiHiggsAcceptance    signal hypothesis : 1200 GeV resonance
+----------------------------------------
+ Total entries in input   : 200000
+ Total entries to process : 200000
+----------------------------------------
+TruthSelectorBase::Begin    
+TruthSelectorBase::Init    Input sample : ../truth_dihiggs_samples/user.amete.343779.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_Xhh_m1200_wwbb.DAOD_TRUTH3.e5153.forDanny.v1_EXT0/
+TruthSelectorBase::Init    Found tree with 200000 entries
+X = 0  xsec = 0.59
+X = 260  xsec = 0.044
+X = 300  xsec = 0.044
+X = 400  xsec = 0.044
+X = 500  xsec = 0.044
+X = 600  xsec = 0.044
+X = 700  xsec = 0.044
+X = 750  xsec = 0.044
+X = 800  xsec = 0.044
+X = 900  xsec = 0.044
+X = 1000  xsec = 0.044
+X = 1100  xsec = 0.044
+X = 1200  xsec = 0.044
+X = 1300  xsec = 0.044
+X = 1400  xsec = 0.044
+X = 1500  xsec = 0.044
+X = 1600  xsec = 0.044
+X = 1800  xsec = 0.044
+X = 2000  xsec = 0.041
+X = 2250  xsec = 0.041
+X = 2500  xsec = 0.041
+X = 2750  xsec = 0.041
+X = 3000  xsec = 0.041
+DiHiggsAcceptance::Process     **** Processing entry      0 *** 
+DiHiggsAcceptance::Process     **** Processing entry   5000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  10000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  15000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  20000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  25000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  30000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  35000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  40000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  45000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  50000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  55000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  60000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  65000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  70000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  75000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  80000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  85000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  90000 *** 
+DiHiggsAcceptance::Process     **** Processing entry  95000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 100000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 105000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 110000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 115000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 120000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 125000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 130000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 135000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 140000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 145000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 150000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 155000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 160000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 165000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 170000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 175000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 180000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 185000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 190000 *** 
+DiHiggsAcceptance::Process     **** Processing entry 195000 *** 
+==================== COUNTS SUMMARY ======================
+COUNTS 1200
+COUNTS - - - - - - - - - - - - - - - - -
+COUNTS EE TOTAL READ IN = 4401.73  [200000]
+COUNTS EE TOTAL PASSED  = 12.8949  [584]
+COUNTS EE ACCEPTANCE    = 0.00292951  [0.00292]
+COUNTS - - - - - - - - - - - - - - - - -
+COUNTS MM TOTAL READ IN = 4401.73  [200000]
+COUNTS MM TOTAL PASSED  = 12.5506  [581]
+COUNTS MM ACCEPTANCE    = 0.0028513  [0.002905]
+COUNTS - - - - - - - - - - - - - - - - -
+COUNTS EM TOTAL READ IN = 4401.73  [200000]
+COUNTS EM TOTAL PASSED  = 24.7977  [1109]
+COUNTS EM ACCEPTANCE    = 0.00563363  [0.005545]
+COUNTS - - - - - - - - - - - - - - - - -
+COUNTS ALL TOTAL READ IN= 4401.73  [200000]
+COUNTS ALL PASSED       = 50.2433  [2274]
+COUNTS ALL ACCEPTANCE   = 0.0114145  [0.01137]
+=============================================================
+
+DiHiggsAcceptance::Terminate    There were 188229 events that were not dileptonic (< = 188229, > = 0)
+-------------------------------------------
+ Number of events processed : 200000
+ Number of events saved     : 0
+	 Analysis time      : Real 0:00:52, CPU 52.200
+	 Analysis speed     : [kHz]: 3.809
+-------------------------------------------
+
+DiHiggsAcceptance::Terminate    TOTAL SUMW 1200 6156.85
+TruthSelector job done
+xAOD::TFileAccessTracer   INFO    Sending file access statistics to http://rucio-lb-prod.cern.ch:18762/traces/
+Warning in <xAOD::TReturnCode>:
+Warning in <xAOD::TReturnCode>: Unchecked return codes encountered during the job
+Warning in <xAOD::TReturnCode>: Number of unchecked successes: 2
+Warning in <xAOD::TReturnCode>: To fail on an unchecked code, call xAOD::TReturnCode::enableFailure() at the job's start
+Warning in <xAOD::TReturnCode>:
