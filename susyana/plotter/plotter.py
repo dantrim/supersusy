@@ -1001,6 +1001,7 @@ def make_plots1D(plot, reg, data, backgrounds, current_plot_number, total_number
 
         # order the backgrounds by integral
         histos = []
+        maxy = -1
 
         has_signals = False
 
@@ -1021,7 +1022,7 @@ def make_plots1D(plot, reg, data, backgrounds, current_plot_number, total_number
             h.SetMaximum(plot.y_range_max)
             h.Sumw2
 
-            cut = "(" + reg.tcut + ") * eventweight * " + str(b.scale_factor)
+            cut = "(" + reg.tcut + ") * " + str(b.scale_factor)
             cut = r.TCut(cut)
             sel = r.TCut("1")
             cmd = "%s>>+%s"%(plot.variable, h.GetName())
@@ -1034,6 +1035,7 @@ def make_plots1D(plot, reg, data, backgrounds, current_plot_number, total_number
 
             total_bkg = total_bkg + integral
             total_bkg_err = total_bkg_err + stat_err * stat_err
+            if h.GetMaximum() > maxy : maxy = h.GetMaximum()
 
             #stack.Add(h)
             leg.AddEntry(h, b.displayname, "f")
@@ -1043,10 +1045,13 @@ def make_plots1D(plot, reg, data, backgrounds, current_plot_number, total_number
         total_bkg_err = sqrt(total_bkg_err)
         print "Total BKG : %.2f +/- %.2f"%(total_bkg, total_bkg_err)
 
+
         #order the histos
         histos = sorted(histos, key=lambda h: h.Integral(), reverse=False)
         for h in histos :
+            h.SetMaximum(1.3 * maxy)
             stack.Add(h)
+        stack.SetMaximum(1.3 * maxy)
         c.Update()
 
         #### DATA
@@ -1093,7 +1098,7 @@ def make_plots1D(plot, reg, data, backgrounds, current_plot_number, total_number
             h.SetFillStyle(0)
             h.Sumw2
 
-            cut = "(" + reg.tcut + ") * eventweight *" + str(s.scale_factor)
+            cut = "(" + reg.tcut + ") *" + str(s.scale_factor)
             cut = r.TCut(cut)
             sel = r.TCut("1")
             cmd = "%s>>+%s"%(plot.variable, h.GetName())
@@ -1493,9 +1498,11 @@ def make_plots2D(plot, reg, data, backgrounds) :
 
 def make_plots(plots, regions, data, backgrounds) :
     for reg in regions:
+        print "make_plots    : %s" % reg.name
         # first check that there are plots for the given region
         plots_with_region = []
         for p in plots :
+            print " > %s. "% p.region
             if p.region == reg.name : plots_with_region.append(p)
         if len(plots_with_region)==0 : continue
 
@@ -1692,7 +1699,9 @@ if __name__=="__main__" :
     if requestRegion != "" :
         requested_plots = []
         for p in plots :
+            print p.region
             if p.region == requestRegion : requested_plots.append(p)
+        print requested_plots
         make_plots(requested_plots, regions, data, backgrounds)
     elif requestPlot != "" :
         requested_plots = []
